@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
     Building2,
+    CreditCard,
     Menu,
     ChevronLeft,
     LogOut,
@@ -17,6 +18,7 @@ const Sidebar = () => {
     const mainMenuItems = [
         { title: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/' },
         { title: 'Bancos', icon: <Building2 size={20} />, path: '/bancos' },
+        { title: 'Tipos de Cuenta', icon: <CreditCard size={20} />, path: '/tipos-cuenta' },
     ];
 
     const secondaryMenuItems = [
@@ -31,13 +33,11 @@ const Sidebar = () => {
                     <div className="logo-icon">M</div>
                     {isOpen && <span className="logo-text">Core<span className="dot">Bank</span></span>}
                 </div>
-                <button
-                    className="toggle-control"
-                    onClick={() => setIsOpen(!isOpen)}
-                >
+                <button className="toggle-control" onClick={() => setIsOpen(!isOpen)}>
                     {isOpen ? <ChevronLeft size={18} /> : <Menu size={18} />}
                 </button>
             </div>
+
             <nav className="sidebar-content">
                 <div className="nav-group">
                     {isOpen && <p className="group-title">Principal</p>}
@@ -46,7 +46,7 @@ const Sidebar = () => {
                             <li key={index}>
                                 <NavLink
                                     to={item.path}
-                                    className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+                                    className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
                                 >
                                     <span className="icon-wrapper">{item.icon}</span>
                                     {isOpen && <span className="label">{item.title}</span>}
@@ -56,25 +56,8 @@ const Sidebar = () => {
                         ))}
                     </ul>
                 </div>
-                {/*  <div className="nav-group">
-                {isOpen && <p className="group-title">Sistema</p>}
-                <ul className="nav-list">
-                    {secondaryMenuItems.map((item, index) => (
-                        <li key={index}>
-                            <NavLink
-                                to={item.path}
-                                className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-                            >
-                                <span className="icon-wrapper">{item.icon}</span>
-                                {isOpen && <span className="label">{item.title}</span>}
-                                {!isOpen && <div className="floating-tooltip">{item.title}</div>}
-                            </NavLink>
-                        </li>
-                    ))}
-                </ul>
-            </div>*/}
-
             </nav>
+
             <div className="sidebar-footer">
                 <button className="action-btn logout">
                     <LogOut size={20} />
@@ -82,7 +65,7 @@ const Sidebar = () => {
                     {!isOpen && <div className="floating-tooltip">Salir</div>}
                 </button>
             </div>
-        </aside >
+        </aside>
     );
 };
 
