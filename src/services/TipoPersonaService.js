@@ -1,6 +1,6 @@
 import api from '../api/axios';
 
-const BASE = '/api/tipopersona';
+const BASE = '/tipopersona';
 
 export const getTiposPersona = () => api.get(BASE).then(r => r.data);
 export const getTipoPersonaById = (id) => api.get(`${BASE}/${id}`).then(r => r.data);
