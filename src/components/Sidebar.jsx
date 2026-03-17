@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
     Building2,
     CreditCard,
+    UserSquare2,
     Menu,
     ChevronLeft,
     LogOut,
@@ -19,6 +20,7 @@ const Sidebar = () => {
         { title: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/' },
         { title: 'Bancos', icon: <Building2 size={20} />, path: '/bancos' },
         { title: 'Tipos de Cuenta', icon: <CreditCard size={20} />, path: '/tipos-cuenta' },
+        { title: 'Tipos de Persona', icon: <UserSquare2 size={20} />, path: '/tipos-persona' },
     ];
 
     const secondaryMenuItems = [
