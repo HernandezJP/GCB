@@ -7,6 +7,8 @@ import TipoCuentaPage from './pages/TipoCuenta/TipoCuentaPage'
 import TipoPersonaPage from './pages/TipoPersona/TipoPersonaPage';
 import TipoTelefonoPage from './pages/TipoTelefono/TipoTelefonoPage';
 import TipoDireccionPage from './pages/TipoDireccion/TipoDireccionPage';
+import EstadoCuentaPage from './pages/EstadoCuenta/EstadoCuentaPage';
+
 
 // Componentes temporales (Mock) para las rutas vacías
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -26,6 +28,7 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/tipos-telefono" element={<TipoTelefonoPage />} />
           <Route path="/tipos-direccion" element={<TipoDireccionPage />} />
+          <Route path="/estados-cuenta" element={<EstadoCuentaPage />} />
         </Routes>
       </main>
     </Router>
