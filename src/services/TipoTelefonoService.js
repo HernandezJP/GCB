@@ -1,6 +1,6 @@
 import api from '../api/axios';
 
-const BASE = '/api/tipotelefono';
+const BASE = '/tipotelefono';
 
 export const getTiposTelefono = () => api.get(BASE).then(r => r.data);
 export const getTipoTelefonoById = (id) => api.get(`${BASE}/${id}`).then(r => r.data);
