@@ -12,6 +12,7 @@ import {
     HelpCircle,
     Phone,
     MapPin,
+    Coins,
     
     FileText,
 } from 'lucide-react';
@@ -27,7 +28,8 @@ const Sidebar = () => {
         { title: 'Tipos de Persona', icon: <UserSquare2 size={20} />, path: '/tipos-persona' },
         { title: 'Tipos de Teléfono', icon: <Phone size={20} />, path: '/tipos-telefono' },
         { title: 'Tipos de Dirección', icon: <MapPin size={20} />, path: '/tipos-direccion' },
-        { title: 'Estados de Cuenta',   icon: <FileText size={20} />, path: '/estados-cuenta' }
+        { title: 'Estados de Cuenta',   icon: <FileText size={20} />, path: '/estados-cuenta' },
+        { title: 'Tipos de Moneda', icon: <Coins size={20} />, path: '/tipos-moneda' },
     ];
 
     const secondaryMenuItems = [
