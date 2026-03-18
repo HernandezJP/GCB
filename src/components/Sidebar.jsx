@@ -11,12 +11,9 @@ import {
     Settings,
     HelpCircle,
     Phone,
-<<<<<<< HEAD
     MapPin,
     
-=======
     FileText,
->>>>>>> d9edda9 (feat: implementar módulo de Estados de Cuenta en frontend)
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -29,11 +26,8 @@ const Sidebar = () => {
         { title: 'Tipos de Cuenta', icon: <CreditCard size={20} />, path: '/tipos-cuenta' },
         { title: 'Tipos de Persona', icon: <UserSquare2 size={20} />, path: '/tipos-persona' },
         { title: 'Tipos de Teléfono', icon: <Phone size={20} />, path: '/tipos-telefono' },
-<<<<<<< HEAD
         { title: 'Tipos de Dirección', icon: <MapPin size={20} />, path: '/tipos-direccion' },
-=======
         { title: 'Estados de Cuenta',   icon: <FileText size={20} />, path: '/estados-cuenta' }
->>>>>>> d9edda9 (feat: implementar módulo de Estados de Cuenta en frontend)
     ];
 
     const secondaryMenuItems = [
