@@ -9,6 +9,9 @@ import TipoTelefonoPage from './pages/TipoTelefono/TipoTelefonoPage';
 import TipoDireccionPage from './pages/TipoDireccion/TipoDireccionPage';
 import EstadoCuentaPage from './pages/EstadoCuenta/EstadoCuentaPage';
 import TipoMonedaPage from './pages/TipoMoneda/TipoMonedaPage';
+import EstadoChequePage from './pages/EstadoCheque/EstadoChequePage';
+import EstadoConciliacionPage from './pages/EstadoConciliacion/EstadoConciliacionPage';
+import EstadoDetalleConciliacionPage from './pages/EstadoDetalleConciliacion/EstadoDetalleConciliacionPage';
 
 // Componentes temporales (Mock) para las rutas vacías
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -30,6 +33,9 @@ function App() {
           <Route path="/tipos-direccion" element={<TipoDireccionPage />} />
           <Route path="/estados-cuenta" element={<EstadoCuentaPage />} />
           <Route path="/tipos-moneda" element={<TipoMonedaPage />} />
+          <Route path="/estados-cheque" element={<EstadoChequePage />} />
+          <Route path="/estados-conciliacion" element={<EstadoConciliacionPage />} />
+          <Route path="/estados-detalle-conciliacion" element={<EstadoDetalleConciliacionPage />} />
         </Routes>
       </main>
     </Router>

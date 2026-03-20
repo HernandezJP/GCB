@@ -3,7 +3,7 @@ import axios from 'axios';
 // Creamos una instancia de axios personalizada
 const api = axios.create({
     // baseURL: Cambia esto por la URL base de tu servidor/backend real
-    baseURL: 'https://localhost:7172/api',
+    baseURL: 'http://localhost:7172/api',
     timeout: 10000, // Tiempo máximo de espera para una petición (10 segundos)
     headers: {
         'Content-Type': 'application/json',
