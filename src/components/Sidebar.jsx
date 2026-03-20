@@ -13,8 +13,10 @@ import {
     Phone,
     MapPin,
     Coins,
-    
     FileText,
+    Wallet,
+    FileSignature,
+    Receipt,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -30,6 +32,10 @@ const Sidebar = () => {
         { title: 'Tipos de Dirección', icon: <MapPin size={20} />, path: '/tipos-direccion' },
         { title: 'Estados de Cuenta',   icon: <FileText size={20} />, path: '/estados-cuenta' },
         { title: 'Tipos de Moneda', icon: <Coins size={20} />, path: '/tipos-moneda' },
+        //agregando conciliaciones
+        { title: 'Estado Cheque', icon: <FileSignature size={20} />, path: '/estados-cheque' },
+        { title: 'Estado Conciliacion', icon: <Wallet size={20} />, path: '/estados-conciliacion' },
+        { title: 'Estado Detalle Conciliacion', icon: <Receipt size={20} />, path: '/estados-detalle-conciliacion' },
     ];
 
     const secondaryMenuItems = [
