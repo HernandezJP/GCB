@@ -1,3 +1,4 @@
+//Tabla
 import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import { getId, getDescripcion, isActivo, getFecha } from './EstadoDetalleConciliacionPage';

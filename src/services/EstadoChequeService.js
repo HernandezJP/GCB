@@ -1,3 +1,4 @@
+//Cheque.
 import api from '../api/axios';
 
 const BASE = '/estados-cheque';

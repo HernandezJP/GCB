@@ -1,3 +1,4 @@
+/*detalle */
 import React from 'react';
 import { ArrowLeft, FileText, Activity, IdCard, Calendar } from 'lucide-react';
 import { getId, getDescripcion, getFecha, isActivo } from './EstadoChequePage';
