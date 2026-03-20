@@ -7,3 +7,4 @@ export const getTipoMovimientoById = (id) => api.get(`${BASE}/${id}`).then(r => 
 export const createTipoMovimiento = (data) => api.post(BASE, data).then(r => r.data);
 export const updateTipoMovimiento = (id, data) => api.put(`${BASE}/${id}`, data).then(r => r.data);
 export const deleteTipoMovimiento = (id) => api.delete(`${BASE}/${id}`).then(r => r.data);
+export const reactivarTipoMovimiento = (id) => api.patch(`${BASE}/${id}/reactivar`).then(r => r.data);

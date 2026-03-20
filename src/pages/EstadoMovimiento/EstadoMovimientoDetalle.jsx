@@ -1,41 +1,87 @@
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { getId, getDescripcion, getEstado, getFecha } from './EstadoMovimientoPage';
+import { ArrowLeft, Tag, Activity, IdCard, Calendar } from 'lucide-react';
+import { getId, getDescripcion, getFecha, isActivo } from './EstadoMovimientoPage';
 
 const EstadoMovimientoDetalle = ({ estado, onBack }) => {
-  return (
-    <div className="detail-card">
-      <div className="detail-header">
-        <button className="btn-cancel" onClick={onBack}>
-          <ArrowLeft size={16} />
-          Regresar
-        </button>
-        <h2>Detalle de Estado de Movimiento</h2>
-      </div>
+    if (!estado) return null;
 
-      <div className="detail-grid">
-        <div className="detail-item">
-          <strong>ID:</strong>
-          <span>{getId(estado)}</span>
-        </div>
+    const activo = isActivo(estado);
 
-        <div className="detail-item">
-          <strong>Descripción:</strong>
-          <span>{getDescripcion(estado)}</span>
-        </div>
+    const formatFecha = () => {
+        const fecha = getFecha(estado);
+        if (!fecha) return 'No disponible';
+        return new Date(fecha).toLocaleDateString('es-GT', {
+            weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+        });
+    };
 
-        <div className="detail-item">
-          <strong>Estado:</strong>
-          <span>{getEstado(estado)}</span>
-        </div>
+    return (
+        <div className="detalle-container">
+            <div className="detalle-back-row">
+                <button className="btn-secondary" onClick={onBack}>
+                    <ArrowLeft size={16} />
+                    Volver al catálogo
+                </button>
+            </div>
 
-        <div className="detail-item">
-          <strong>Fecha de creación:</strong>
-          <span>{getFecha(estado) || 'Sin fecha'}</span>
+            <div className="detalle-card">
+                <div className="detalle-card-header">
+                    <div className="detalle-icon-wrap">
+                        <Tag size={28} />
+                    </div>
+                    <div>
+                        <h2>{getDescripcion(estado) || 'Sin descripción'}</h2>
+                        <p className="detalle-subtitle">Información detallada del estado de movimiento</p>
+                    </div>
+                    <span className={`status-pill ${activo ? 'pill-green' : 'pill-red'} detalle-status`}>
+                        <span className="pill-dot" />
+                        {activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                </div>
+
+                <div className="detalle-grid">
+                    <div className="detalle-item">
+                        <div className="detalle-label">
+                            <IdCard size={14} /> ID Interno
+                        </div>
+                        <div className="detalle-valor mono">
+                            #{getId(estado)}
+                        </div>
+                    </div>
+
+                    <div className="detalle-item">
+                        <div className="detalle-label">
+                            <Tag size={14} /> Descripción
+                        </div>
+                        <div className="detalle-valor">
+                            {getDescripcion(estado) || 'No disponible'}
+                        </div>
+                    </div>
+
+                    <div className="detalle-item">
+                        <div className="detalle-label">
+                            <Calendar size={14} /> Fecha de Creación
+                        </div>
+                        <div className="detalle-valor">
+                            {formatFecha()}
+                        </div>
+                    </div>
+
+                    <div className="detalle-item">
+                        <div className="detalle-label">
+                            <Activity size={14} /> Estado del Registro
+                        </div>
+                        <div className="detalle-valor">
+                            <span className={`status-pill ${activo ? 'pill-green' : 'pill-red'}`}>
+                                <span className="pill-dot" />
+                                {activo ? 'Operativo (Activo)' : 'Baja lógica (Inactivo)'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default EstadoMovimientoDetalle;
