@@ -30,6 +30,10 @@ const Sidebar = () => {
         { title: 'Tipos de Dirección', icon: <MapPin size={20} />, path: '/tipos-direccion' },
         { title: 'Estados de Cuenta',   icon: <FileText size={20} />, path: '/estados-cuenta' },
         { title: 'Tipos de Moneda', icon: <Coins size={20} />, path: '/tipos-moneda' },
+        { title: 'Tipos de Movimiento', icon: <Coins size={20} />, path: '/tipos-movimiento'},
+        { title: 'Medios de Movimiento', icon: <Coins size={20} />, path: '/medios-movimiento'},
+        { title: 'Estados de Movimiento', icon: <Coins size={20} />, path: '/estados-movimiento'},
+        { title: 'Movimientos', icon: <Coins size={20} />, path: '/movimientos'},
     ];
 
     const secondaryMenuItems = [
