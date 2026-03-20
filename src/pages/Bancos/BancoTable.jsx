@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
-import { getId, isActivo, getNombre, getSwift } from './BancoPage';
+import { getId, isActivo, getNombre, getSwift, getFecha } from './BancoPage';
 
 const BancoTable = ({ bancos, onEdit, onToggleStatus, onView }) => {
 
@@ -14,17 +14,26 @@ const BancoTable = ({ bancos, onEdit, onToggleStatus, onView }) => {
         );
     }
 
+    const formatFecha = (banco) => {
+        const fecha = getFecha(banco);
+        if (!fecha) return '—';
+        return new Date(fecha).toLocaleDateString('es-GT', {
+            day:   '2-digit',
+            month: 'short',
+            year:  'numeric'
+        });
+    };
+
     return (
         <div className="table-container">
          <div className="table-scroll">
-
-         
             <table className="custom-table">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Nombre del Banco</th>
                         <th>Código SWIFT</th>
+                        <th>Fecha de Creación</th>
                         <th className="text-center">Estado</th>
                         <th className="text-center">Acciones</th>
                     </tr>
@@ -42,13 +51,14 @@ const BancoTable = ({ bancos, onEdit, onToggleStatus, onView }) => {
                                 <td className="font-semibold">
                                     {getNombre(banco) || 'N/A'}
                                 </td>
-
                                 <td>
                                     <code className="swift-txt">
                                         {getSwift(banco) || 'N/A'}
                                     </code>
                                 </td>
-
+                                <td className="col-fecha">
+                                    {formatFecha(banco)}
+                                </td>
                                 <td className="text-center">
                                     <span className={`status-pill ${activo ? 'pill-green' : 'pill-red'}`}>
                                         <span className="pill-dot" />

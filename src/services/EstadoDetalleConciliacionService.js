@@ -1,4 +1,3 @@
-//Detalle conciliacion
 import api from '../api/axios';
 
 const BASE = '/estados-detalle-conciliacion';

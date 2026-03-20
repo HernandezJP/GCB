@@ -27,6 +27,7 @@ const EstadoDetalleConciliacionTable = ({ estados, onEdit, onToggleStatus, onVie
 
     return (
         <div className="table-container">
+            <div className="table-scroll">
             <table className="custom-table">
                 <thead>
                     <tr>
@@ -97,6 +98,7 @@ const EstadoDetalleConciliacionTable = ({ estados, onEdit, onToggleStatus, onVie
                     })}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

@@ -13,11 +13,12 @@ import BancoModal   from './BancoModal';
 import BancoDetalle from './BancoDetalle';
 import './Bancos.css';
 
-// ── Helpers para leer campos sin importar el casing que devuelva .NET ──
+
 export const getId    = (b) => b?.BAN_Banco        ?? b?.baN_Banco        ?? b?.ban_banco;
 export const getEstado= (b) => b?.BAN_Estado       ?? b?.baN_Estado       ?? b?.ban_estado ?? 'I';
 export const getNombre= (b) => b?.BAN_Nombre       ?? b?.baN_Nombre       ?? b?.ban_nombre ?? '';
 export const getSwift = (b) => b?.BAN_Codigo_Swift ?? b?.baN_Codigo_Swift ?? b?.ban_codigo_Swift ?? '';
+export const getFecha = (b) => b?.BAN_Fecha_Creacion ?? b?.baN_Fecha_Creacion ?? b?.ban_fecha_creacion ?? null;
 export const isActivo = (b) => getEstado(b) === 'A';
 
 const BancoPage = () => {
@@ -35,7 +36,7 @@ const BancoPage = () => {
         try {
             setLoading(true);
             const data = await getBancos();
-            // Log de diagnóstico — útil para confirmar el casing real
+  
             if (data?.length > 0) {
                 console.group('🏦 Banco API');
                 console.log('Objeto:', data[0]);

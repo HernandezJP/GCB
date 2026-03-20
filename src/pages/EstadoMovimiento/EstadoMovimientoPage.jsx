@@ -18,7 +18,7 @@ import './EstadoMovimiento.css';
 export const getId          = (t) => t?.ESM_Estado_Movimiento ?? t?.eSM_Estado_Movimiento ?? t?.esM_Estado_Movimiento;
 export const getDescripcion = (t) => t?.ESM_Descripcion       ?? t?.eSM_Descripcion       ?? t?.esM_Descripcion       ?? '';
 export const getEstado      = (t) => t?.ESM_Estado            ?? t?.eSM_Estado            ?? t?.esM_Estado            ?? 'I';
-export const getFecha       = (t) => t?.ESM_Fecha_Creacion    ?? t?.eSM_Fecha_Creacion    ?? null;
+export const getFecha       = (t) => t?.ESM_Fecha_Creacion    ?? t?.eSM_Fecha_Creacion    ?? t?.esM_Fecha_Creacion    ?? null;
 export const isActivo       = (t) => getEstado(t) === 'A';
 
 const EstadoMovimientoPage = () => {

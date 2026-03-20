@@ -1,11 +1,22 @@
 import React from 'react';
-import { ArrowLeft, Building2, Hash, Activity, IdCard } from 'lucide-react';
-import { getId, getNombre, getSwift, getEstado, isActivo } from './BancoPage';
+import { ArrowLeft, Building2, Hash, Activity, IdCard, Calendar } from 'lucide-react';
+import { getId, getNombre, getSwift, getEstado, isActivo, getFecha } from './BancoPage';
 
 const BancoDetalle = ({ banco, onBack }) => {
     if (!banco) return null;
 
     const activo = isActivo(banco);
+
+    const formatFecha = () => {
+        const fecha = getFecha(banco);
+        if (!fecha) return 'No disponible';
+        return new Date(fecha).toLocaleDateString('es-GT', {
+            weekday: 'long',
+            day:     '2-digit',
+            month:   'long',
+            year:    'numeric'
+        });
+    };
 
     return (
         <div className="detalle-container">
@@ -51,7 +62,15 @@ const BancoDetalle = ({ banco, onBack }) => {
                             {getNombre(banco) || 'No disponible'}
                         </div>
                     </div>
-
+                    <div className="detalle-item">
+                        <div className="detalle-label">
+                            <Calendar size={14} />
+                            Fecha de Creación
+                        </div>
+                        <div className="detalle-valor">
+                            {formatFecha(banco)}
+                        </div>
+                    </div>
                     <div className="detalle-item">
                         <div className="detalle-label">
                             <Hash size={14} />

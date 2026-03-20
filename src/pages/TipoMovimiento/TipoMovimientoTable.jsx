@@ -24,6 +24,7 @@ const TipoMovimientoTable = ({ movimientos, onEdit, onToggleStatus, onView }) =>
 
     return (
         <div className="table-container">
+            <div className="table-scroll">
             <table className="custom-table">
                 <thead>
                     <tr>
@@ -94,6 +95,7 @@ const TipoMovimientoTable = ({ movimientos, onEdit, onToggleStatus, onView }) =>
                     })}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };
