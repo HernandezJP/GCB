@@ -1,4 +1,3 @@
-//tabla
 import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import { getId, getDescripcion, isActivo, getFecha } from './EstadoChequePage';
@@ -12,7 +11,7 @@ const EstadoChequeTable = ({ estados, onEdit, onToggleStatus, onView }) => {
                     <p>No se encontraron estados de cheque.</p>
                 </div>
             </div>
-        );np
+        );
     }
 
     const formatFecha = (estado) => {

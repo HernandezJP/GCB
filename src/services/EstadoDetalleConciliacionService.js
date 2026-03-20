@@ -1,7 +1,7 @@
 //Detalle conciliacion
 import api from '../api/axios';
 
-const BASE = '/EstadoDetalleConciliacion';
+const BASE = '/estados-detalle-conciliacion';
 
 export const getEstadosDetalleConciliacion      = ()         => api.get(BASE).then(r => r.data);
 export const getEstadoDetalleConciliacionById   = (id)       => api.get(`${BASE}/${id}`).then(r => r.data);

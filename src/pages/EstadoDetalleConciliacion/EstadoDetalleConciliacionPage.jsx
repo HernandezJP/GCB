@@ -14,9 +14,8 @@ import EstadoDetalleConciliacionModal   from './EstadoDetalleConciliacionModal';
 import EstadoDetalleConciliacionDetalle from './EstadoDetalleConciliacionDetalle';
 import './EstadoDetalleConciliacion.css';
 
-// ── Helpers: .NET serializa "EDC_Estado_Detalle_Conciliacion" → "edC_Estado_Detalle_Conciliacion" ──
-// Se confirma al cargar: revisar consola para ajustar si difiere
-export const getId          = (e) => e?.edC_Estado_Cuenta  ?? e?.eDC_Estado_Cuenta  ?? e?.edc_estado_cuenta;
+
+export const getId          = (e) => e?.edC_Estado_Detalle_Conciliacion ?? e?.eDC_Estado_Detalle_Conciliacion ?? e?.edc_estado_detalle_conciliacion;
 export const getDescripcion = (e) => e?.edC_Descripcion    ?? e?.eDC_Descripcion    ?? e?.edc_descripcion   ?? '';
 export const getEstado      = (e) => e?.edC_Estado         ?? e?.eDC_Estado         ?? e?.edc_estado        ?? 'I';
 export const getFecha       = (e) => e?.edC_Fecha_Creacion ?? e?.eDC_Fecha_Creacion ?? null;

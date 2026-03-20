@@ -1,4 +1,3 @@
-/*mpage*/
 import React, { useState, useEffect } from 'react';
 import { Plus, Search } from 'lucide-react';
 import {
@@ -9,38 +8,34 @@ import {
     reactivarEstadoCheque
 } from '../../services/EstadoChequeService';
 
-import EstadoChequeTable   from './EstadoChequeTable';
-import EstadoChequeModal   from './EstadoChequeModal';
+import EstadoChequeTable from './EstadoChequeTable';
+import EstadoChequeModal from './EstadoChequeModal';
 import EstadoChequeDetalle from './EstadoChequeDetalle';
 import './EstadoCheque.css';
 
-// ── Helpers: .NET serializa "ESC_Estado_Cuenta" → "esC_Estado_Cuenta" ──
-// Se confirma al cargar: revisar consola para ajustar si difiere
-export const getId          = (e) => e?.esC_Estado_Cheque  ?? e?.eSC_Estado_Cheque  ?? e?.esc_estado_cheque;
-export const getDescripcion = (e) => e?.esC_Descripcion    ?? e?.eSC_Descripcion    ?? e?.esc_descripcion   ?? '';
-export const getEstado      = (e) => e?.esC_Estado         ?? e?.eSC_Estado         ?? e?.esc_estado        ?? 'I';
-export const getFecha       = (e) => e?.esC_Fecha_Creacion ?? e?.eSC_Fecha_Creacion ?? null;
-export const isActivo       = (e) => getEstado(e) === 'A';
+export const getId = (e) => e?.esC_Estado_Cheque ?? e?.eSC_Estado_Cheque ?? e?.esc_estado_cheque;
+export const getDescripcion = (e) => e?.esC_Descripcion ?? e?.eSC_Descripcion ?? e?.esc_descripcion ?? '';
+export const getEstado = (e) => e?.esC_Estado ?? e?.eSC_Estado ?? e?.esc_estado ?? 'I';
+export const getFecha = (e) => e?.esC_Fecha_Creacion ?? e?.eSC_Fecha_Creacion ?? null;
+export const isActivo = (e) => getEstado(e) === 'A';
 
 const EstadoChequePage = () => {
-    const [estados,         setEstados]         = useState([]);
+    const [estados, setEstados] = useState([]);
     const [filteredEstados, setFilteredEstados] = useState([]);
-    const [searchTerm,      setSearchTerm]      = useState('');
-    const [loading,         setLoading]         = useState(true);
-    const [error,           setError]           = useState(null);
-    const [isModalOpen,     setIsModalOpen]     = useState(false);
-    const [estadoToEdit,    setEstadoToEdit]    = useState(null);
-    const [estadoDetail,    setEstadoDetail]    = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [estadoToEdit, setEstadoToEdit] = useState(null);
+    const [estadoDetail, setEstadoDetail] = useState(null);
 
-    /* ── fetch ────────────────────────────────────────────────── */
     const fetchEstados = async () => {
         try {
             setLoading(true);
             const data = await getEstadosCheque();
 
-            // Log de diagnóstico — confirma el casing real de la API
             if (data?.length > 0) {
-                console.group('📋 EstadoCheque API');
+                console.group('🧾 EstadoCheque API');
                 console.log('Objeto:', data[0]);
                 console.log('Claves:', Object.keys(data[0]));
                 console.log('ID detectado:', getId(data[0]));
@@ -61,7 +56,6 @@ const EstadoChequePage = () => {
 
     useEffect(() => { fetchEstados(); }, []);
 
-    /* ── búsqueda debounce ────────────────────────────────────── */
     useEffect(() => {
         const t = setTimeout(() => {
             if (!searchTerm.trim()) { setFilteredEstados(estados); return; }
@@ -73,10 +67,9 @@ const EstadoChequePage = () => {
         return () => clearTimeout(t);
     }, [searchTerm, estados]);
 
-    /* ── handlers ─────────────────────────────────────────────── */
     const handleAddNew = () => { setEstadoToEdit(null); setIsModalOpen(true); };
-    const handleEdit   = (e) => { setEstadoToEdit(e);   setIsModalOpen(true); };
-    const handleView   = (e) => setEstadoDetail(e);
+    const handleEdit = (e) => { setEstadoToEdit(e); setIsModalOpen(true); };
+    const handleView = (e) => setEstadoDetail(e);
 
     const handleToggleStatus = async (id, nuevoActivo) => {
         if (id === undefined || id === null) {
@@ -104,10 +97,7 @@ const EstadoChequePage = () => {
         try {
             if (estadoToEdit) {
                 const id = getId(estadoToEdit);
-                if (id === undefined || id === null) {
-                    alert('Error: ID no detectado.');
-                    return;
-                }
+                if (id === undefined || id === null) { alert('Error: ID no detectado.'); return; }
                 await updateEstadoCheque(id, { ESC_Descripcion: formData.ESC_Descripcion });
             } else {
                 await createEstadoCheque({ ESC_Descripcion: formData.ESC_Descripcion });
@@ -121,17 +111,16 @@ const EstadoChequePage = () => {
         }
     };
 
-    /* ── render ───────────────────────────────────────────────── */
     if (estadoDetail) {
         return (
-            <div className="estadosc-container">
+            <div className="estadocheque-container">
                 <EstadoChequeDetalle estado={estadoDetail} onBack={() => setEstadoDetail(null)} />
             </div>
         );
     }
 
     return (
-        <div className="estadosc-container">
+        <div className="estadocheque-container">
             <div className="page-header">
                 <div className="page-header-left">
                     <h1>Gestión de Estados de Cheque</h1>
@@ -164,7 +153,7 @@ const EstadoChequePage = () => {
                     onEdit={handleEdit}
                     onToggleStatus={handleToggleStatus}
                     onView={handleView}
-                  />
+                />
             }
 
             <EstadoChequeModal

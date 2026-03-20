@@ -16,6 +16,9 @@ const BancoTable = ({ bancos, onEdit, onToggleStatus, onView }) => {
 
     return (
         <div className="table-container">
+         <div className="table-scroll">
+
+         
             <table className="custom-table">
                 <thead>
                     <tr>
@@ -88,6 +91,7 @@ const BancoTable = ({ bancos, onEdit, onToggleStatus, onView }) => {
                     })}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

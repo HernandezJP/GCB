@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
+import './global.css';
 import Sidebar from './components/Sidebar'
 import BancoPage from './pages/Bancos/BancoPage'
 import TipoCuentaPage from './pages/TipoCuenta/TipoCuentaPage'
