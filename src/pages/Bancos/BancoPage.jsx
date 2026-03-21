@@ -8,27 +8,27 @@ import {
     reactivarBanco
 } from '../../services/bancoService';
 
-import BancoTable from './BancoTable';
-import BancoModal from './BancoModal';
+import BancoTable   from './BancoTable';
+import BancoModal   from './BancoModal';
 import BancoDetalle from './BancoDetalle';
 import './Bancos.css';
 
 // ── Helpers para leer campos sin importar el casing que devuelva .NET ──
-export const getId = (b) => b?.BAN_Banco ?? b?.baN_Banco ?? b?.ban_banco;
-export const getEstado = (b) => b?.BAN_Estado ?? b?.baN_Estado ?? b?.ban_estado ?? 'I';
-export const getNombre = (b) => b?.BAN_Nombre ?? b?.baN_Nombre ?? b?.ban_nombre ?? '';
+export const getId    = (b) => b?.BAN_Banco        ?? b?.baN_Banco        ?? b?.ban_banco;
+export const getEstado= (b) => b?.BAN_Estado       ?? b?.baN_Estado       ?? b?.ban_estado ?? 'I';
+export const getNombre= (b) => b?.BAN_Nombre       ?? b?.baN_Nombre       ?? b?.ban_nombre ?? '';
 export const getSwift = (b) => b?.BAN_Codigo_Swift ?? b?.baN_Codigo_Swift ?? b?.ban_codigo_Swift ?? '';
 export const isActivo = (b) => getEstado(b) === 'A';
 
 const BancoPage = () => {
-    const [bancos, setBancos] = useState([]);
+    const [bancos,         setBancos]         = useState([]);
     const [filteredBancos, setFilteredBancos] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [bancoToEdit, setBancoToEdit] = useState(null);
-    const [bancoDetail, setBancoDetail] = useState(null);
+    const [searchTerm,     setSearchTerm]     = useState('');
+    const [loading,        setLoading]        = useState(true);
+    const [error,          setError]          = useState(null);
+    const [isModalOpen,    setIsModalOpen]    = useState(false);
+    const [bancoToEdit,    setBancoToEdit]    = useState(null);
+    const [bancoDetail,    setBancoDetail]    = useState(null);
 
     /* ── fetch ────────────────────────────────────────────────── */
     const fetchBancos = async () => {
@@ -74,8 +74,8 @@ const BancoPage = () => {
 
     /* ── handlers ─────────────────────────────────────────────── */
     const handleAddNew = () => { setBancoToEdit(null); setIsModalOpen(true); };
-    const handleEdit = (b) => { setBancoToEdit(b); setIsModalOpen(true); };
-    const handleView = (b) => setBancoDetail(b);
+    const handleEdit   = (b) => { setBancoToEdit(b);   setIsModalOpen(true); };
+    const handleView   = (b) => setBancoDetail(b);
 
     const handleToggleStatus = async (id, nuevoActivo) => {
         if (id === undefined || id === null) {
@@ -111,12 +111,12 @@ const BancoPage = () => {
                     return;
                 }
                 await updateBanco(id, {
-                    BAN_Nombre: formData.BAN_Nombre,
+                    BAN_Nombre:       formData.BAN_Nombre,
                     BAN_Codigo_Swift: formData.BAN_Codigo_Swift,
                 });
             } else {
                 await createBanco({
-                    BAN_Nombre: formData.BAN_Nombre,
+                    BAN_Nombre:       formData.BAN_Nombre,
                     BAN_Codigo_Swift: formData.BAN_Codigo_Swift,
                 });
             }
@@ -172,7 +172,7 @@ const BancoPage = () => {
                     onEdit={handleEdit}
                     onToggleStatus={handleToggleStatus}
                     onView={handleView}
-                />
+                  />
             }
 
             <BancoModal

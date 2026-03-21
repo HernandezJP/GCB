@@ -12,7 +12,6 @@ import TipoMonedaPage from './pages/TipoMoneda/TipoMonedaPage';
 import TipoMovimientoPage from './pages/TipoMovimiento/TipoMovimientoPage';
 import MedioMovimientoPage from './pages/MedioMovimiento/MedioMovimientoPage';
 import EstadoMovimientoPage from './pages/EstadoMovimiento/EstadoMovimientoPage';
-import MovimientoPage from './pages/Movimiento/MovimientoPage';
 
 // Componentes temporales (Mock) para las rutas vacías
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -37,7 +36,6 @@ function App() {
           <Route path="/tipos-movimiento" element={<TipoMovimientoPage />} />
           <Route path="/medios-movimiento" element={<MedioMovimientoPage />} />
           <Route path="/estados-movimiento" element={<EstadoMovimientoPage />} />
-          <Route path="/movimientos" element={<MovimientoPage />} />
         </Routes>
       </main>
     </Router>

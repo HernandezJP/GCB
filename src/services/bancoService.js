@@ -22,7 +22,6 @@ export const updateBanco = async (id, bancoData) => {
     return response.data;
 };
 
-// DELETE = eliminación lógica (cambia estado a Inactivo en el backend)
 export const deleteBanco = async (id) => {
     const response = await api.delete(`${BASE_PATH}/${id}`);
     return response.data;
