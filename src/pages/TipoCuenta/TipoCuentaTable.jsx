@@ -1,6 +1,6 @@
 import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
-import { getId, getDescripcion, getEstado, isActivo } from './TipoCuentaPage';
+import { getId, getDescripcion, getEstado, isActivo, getFecha } from './TipoCuentaPage';
 
 const TipoCuentaTable = ({ tipos, onEdit, onToggleStatus, onView }) => {
 
@@ -13,13 +13,26 @@ const TipoCuentaTable = ({ tipos, onEdit, onToggleStatus, onView }) => {
             </div>
         );
     }
+
+    const formatFecha = (tipos) => {
+        const fecha = getFecha(tipos);
+        if (!fecha) return '—';
+        return new Date(fecha).toLocaleDateString('es-GT', {
+            day:   '2-digit',
+            month: 'short',
+            year:  'numeric'
+        });
+    };
+
     return (
         <div className="table-container">
+            <div className="table-scroll">
             <table className="custom-table">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>Descripción</th>
+                        <th>Fecha Creación</th>
                         <th className="text-center">Estado</th>
                         <th className="text-center">Acciones</th>
                     </tr>
@@ -36,6 +49,10 @@ const TipoCuentaTable = ({ tipos, onEdit, onToggleStatus, onView }) => {
 
                                 <td className="font-semibold">
                                     {getDescripcion(tipo) || 'N/A'}
+                                </td>
+
+                                <td className="col-fecha">
+                                    {formatFecha(tipo)}
                                 </td>
 
                                 <td className="text-center">
@@ -80,6 +97,7 @@ const TipoCuentaTable = ({ tipos, onEdit, onToggleStatus, onView }) => {
                     })}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

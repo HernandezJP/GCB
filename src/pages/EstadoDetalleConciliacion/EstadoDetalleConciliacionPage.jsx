@@ -1,27 +1,27 @@
+//page
 import React, { useState, useEffect } from 'react';
 import { Plus, Search } from 'lucide-react';
 import {
-    getEstadosMovimiento,
-    createEstadoMovimiento,
-    updateEstadoMovimiento,
-    deleteEstadoMovimiento,
-    reactivarEstadoMovimiento
-} from '../../services/EstadoMovimientoService';
+    getEstadosDetalleConciliacion,
+    createEstadoDetalleConciliacion,
+    updateEstadoDetalleConciliacion,
+    deleteEstadoDetalleConciliacion,
+    reactivarEstadoDetalleConciliacion
+} from '../../services/EstadoDetalleConciliacionService';
 
-import EstadoMovimientoTable   from './EstadoMovimientoTable';
-import EstadoMovimientoModal   from './EstadoMovimientoModal';
-import EstadoMovimientoDetalle from './EstadoMovimientoDetalle';
-import './EstadoMovimiento.css';
+import EstadoDetalleConciliacionTable   from './EstadoDetalleConciliacionTable';
+import EstadoDetalleConciliacionModal   from './EstadoDetalleConciliacionModal';
+import EstadoDetalleConciliacionDetalle from './EstadoDetalleConciliacionDetalle';
+import './EstadoDetalleConciliacion.css';
 
-// ── Helpers: ajustar casing según lo que devuelva la API
-// Al cargar revisa consola: 💠 EstadoMovimiento API → Claves
-export const getId          = (t) => t?.ESM_Estado_Movimiento ?? t?.eSM_Estado_Movimiento ?? t?.esM_Estado_Movimiento;
-export const getDescripcion = (t) => t?.ESM_Descripcion       ?? t?.eSM_Descripcion       ?? t?.esM_Descripcion       ?? '';
-export const getEstado      = (t) => t?.ESM_Estado            ?? t?.eSM_Estado            ?? t?.esM_Estado            ?? 'I';
-export const getFecha       = (t) => t?.ESM_Fecha_Creacion    ?? t?.eSM_Fecha_Creacion    ?? t?.esM_Fecha_Creacion    ?? null;
-export const isActivo       = (t) => getEstado(t) === 'A';
 
-const EstadoMovimientoPage = () => {
+export const getId          = (e) => e?.edC_Estado_Detalle_Conciliacion ?? e?.eDC_Estado_Detalle_Conciliacion ?? e?.edc_estado_detalle_conciliacion;
+export const getDescripcion = (e) => e?.edC_Descripcion    ?? e?.eDC_Descripcion    ?? e?.edc_descripcion   ?? '';
+export const getEstado      = (e) => e?.edC_Estado         ?? e?.eDC_Estado         ?? e?.edc_estado        ?? 'I';
+export const getFecha       = (e) => e?.edC_Fecha_Creacion ?? e?.eDC_Fecha_Creacion ?? null;
+export const isActivo       = (e) => getEstado(e) === 'A';
+
+const EstadoDetalleConciliacionPage = () => {
     const [estados,         setEstados]         = useState([]);
     const [filteredEstados, setFilteredEstados] = useState([]);
     const [searchTerm,      setSearchTerm]      = useState('');
@@ -35,11 +35,11 @@ const EstadoMovimientoPage = () => {
     const fetchEstados = async () => {
         try {
             setLoading(true);
-            const data = await getEstadosMovimiento();
+            const data = await getEstadosDetalleConciliacion();
 
-            // Log de diagnóstico
+            // Log de diagnóstico — confirma el casing real de la API
             if (data?.length > 0) {
-                console.group('💠 EstadoMovimiento API');
+                console.group('📋 EstadoDetalleConciliacion API');
                 console.log('Objeto:', data[0]);
                 console.log('Claves:', Object.keys(data[0]));
                 console.log('ID detectado:', getId(data[0]));
@@ -47,12 +47,12 @@ const EstadoMovimientoPage = () => {
                 console.groupEnd();
             }
 
-            setEstados(data || []);
-            setFilteredEstados(data || []);
+            setEstados(data);
+            setFilteredEstados(data);
             setError(null);
         } catch (err) {
-            console.error('Error al obtener estados de movimiento:', err);
-            setError('No se pudieron cargar los estados de movimiento.');
+            console.error('Error al obtener estados de Detalle Conciliacion:', err);
+            setError('No se pudieron cargar los estados de Detalle Conciliacion.');
         } finally {
             setLoading(false);
         }
@@ -77,24 +77,23 @@ const EstadoMovimientoPage = () => {
     const handleEdit   = (e) => { setEstadoToEdit(e);   setIsModalOpen(true); };
     const handleView   = (e) => setEstadoDetail(e);
 
-    // Toggle bidireccional: desactivar → DELETE, activar → PATCH reactivar
     const handleToggleStatus = async (id, nuevoActivo) => {
         if (id === undefined || id === null) {
             alert('Error interno: ID no detectado. Revisa la consola (F12).');
             return;
         }
         const accion = nuevoActivo ? 'activar' : 'desactivar';
-        if (!window.confirm(`¿Deseas ${accion} este estado de movimiento?`)) return;
+        if (!window.confirm(`¿Deseas ${accion} este estado de Detalle Conciliacion?`)) return;
 
         try {
             if (nuevoActivo) {
-                await reactivarEstadoMovimiento(id);
+                await reactivarEstadoDetalleConciliacion(id);
             } else {
-                await deleteEstadoMovimiento(id);
+                await deleteEstadoDetalleConciliacion(id);
             }
             await fetchEstados();
         } catch (err) {
-            console.error(`Error al ${accion} estado de movimiento:`, err);
+            console.error(`Error al ${accion} estado de Detalle Conciliacion:`, err);
             const msg = err.response?.data?.title || err.response?.data || 'Error al procesar.';
             alert(`Error: ${typeof msg === 'string' ? msg : JSON.stringify(msg)}`);
         }
@@ -108,18 +107,14 @@ const EstadoMovimientoPage = () => {
                     alert('Error: ID no detectado.');
                     return;
                 }
-                await updateEstadoMovimiento(id, {
-                    ESM_Descripcion: formData.ESM_Descripcion,
-                });
+                await updateEstadoDetalleConciliacion(id, { EDC_Descripcion: formData.EDC_Descripcion });
             } else {
-                await createEstadoMovimiento({
-                    ESM_Descripcion: formData.ESM_Descripcion,
-                });
+                await createEstadoDetalleConciliacion({ EDC_Descripcion: formData.EDC_Descripcion });
             }
             setIsModalOpen(false);
             await fetchEstados();
         } catch (err) {
-            console.error('Error al guardar estado de movimiento:', err);
+            console.error('Error al guardar estado de Detalle Conciliacion:', err);
             const msg = err.response?.data?.title || err.response?.data || 'Error al guardar.';
             alert(`Error: ${typeof msg === 'string' ? msg : JSON.stringify(msg)}`);
         }
@@ -128,20 +123,17 @@ const EstadoMovimientoPage = () => {
     /* ── render ───────────────────────────────────────────────── */
     if (estadoDetail) {
         return (
-            <div className="estadomovimiento-container">
-                <EstadoMovimientoDetalle
-                    estado={estadoDetail}
-                    onBack={() => setEstadoDetail(null)}
-                />
+            <div className="estadosc-container">
+                <EstadoDetalleConciliacionDetalle estado={estadoDetail} onBack={() => setEstadoDetail(null)} />
             </div>
         );
     }
 
     return (
-        <div className="estadomovimiento-container">
+        <div className="estadosc-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Estados de Movimiento</h1>
+                    <h1>Gestión de Estados de Detalle Conciliacion</h1>
                     <span className="record-count">{filteredEstados.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>
@@ -165,8 +157,8 @@ const EstadoMovimientoPage = () => {
             {error && <div className="error-banner">{error}</div>}
 
             {loading
-                ? <div className="loading-state">Cargando estados de movimiento...</div>
-                : <EstadoMovimientoTable
+                ? <div className="loading-state">Cargando estados de Detalle Conciliacion...</div>
+                : <EstadoDetalleConciliacionTable
                     estados={filteredEstados}
                     onEdit={handleEdit}
                     onToggleStatus={handleToggleStatus}
@@ -174,7 +166,7 @@ const EstadoMovimientoPage = () => {
                   />
             }
 
-            <EstadoMovimientoModal
+            <EstadoDetalleConciliacionModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveModal}
@@ -184,4 +176,4 @@ const EstadoMovimientoPage = () => {
     );
 };
 
-export default EstadoMovimientoPage;
+export default EstadoDetalleConciliacionPage;

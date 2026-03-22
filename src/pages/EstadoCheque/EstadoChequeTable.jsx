@@ -1,14 +1,14 @@
 import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
-import { getId, getDescripcion, isActivo, getFecha } from './EstadoMovimientoPage';
+import { getId, getDescripcion, isActivo, getFecha } from './EstadoChequePage';
 
-const EstadoMovimientoTable = ({ estados, onEdit, onToggleStatus, onView }) => {
+const EstadoChequeTable = ({ estados, onEdit, onToggleStatus, onView }) => {
 
     if (!estados || estados.length === 0) {
         return (
             <div className="table-container">
                 <div className="empty-state">
-                    <p>No se encontraron estados de movimiento.</p>
+                    <p>No se encontraron estados de cheque.</p>
                 </div>
             </div>
         );
@@ -18,7 +18,9 @@ const EstadoMovimientoTable = ({ estados, onEdit, onToggleStatus, onView }) => {
         const fecha = getFecha(estado);
         if (!fecha) return '—';
         return new Date(fecha).toLocaleDateString('es-GT', {
-            day: '2-digit', month: 'short', year: 'numeric'
+            day:   '2-digit',
+            month: 'short',
+            year:  'numeric'
         });
     };
 
@@ -100,4 +102,4 @@ const EstadoMovimientoTable = ({ estados, onEdit, onToggleStatus, onView }) => {
     );
 };
 
-export default EstadoMovimientoTable;
+export default EstadoChequeTable;

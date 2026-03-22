@@ -1,14 +1,15 @@
+/*detalle */
 import React from 'react';
-import { ArrowLeft, Building2, Hash, Activity, IdCard, Calendar } from 'lucide-react';
-import { getId, getNombre, getSwift, getEstado, isActivo, getFecha } from './BancoPage';
+import { ArrowLeft, FileText, Activity, IdCard, Calendar } from 'lucide-react';
+import { getId, getDescripcion, getFecha, isActivo } from './EstadoChequePage';
 
-const BancoDetalle = ({ banco, onBack }) => {
-    if (!banco) return null;
+const EstadoChequeDetalle = ({ estado, onBack }) => {
+    if (!estado) return null;
 
-    const activo = isActivo(banco);
+    const activo = isActivo(estado);
 
     const formatFecha = () => {
-        const fecha = getFecha(banco);
+        const fecha = getFecha(estado);
         if (!fecha) return 'No disponible';
         return new Date(fecha).toLocaleDateString('es-GT', {
             weekday: 'long',
@@ -30,11 +31,11 @@ const BancoDetalle = ({ banco, onBack }) => {
             <div className="detalle-card">
                 <div className="detalle-card-header">
                     <div className="detalle-icon-wrap">
-                        <Building2 size={28} />
+                        <FileText size={28} />
                     </div>
                     <div>
-                        <h2>{getNombre(banco) || 'Sin nombre'}</h2>
-                        <p className="detalle-subtitle">Información detallada del banco</p>
+                        <h2>{getDescripcion(estado) || 'Sin descripción'}</h2>
+                        <p className="detalle-subtitle">Información detallada del estado de cheque</p>
                     </div>
                     <span className={`status-pill ${activo ? 'pill-green' : 'pill-red'} detalle-status`}>
                         <span className="pill-dot" />
@@ -49,37 +50,27 @@ const BancoDetalle = ({ banco, onBack }) => {
                             ID Interno
                         </div>
                         <div className="detalle-valor mono">
-                            #{getId(banco)}
+                            #{getId(estado)}
                         </div>
                     </div>
 
                     <div className="detalle-item">
                         <div className="detalle-label">
-                            <Building2 size={14} />
-                            Nombre Institucional
+                            <FileText size={14} />
+                            Descripción
                         </div>
                         <div className="detalle-valor">
-                            {getNombre(banco) || 'No disponible'}
+                            {getDescripcion(estado) || 'No disponible'}
                         </div>
                     </div>
+
                     <div className="detalle-item">
                         <div className="detalle-label">
                             <Calendar size={14} />
                             Fecha de Creación
                         </div>
                         <div className="detalle-valor">
-                            {formatFecha(banco)}
-                        </div>
-                    </div>
-                    <div className="detalle-item">
-                        <div className="detalle-label">
-                            <Hash size={14} />
-                            Código SWIFT / BIC
-                        </div>
-                        <div className="detalle-valor">
-                            <code className="swift-txt swift-lg">
-                                {getSwift(banco) || 'N/A'}
-                            </code>
+                            {formatFecha()}
                         </div>
                     </div>
 
@@ -101,4 +92,4 @@ const BancoDetalle = ({ banco, onBack }) => {
     );
 };
 
-export default BancoDetalle;
+export default EstadoChequeDetalle;

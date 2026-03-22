@@ -1,11 +1,22 @@
 import React from 'react';
-import { ArrowLeft, CreditCard, Activity, IdCard } from 'lucide-react';
-import { getId, getDescripcion, getEstado, isActivo } from './TipoCuentaPage';
+import { ArrowLeft, CreditCard, Activity, IdCard, Calendar } from 'lucide-react';
+import { getId, getDescripcion, getEstado, isActivo, getFecha } from './TipoCuentaPage';
 
 const TipoCuentaDetalle = ({ tipo, onBack }) => {
     if (!tipo) return null;
 
     const activo = isActivo(tipo);
+
+    const formatFecha = () => {
+        const fecha = getFecha(tipo);
+        if (!fecha) return 'No disponible';
+        return new Date(fecha).toLocaleDateString('es-GT', {
+            weekday: 'long',
+            day:     '2-digit',
+            month:   'long',
+            year:    'numeric'
+        });
+    };
 
     return (
         <div className="detalle-container">
@@ -51,8 +62,15 @@ const TipoCuentaDetalle = ({ tipo, onBack }) => {
                             {getDescripcion(tipo) || 'No disponible'}
                         </div>
                     </div>
-
-
+                    <div className="detalle-item">
+                        <div className="detalle-label">
+                            <Calendar size={14} />
+                            Fecha de Creación
+                        </div>
+                        <div className="detalle-valor">
+                            {formatFecha()}
+                        </div>
+                    </div>
                     <div className="detalle-item">
                         <div className="detalle-label">
                             <Activity size={14} />

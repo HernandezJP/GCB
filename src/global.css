@@ -1,0 +1,141 @@
+/* ================================================================
+   global.css — Estilos base compartidos por todos los módulos
+   Importar en App.jsx: import './global.css'
+   ================================================================ */
+
+/* ── Reset modal en móvil ──────────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Bottom sheet: se desliza desde abajo */
+    .modal-backdrop {
+        padding: 0 !important;
+        align-items: flex-end !important;
+    }
+
+    .modal-card {
+        max-width: 100% !important;
+        width: 100% !important;
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 92vh !important;
+        animation: slideUpMobile 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); opacity: 0.5; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* Handle bar decorativo arriba del modal */
+    .modal-card::before {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        margin: 12px auto 0;
+        flex-shrink: 0;
+    }
+
+    .modal-footer {
+        flex-direction: row !important;
+        justify-content: stretch !important;
+        gap: 10px !important;
+        padding-bottom: max(18px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .modal-footer .btn-cancel,
+    .modal-footer .btn-save {
+        flex: 1 !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    /* ── Page header apilado ─────────────────────────────────── */
+    .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .btn-primary {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* ── Search full width ───────────────────────────────────── */
+    .search-bar {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* ── Tabla: scroll horizontal ────────────────────────────── */
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .custom-table {
+        min-width: 480px !important;
+    }
+
+    .col-id { display: none !important; }
+
+    /* ── Detalle ─────────────────────────────────────────────── */
+    .detalle-card-header {
+        flex-wrap: wrap !important;
+        padding: 20px !important;
+        gap: 14px !important;
+    }
+
+    .detalle-status {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .detalle-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .detalle-item {
+        padding: 18px 20px !important;
+        border-right: 1px solid #f1f5f9 !important;
+    }
+
+    .detalle-back-row .btn-secondary {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* ── Móvil pequeño ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .detalle-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .detalle-item {
+        border-right: none !important;
+    }
+
+    .custom-table th,
+    .custom-table td {
+        padding: 10px 12px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .action-buttons { gap: 4px !important; }
+    .icon-btn       { padding: 6px !important; }
+
+    .page-header h1 { font-size: 1.2rem !important; }
+}
+
+/* ── Tablet ────────────────────────────────────────────────────── */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .page-header h1 { font-size: 1.5rem; }
+}
+
+.table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}

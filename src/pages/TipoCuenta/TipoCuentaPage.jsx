@@ -17,6 +17,7 @@ import './TipoCuenta.css';
 export const getId = (t) => t?.tcU_Tipo_Cuenta;
 export const getDescripcion = (t) => t?.tcU_Descripcion ?? '';
 export const getEstado = (t) => t?.tcU_Estado ?? 'I';
+export const getFecha = (t) => t?.tcU_Fecha_Creacion ?? null;
 export const isActivo = (t) => getEstado(t) === 'A';
 
 const TipoCuentaPage = () => {
