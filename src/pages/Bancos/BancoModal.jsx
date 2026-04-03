@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Building2, Hash } from 'lucide-react';
+import { getNombre, getSwift } from './BancoPage';
 
 const INITIAL = { BAN_Nombre: '', BAN_Codigo_Swift: '' };
 
 const BancoModal = ({ isOpen, onClose, onSave, bancoToEdit }) => {
     const [formData, setFormData] = useState(INITIAL);
-    const [saving, setSaving] = useState(false);
+    const [saving,   setSaving]   = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setFormData(
                 bancoToEdit
-                    ? { BAN_Nombre: bancoToEdit.BAN_Nombre, BAN_Codigo_Swift: bancoToEdit.BAN_Codigo_Swift }
+                    ? {
+                        // Usar helpers para leer el casing real de la API
+                        BAN_Nombre:       getNombre(bancoToEdit),
+                        BAN_Codigo_Swift: getSwift(bancoToEdit),
+                      }
                     : INITIAL
             );
         }
@@ -23,14 +28,12 @@ const BancoModal = ({ isOpen, onClose, onSave, bancoToEdit }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
-        try {
-            await onSave(formData);
-        } finally {
-            setSaving(false);
-        }
+        try { await onSave(formData); }
+        finally { setSaving(false); }
     };
 
-    const set = (field) => (e) => setFormData(prev => ({ ...prev, [field]: e.target.value }));
+    const set = (field) => (e) =>
+        setFormData(prev => ({ ...prev, [field]: e.target.value }));
 
     return createPortal(
         <div className="modal-backdrop">

@@ -56,7 +56,7 @@ const EstadoChequeModal = ({ isOpen, onClose, onSave, estadoToEdit }) => {
                                 required
                                 value={formData.ESC_Descripcion}
                                 onChange={e => setFormData({ ESC_Descripcion: e.target.value })}
-                                placeholder="Ej. Cheque por cobrar"
+                                placeholder="Ej. Cobrado"
                                 disabled={saving}
                             />
                         </div>

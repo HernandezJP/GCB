@@ -157,7 +157,7 @@ const TipoDireccionPage = () => {
     <div className="tipodir-container">
       <div className="page-header">
         <div className="page-header-left">
-          <h1>Gestión de Tipos de Dirección</h1>
+          <h1>Tipos de Dirección</h1>
           <span className="record-count">{filteredTipos.length} registros</span>
         </div>
 

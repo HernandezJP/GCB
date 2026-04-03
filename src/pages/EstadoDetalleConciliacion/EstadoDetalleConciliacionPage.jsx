@@ -133,7 +133,7 @@ const EstadoDetalleConciliacionPage = () => {
         <div className="estadosc-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Estados de Detalle Conciliacion</h1>
+                    <h1>Estados de Detalle Conciliacion</h1>
                     <span className="record-count">{filteredEstados.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

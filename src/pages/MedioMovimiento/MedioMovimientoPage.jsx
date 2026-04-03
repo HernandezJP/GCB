@@ -141,7 +141,7 @@ const MedioMovimientoPage = () => {
         <div className="mediomovimiento-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Medios de Movimiento</h1>
+                    <h1>Medios de Movimiento</h1>
                     <span className="record-count">{filteredMedios.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

@@ -133,7 +133,7 @@ const EstadoCuentaPage = () => {
         <div className="estadosc-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Estados de Cuenta</h1>
+                    <h1>Estados de Cuenta</h1>
                     <span className="record-count">{filteredEstados.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>
