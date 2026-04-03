@@ -135,7 +135,7 @@ const TipoMovimientoPage = () => {
         <div className="tipomovimiento-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Tipos de Movimiento</h1>
+                    <h1>Tipos de Movimiento</h1>
                     <span className="record-count">{filteredMovimientos.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

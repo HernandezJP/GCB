@@ -162,7 +162,7 @@ const TipoTelefonoPage = () => {
         <div className="tipotel-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Tipos de Teléfono</h1>
+                    <h1>Tipos de Teléfono</h1>
                     <span className="record-count">{filteredTipos.length} registros</span>
                 </div>
 

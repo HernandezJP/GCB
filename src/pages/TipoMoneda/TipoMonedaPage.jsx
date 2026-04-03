@@ -134,7 +134,7 @@ const TipoMonedaPage = () => {
         <div className="tipomoneda-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Tipos de Moneda</h1>
+                    <h1>Tipos de Moneda</h1>
                     <span className="record-count">{filteredMonedas.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

@@ -141,7 +141,7 @@ const EstadoMovimientoPage = () => {
         <div className="estadomovimiento-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Estados de Movimiento</h1>
+                    <h1>Estados de Movimiento</h1>
                     <span className="record-count">{filteredEstados.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>
