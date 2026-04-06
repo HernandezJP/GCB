@@ -154,7 +154,7 @@ if (id === undefined || id === null) {
         <div className="tiposc-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Tipos de Persona</h1>
+                    <h1>Tipos de Persona</h1>
                     <span className="record-count">{filteredTipos.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

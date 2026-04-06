@@ -16,6 +16,7 @@ import EstadoDetalleConciliacionPage from './pages/EstadoDetalleConciliacion/Est
 import TipoMovimientoPage from './pages/TipoMovimiento/TipoMovimientoPage';
 import MedioMovimientoPage from './pages/MedioMovimiento/MedioMovimientoPage';
 import EstadoMovimientoPage from './pages/EstadoMovimiento/EstadoMovimientoPage';
+import CuentaBancariaPage from './pages/CuentaBancaria/CuentaBancariaPage';
 
 // Componentes temporales (Mock) para las rutas vacías//
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -28,6 +29,7 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/cuentas-bancarias" element={<CuentaBancariaPage />} />
           <Route path="/bancos" element={<BancoPage />} />
           <Route path="/tipos-cuenta" element={<TipoCuentaPage />} />
           <Route path="/perfil" element={<Perfil />} />

@@ -123,7 +123,7 @@ const EstadoChequePage = () => {
         <div className="estadocheque-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Estados de Cheque</h1>
+                    <h1>Estados de Cheque</h1>
                     <span className="record-count">{filteredEstados.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

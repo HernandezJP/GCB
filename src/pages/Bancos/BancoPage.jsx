@@ -143,7 +143,7 @@ const BancoPage = () => {
         <div className="bancos-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Gestión de Bancos</h1>
+                    <h1>Bancos</h1>
                     <span className="record-count">{filteredBancos.length} registros</span>
                 </div>
                 <button className="btn-primary" onClick={handleAddNew}>

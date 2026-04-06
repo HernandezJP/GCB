@@ -1,35 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-    --sb-bg:          #0b1221;
-    --sb-surface:     #111827;
-    --sb-border:      rgba(255,255,255,0.06);
-    --sb-active:      rgba(56,189,248,0.12);
-    --sb-active-line: #38bdf8;
-    --sb-text:        #64748b;
-    --sb-text-mid:    #94a3b8;
-    --sb-text-bright: #f1f5f9;
-    --sb-accent:      #38bdf8;
-    --sb-accent2:     #818cf8;
-    --sb-danger:      #ef4444;
-    --transition:     all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    --sb-width-open:  256px;
+    --sb-bg:           #0b1221;
+    --sb-border:       rgba(255,255,255,0.06);
+    --sb-active:       rgba(56,189,248,0.12);
+    --sb-active-line:  #38bdf8;
+    --sb-text:         #64748b;
+    --sb-text-mid:     #94a3b8;
+    --sb-text-bright:  #f1f5f9;
+    --sb-accent:       #38bdf8;
+    --sb-accent2:      #818cf8;
+    --sb-danger:       #ef4444;
+    --transition:      all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --sb-width-open:   256px;
     --sb-width-closed: 68px;
-    --sb-font:        'Outfit', sans-serif;
+    --sb-font:         'Outfit', sans-serif;
 }
 
-/* ── Botón hamburguesa móvil ───────────────────────────────────── */
+/* ── Hamburguesa móvil ─────────────────────────────────────────── */
 .mobile-menu-btn {
     display: none;
     position: fixed;
-    top: 16px;
-    left: 16px;
+    top: 16px; left: 16px;
     z-index: 200;
     background: #0b1221;
     border: 1px solid var(--sb-border);
     color: var(--sb-text-bright);
-    width: 42px;
-    height: 42px;
+    width: 42px; height: 42px;
     border-radius: 10px;
     cursor: pointer;
     align-items: center;
@@ -37,20 +34,18 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     transition: var(--transition);
 }
-
-.mobile-menu-btn:hover { background: var(--sb-surface); }
+.mobile-menu-btn:hover { background: #111827; }
 
 /* ── Overlay ───────────────────────────────────────────────────── */
 .sidebar-overlay {
     display: none;
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
     z-index: 149;
 }
 
-/* ── Base sidebar ──────────────────────────────────────────────── */
+/* ── Base ──────────────────────────────────────────────────────── */
 .sidebar {
     height: 100vh;
     background: var(--sb-bg);
@@ -62,54 +57,47 @@
     overflow: hidden;
 }
 
-/* Línea decorativa superior */
 .sidebar::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 2px;
     background: linear-gradient(90deg, var(--sb-accent), var(--sb-accent2));
 }
 
-/* ── Desktop sidebar ───────────────────────────────────────────── */
+/* ── Desktop ───────────────────────────────────────────────────── */
 .desktop-sidebar {
     position: sticky;
     top: 0;
     transition: width var(--transition);
     flex-shrink: 0;
 }
-
 .desktop-sidebar.open   { width: var(--sb-width-open); }
 .desktop-sidebar.closed { width: var(--sb-width-closed); }
 
-/* ── Mobile sidebar ────────────────────────────────────────────── */
+/* ── Mobile ────────────────────────────────────────────────────── */
 .mobile-sidebar {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     width: var(--sb-width-open);
     z-index: 150;
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 24px rgba(0,0,0,0.5);
 }
-
 .mobile-sidebar.mobile-open { transform: translateX(0); }
 
-/* Ocultar botones de toggle que no aplican */
-.desktop-sidebar .mobile-close { display: none; }
+.desktop-sidebar .mobile-close  { display: none; }
 .mobile-sidebar  .desktop-toggle { display: none; }
 
 /* ── Header ────────────────────────────────────────────────────── */
 .sidebar-header {
-    height: 68px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 14px;
     border-bottom: 1px solid var(--sb-border);
     flex-shrink: 0;
 }
@@ -122,35 +110,32 @@
 }
 
 .logo-icon {
-    width: 34px;
-    height: 34px;
+    width: 32px; height: 32px;
     background: linear-gradient(135deg, var(--sb-accent), var(--sb-accent2));
-    border-radius: 9px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(56,189,248,0.3);
+    box-shadow: 0 4px 12px rgba(56,189,248,0.25);
 }
 
 .logo-text {
     color: var(--sb-text-bright);
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: 1rem;
     letter-spacing: -0.3px;
     white-space: nowrap;
     font-family: var(--sb-font);
 }
-
 .dot { color: var(--sb-accent); }
 
 .toggle-control {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--sb-border);
     color: var(--sb-text);
-    width: 30px;
-    height: 30px;
+    width: 28px; height: 28px;
     border-radius: 7px;
     cursor: pointer;
     display: flex;
@@ -159,64 +144,77 @@
     transition: var(--transition);
     flex-shrink: 0;
 }
-
 .toggle-control:hover {
     background: rgba(255,255,255,0.08);
     color: var(--sb-text-bright);
-    border-color: rgba(255,255,255,0.1);
 }
 
 /* ── Nav content ───────────────────────────────────────────────── */
 .sidebar-content {
     flex: 1;
-    padding: 12px 10px;
+    padding: 10px 10px;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.08) transparent;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
 }
-
-.sidebar-content::-webkit-scrollbar { width: 4px; }
+.sidebar-content::-webkit-scrollbar       { width: 3px; }
 .sidebar-content::-webkit-scrollbar-track { background: transparent; }
-.sidebar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
 
 /* ── Nav groups ────────────────────────────────────────────────── */
-.nav-group {
-    margin-bottom: 6px;
-}
+.nav-group { margin-bottom: 4px; }
 
+/* Título de grupo — estático */
 .group-title {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: #334155;
-    margin: 14px 10px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.62rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.1px;
+    color: #334155;
+    margin: 14px 10px 5px;
     font-family: var(--sb-font);
     white-space: nowrap;
     overflow: hidden;
+    user-select: none;
 }
 
-.nav-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+/* Título colapsable — cursor pointer + hover */
+.group-collapsible {
+    cursor: pointer;
+    color: #475569;
+    transition: color 0.15s;
 }
+.group-collapsible:hover { color: var(--sb-text-mid); }
+
+.group-chevron {
+    display: flex;
+    align-items: center;
+    color: #475569;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+/* ── Nav list ──────────────────────────────────────────────────── */
+.nav-list { list-style: none; padding: 0; margin: 0; }
 
 /* ── Nav items ─────────────────────────────────────────────────── */
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 9px 10px;
+    padding: 8px 10px;
     color: var(--sb-text-mid);
     text-decoration: none;
     border-radius: 8px;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     transition: var(--transition);
     position: relative;
     white-space: nowrap;
     overflow: hidden;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     font-weight: 500;
     font-family: var(--sb-font);
 }
@@ -232,20 +230,17 @@
     font-weight: 600;
 }
 
-/* Línea izquierda en activo */
 .nav-item.active::before {
     content: '';
     position: absolute;
-    left: 0;
-    top: 20%;
-    height: 60%;
+    left: 0; top: 20%; height: 60%;
     width: 3px;
     background: var(--sb-active-line);
     border-radius: 0 3px 3px 0;
 }
 
 .icon-wrapper {
-    min-width: 22px;
+    min-width: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -259,15 +254,15 @@
     white-space: nowrap;
 }
 
-/* ── Tooltip (sidebar cerrado) ─────────────────────────────────── */
+/* ── Tooltip ───────────────────────────────────────────────────── */
 .floating-tooltip {
     position: absolute;
     left: calc(var(--sb-width-closed) - 4px);
     background: #1e293b;
     color: var(--sb-text-bright);
-    padding: 6px 12px;
+    padding: 5px 12px;
     border-radius: 7px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
@@ -277,7 +272,6 @@
     border: 1px solid var(--sb-border);
     font-family: var(--sb-font);
 }
-
 .nav-item:hover .floating-tooltip {
     opacity: 1;
     left: calc(var(--sb-width-closed) + 4px);
@@ -285,7 +279,7 @@
 
 /* ── Footer ────────────────────────────────────────────────────── */
 .sidebar-footer {
-    padding: 12px 10px;
+    padding: 10px;
     border-top: 1px solid var(--sb-border);
     flex-shrink: 0;
 }
@@ -294,7 +288,7 @@
     width: 100%;
     display: flex;
     align-items: center;
-    padding: 9px 10px;
+    padding: 8px 10px;
     background: none;
     border: none;
     border-radius: 8px;
@@ -302,22 +296,18 @@
     cursor: pointer;
     transition: var(--transition);
     font-family: var(--sb-font);
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
 }
-
 .action-btn:hover {
     background: rgba(239,68,68,0.08);
     color: var(--sb-danger);
 }
-
 .action-btn span { margin-left: 10px; }
 
-/* ================================================================
-   RESPONSIVE
-   ================================================================ */
+/* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .mobile-menu-btn  { display: flex; }
     .sidebar-overlay  { display: block; }
