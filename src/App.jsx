@@ -19,6 +19,7 @@ import EstadoMovimientoPage from './pages/EstadoMovimiento/EstadoMovimientoPage'
 import CuentaBancariaPage from './pages/CuentaBancaria/CuentaBancariaPage';
 import PersonaPage from './pages/Persona/PersonaPage';
 import MovimientoPage from './pages/Movimiento/MovimientoPage';
+import TasaInteresPage from './pages/TasaInteres/TasaInteresPage';
 
 // Componentes temporales (Mock) para las rutas vacías//
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -50,6 +51,7 @@ function App() {
           <Route path="/estados-movimiento" element={<EstadoMovimientoPage />} />
           <Route path="/personas" element={<PersonaPage />} />
           <Route path="/movimientos" element={<MovimientoPage />} />
+          <Route path="/tasas-interes" element={<TasaInteresPage />} />
         </Routes>
       </main>
     </Router>
