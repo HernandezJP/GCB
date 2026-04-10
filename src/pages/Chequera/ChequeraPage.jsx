@@ -1,317 +1,364 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Search, CheckCircle, BookOpen, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, BookOpen, CheckCircle, Loader } from 'lucide-react';
 import {
-  getChequeras,
-  createChequera,
-  updateChequera,
-  deleteChequera,
-  reactivarChequera
-} from '../../services/chequeraService';
-import ChequeraTable from './ChequeraTable';
-import ChequeraModal, {
-  getId,
-  getSerie,
-  getCuenta,
-  getEstado,
-  getNumeroDesde,
-  getNumeroHasta,
-  getUltimoUsado,
-  getFechaRecepcion,
-  isActiva
-} from './ChequeraModal';
+    getChequeras,
+    deleteChequera,
+    reactivarChequera,
+    createChequera
+} from '../../services/ChequeraService';
+import { getCuentas } from '../../services/CuentaBancariaService';
+import { getBancos } from '../../services/BancoService';
+import ChequeraTable, { getQEstado } from './ChequeraTable';
+import ChequeraDetalle from './ChequeraDetalle';
+import ChequeraModal from './ChequeraModal';
 import './Chequera.css';
 
-const ChequeraDetail = ({ chequera, onBack, onEdit }) => {
-  const desde = Number(getNumeroDesde(chequera));
-  const hasta = Number(getNumeroHasta(chequera));
-  const ultimo = Number(getUltimoUsado(chequera));
-  const disponibles = Math.max(hasta - ultimo, 0);
-
-  return (
-    <div>
-      <button className="btn-secondary" style={{ marginBottom: 16 }} onClick={onBack}>
-        <ArrowLeft size={15} /> Volver a chequeras
-      </button>
-
-      <div className="detalle-card">
-        <div className="detalle-header">
-          <div className="detalle-icon">
-            <BookOpen size={26} />
-          </div>
-
-          <div>
-            <h2>Chequera {getSerie(chequera)}</h2>
-            <p className="detalle-subtitle">
-              Cuenta #{getCuenta(chequera)}
-              {' · '}Rango {desde} - {hasta}
-            </p>
-          </div>
-
-          <div className="detalle-status">
-            <span className={`status-pill ${isActiva(chequera) ? 'pill-green' : 'pill-red'}`}>
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: isActiva(chequera) ? '#22c55e' : '#ef4444',
-                  display: 'inline-block',
-                  marginRight: 8
-                }}
-              />
-              {isActiva(chequera) ? 'Activa' : 'Inactiva'}
-            </span>
-          </div>
-        </div>
-
-        <div className="detalle-stats">
-          {[
-            { label: 'Serie', val: getSerie(chequera) || '—' },
-            { label: 'Cuenta', val: getCuenta(chequera) || '—' },
-            { label: 'Último usado', val: ultimo },
-            { label: 'Disponibles', val: disponibles, color: disponibles > 0 ? '#15803d' : '#b91c1c' },
-            { label: 'Fecha recepción', val: String(getFechaRecepcion(chequera)).split('T')[0] || '—' },
-            { label: 'Estado', val: isActiva(chequera) ? 'Activa' : 'Inactiva' }
-          ].map((s, i) => (
-            <div key={i} className="detalle-stat">
-              <div className="detalle-stat-label">{s.label}</div>
-              <div className="detalle-stat-value" style={{ color: s.color || '#0f172a' }}>
-                {s.val}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="tab-content">
-          <div className="tab-toolbar">
-            <strong style={{ color: '#0f172a', fontSize: 14 }}>Información de la chequera</strong>
-            <button className="btn-primary" onClick={() => onEdit(chequera)}>
-              Editar chequera
-            </button>
-          </div>
-
-          <div style={{ padding: 24, color: '#64748b', fontSize: 14 }}>
-            Esta vista muestra el resumen general de la chequera seleccionada.
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+const g = (o, ...ks) => {
+    for (const k of ks) {
+        const v = o?.[k];
+        if (v != null) return v;
+    }
+    return null;
 };
 
-const ChequeraPage = () => {
-  const [chequeras, setChequeras] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [chequeraEdit, setChequeraEdit] = useState(null);
-  const [chequeraDetalle, setChequeraDetalle] = useState(null);
+const getChequeraCuentaId = (q) =>
+    g(q, 'cuB_Cuenta', 'cUB_Cuenta', 'CUB_Cuenta');
 
-  useEffect(() => {
-    fetchChequeras();
-  }, []);
+const getCuentaId = (c) =>
+    g(c, 'cuB_Cuenta', 'cUB_Cuenta', 'CUB_Cuenta');
 
-  const fetchChequeras = async () => {
-    try {
-      setLoading(true);
-      const data = await getChequeras();
-      setChequeras(data || []);
-      setFiltered(data || []);
-      setError(null);
-    } catch (err) {
-      setError('No se pudieron cargar las chequeras.');
-    } finally {
-      setLoading(false);
+const getCuentaNumero = (c) =>
+    g(c, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta');
+
+const getCuentaBancoId = (c) =>
+    g(c, 'bAN_Banco', 'ban_Banco', 'BAN_Banco');
+
+const getBancoId = (b) =>
+    g(b, 'bAN_Banco', 'ban_Banco', 'BAN_Banco');
+
+const getBancoNombre = (b) =>
+    g(b, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre', 'ban_Nombre');
+
+const getCuentaTitular = (c) => {
+    const nombreCompleto =
+        g(
+            c,
+            'nombreCompleto',
+            'NombreCompleto',
+            'cUB_Nombre_Completo',
+            'cuB_Nombre_Completo',
+            'CUB_Nombre_Completo'
+        ) ?? '';
+
+    if (nombreCompleto && String(nombreCompleto).trim().toLowerCase() !== 'string') {
+        return String(nombreCompleto).trim();
     }
-  };
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (!search.trim()) {
-        setFiltered(chequeras);
-        return;
-      }
+    const partes = [
+        g(c, 'cuB_Primer_Nombre', 'cUB_Primer_Nombre', 'CUB_Primer_Nombre'),
+        g(c, 'cuB_Segundo_Nombre', 'cUB_Segundo_Nombre', 'CUB_Segundo_Nombre'),
+        g(c, 'cuB_Primer_Apellido', 'cUB_Primer_Apellido', 'CUB_Primer_Apellido'),
+        g(c, 'cuB_Segundo_Apellido', 'cUB_Segundo_Apellido', 'CUB_Segundo_Apellido'),
+    ].filter(Boolean);
 
-      const q = search.toLowerCase();
+    return partes.join(' ').trim();
+};
 
-      setFiltered(
-        chequeras.filter((c) =>
-          String(getSerie(c) || '').toLowerCase().includes(q) ||
-          String(getCuenta(c) || '').toLowerCase().includes(q) ||
-          String(getEstado(c) || '').toLowerCase().includes(q)
-        )
-      );
-    }, 300);
+const buildCuentaLabel = (c, bancos) => {
+    const numero = getCuentaNumero(c) ?? 'Sin número';
+    const bancoId = getCuentaBancoId(c);
 
-    return () => clearTimeout(t);
-  }, [search, chequeras]);
-
-  const showSuccess = (msg) => {
-    setSuccess(msg);
-    setTimeout(() => setSuccess(''), 3000);
-  };
-
-  const handleSave = async (formData) => {
-    try {
-      if (chequeraEdit) {
-        await updateChequera(getId(chequeraEdit), formData);
-        showSuccess('Chequera actualizada correctamente.');
-      } else {
-        await createChequera(formData);
-        showSuccess('Chequera creada correctamente.');
-      }
-
-      setIsModalOpen(false);
-      setChequeraEdit(null);
-      await fetchChequeras();
-    } catch (err) {
-      alert(err?.response?.data?.mensaje || 'Error al guardar la chequera.');
-    }
-  };
-
-  const handleToggleStatus = async (id, nuevoActivo) => {
-    if (!window.confirm(`¿Deseas ${nuevoActivo ? 'activar' : 'desactivar'} esta chequera?`)) return;
-
-    try {
-      if (nuevoActivo) {
-        await reactivarChequera(id);
-        showSuccess('Chequera reactivada correctamente.');
-      } else {
-        await deleteChequera(id);
-        showSuccess('Chequera desactivada correctamente.');
-      }
-
-      if (chequeraDetalle && getId(chequeraDetalle) === id) {
-        setChequeraDetalle(null);
-      }
-
-      await fetchChequeras();
-    } catch (err) {
-      alert(err?.response?.data?.mensaje || 'Error al cambiar el estado.');
-    }
-  };
-
-  const totalChequeras = chequeras.length;
-  const activas = chequeras.filter((c) => getEstado(c) === 'A').length;
-  const disponibles = chequeras.reduce((acc, c) => {
-    const hasta = Number(getNumeroHasta(c));
-    const ultimo = Number(getUltimoUsado(c));
-    return acc + Math.max(hasta - ultimo, 0);
-  }, 0);
-
-  if (chequeraDetalle) {
-    return (
-      <div className="chequera-container">
-        <ChequeraDetail
-          chequera={chequeraDetalle}
-          onBack={() => setChequeraDetalle(null)}
-          onEdit={(c) => {
-            setChequeraEdit(c);
-            setIsModalOpen(true);
-          }}
-        />
-
-        <ChequeraModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setChequeraEdit(null);
-          }}
-          onSave={handleSave}
-          chequeraToEdit={chequeraEdit}
-        />
-      </div>
+    const bancoObj = bancos.find(b =>
+        String(getBancoId(b)) === String(bancoId)
     );
-  }
 
-  return (
-    <div className="chequera-container">
-      <div className="page-header">
-        <div className="page-header-left">
-          <h1>Chequeras</h1>
-          <span className="record-count">{filtered.length} registros</span>
-        </div>
+    const bancoNombre = getBancoNombre(bancoObj);
+    const titular = getCuentaTitular(c);
 
-        <button
-          className="btn-primary"
-          onClick={() => {
-            setChequeraEdit(null);
-            setIsModalOpen(true);
-          }}
-        >
-          <Plus size={18} /> Nueva chequera
-        </button>
-      </div>
+    let label = numero;
 
-      <div className="kpi-grid">
-        {[
-          { label: 'Total chequeras', val: totalChequeras, color: '#0284c7', bg: '#eff6ff' },
-          { label: 'Chequeras activas', val: activas, color: '#7c3aed', bg: '#f3e8ff' },
-          { label: 'Cheques disponibles', val: disponibles, color: '#16a34a', bg: '#dcfce7' }
-        ].map((s, i) => (
-          <div key={i} className="kpi-card" style={{ borderLeft: `4px solid ${s.color}` }}>
-            <div>
-              <div className="kpi-label">{s.label}</div>
-              <div className="kpi-value" style={{ color: s.color }}>
-                {s.val}
-              </div>
+    if (bancoNombre) {
+        label += ` - ${bancoNombre}`;
+    }
+
+    if (titular) {
+        label += ` - ${titular}`;
+    }
+
+    return label;
+};
+
+const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
+    const [chequeras, setChequeras] = useState([]);
+    const [filtered, setFiltered] = useState([]);
+    const [search, setSearch] = useState('');
+    const [filtroCuenta, setFiltroCuenta] = useState(cuentaId ? String(cuentaId) : '');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [detalle, setDetalle] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    const [cuentas, setCuentas] = useState([]);
+    const [bancos, setBancos] = useState([]);
+
+    useEffect(() => {
+        if (cuentaId) setFiltroCuenta(String(cuentaId));
+        else setFiltroCuenta('');
+    }, [cuentaId]);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+
+            const [data, cuentasData, bancosData] = await Promise.all([
+                getChequeras(),
+                getCuentas(),
+                getBancos(),
+            ]);
+
+            setChequeras(data ?? []);
+            setCuentas(cuentasData ?? []);
+            setBancos(bancosData ?? []);
+        } catch {
+            setError('Error al cargar las chequeras.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [cuentaId, modoDetalleCuenta]);
+
+    useEffect(() => {
+        let result = [...chequeras];
+
+        const cuentaFiltroReal = modoDetalleCuenta
+            ? String(cuentaId ?? '')
+            : filtroCuenta;
+
+        if (cuentaFiltroReal) {
+            result = result.filter(q =>
+                String(getChequeraCuentaId(q)) === String(cuentaFiltroReal)
+            );
+        }
+
+        if (search.trim()) {
+            const q = search.toLowerCase();
+
+            result = result.filter(c => {
+                const serie = String(
+                    g(c, 'chQ_Serie', 'cHQ_Serie', 'CHQ_Serie') ?? ''
+                ).toLowerCase();
+
+                const numDesde = String(
+                    g(c, 'chQ_Numero_Desde', 'cHQ_Numero_Desde', 'CHQ_Numero_Desde') ?? ''
+                );
+
+                const numHasta = String(
+                    g(c, 'chQ_Numero_Hasta', 'cHQ_Numero_Hasta', 'CHQ_Numero_Hasta') ?? ''
+                );
+
+                const cuentaNumero = String(
+                    g(c, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') ?? ''
+                );
+
+                const banco = String(
+                    g(c, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? ''
+                ).toLowerCase();
+
+                const titular = String(
+                    g(c, 'titular', 'Titular', 'nombreCompleto', 'NombreCompleto') ?? ''
+                ).toLowerCase();
+
+                return (
+                    serie.includes(q) ||
+                    numDesde.includes(q) ||
+                    numHasta.includes(q) ||
+                    cuentaNumero.includes(q) ||
+                    banco.includes(q) ||
+                    titular.includes(q)
+                );
+            });
+        }
+
+        setFiltered(result);
+    }, [chequeras, search, filtroCuenta, cuentaId, modoDetalleCuenta]);
+
+    const cuentasFiltradasModal = useMemo(() => {
+        if (!modoDetalleCuenta || !cuentaId) return cuentas;
+
+        return cuentas.filter(c =>
+            String(getCuentaId(c)) === String(cuentaId)
+        );
+    }, [cuentas, cuentaId, modoDetalleCuenta]);
+
+    const showOk = (msg) => {
+        setSuccess(msg);
+        setTimeout(() => setSuccess(''), 3500);
+    };
+
+    const showErr = (msg) => {
+        setError(msg);
+        setTimeout(() => setError(''), 4000);
+    };
+
+    const handleToggle = async (id, estaActivo) => {
+        if (!window.confirm(`¿${estaActivo ? 'Desactivar' : 'Reactivar'} esta chequera?`)) return;
+
+        try {
+            if (estaActivo) await deleteChequera(id);
+            else await reactivarChequera(id);
+
+            showOk(`Chequera ${estaActivo ? 'desactivada' : 'reactivada'} correctamente.`);
+            await fetchData();
+        } catch (err) {
+            showErr(err.response?.data?.mensaje ?? 'Error al cambiar el estado.');
+        }
+    };
+
+    const handleSave = async (dto) => {
+        setSaving(true);
+        try {
+            const dtoFinal =
+                modoDetalleCuenta && cuentaId
+                    ? { ...dto, cuB_Cuenta: Number(cuentaId) }
+                    : dto;
+
+            await createChequera(dtoFinal);
+            setModalOpen(false);
+            showOk('Chequera registrada correctamente.');
+            await fetchData();
+        } catch (err) {
+            showErr(err.response?.data?.mensaje ?? 'Error al registrar la chequera.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const activas = filtered.filter(c => {
+        const e = getQEstado(c);
+        return e === 'A' || e === 'Activa' || e === 'Activo';
+    }).length;
+
+    const agotadas = filtered.filter(c => {
+        const desde = Number(g(c, 'chQ_Numero_Desde', 'cHQ_Numero_Desde', 'CHQ_Numero_Desde') ?? 0);
+        const hasta = Number(g(c, 'chQ_Numero_Hasta', 'cHQ_Numero_Hasta', 'CHQ_Numero_Hasta') ?? 0);
+        const ultimo = Number(g(c, 'chQ_Ultimo_Usado', 'cHQ_Ultimo_Usado', 'CHQ_Ultimo_Usado') ?? 0);
+        return ultimo >= hasta && hasta >= desde;
+    }).length;
+
+    const inactivas = filtered.filter(c => {
+        const e = getQEstado(c);
+        return e === 'I' || e === 'Inactiva' || e === 'Desactivada';
+    }).length;
+
+    if (detalle) {
+        return (
+            <div className="chequera-container">
+                <ChequeraDetalle chequera={detalle} onBack={() => setDetalle(null)} />
             </div>
-            <div className="kpi-icon" style={{ background: s.bg }}>
-              <BookOpen size={20} color={s.color} />
+        );
+    }
+
+    return (
+        <div className="chequera-container">
+            <div className="chq-page-header">
+                <div>
+                    <h1>{modoDetalleCuenta ? 'Chequeras de la cuenta' : 'Chequeras'}</h1>
+                    <p className="chq-page-subtitle">
+                        {modoDetalleCuenta
+                            ? 'Consulta de chequeras asociadas a esta cuenta bancaria'
+                            : 'Consulta general de todas las chequeras del sistema'}
+                    </p>
+                </div>
+
+                <button className="btn-primary" onClick={() => setModalOpen(true)}>
+                    + Registrar chequera
+                </button>
             </div>
-          </div>
-        ))}
-      </div>
 
-      {success && (
-        <div className="success-banner">
-          <CheckCircle size={16} />
-          {success}
+            <div className="chq-kpi-grid">
+                {[
+                    { label: 'Total', val: filtered.length, color: '#0284c7', bg: '#e0f2fe' },
+                    { label: 'Activas', val: activas, color: '#15803d', bg: '#dcfce7' },
+                    { label: 'Agotadas', val: agotadas, color: '#92400e', bg: '#fef3c7' },
+                    { label: 'Inactivas', val: inactivas, color: '#64748b', bg: '#f1f5f9' },
+                ].map((s, i) => (
+                    <div key={i} className="chq-kpi-card" style={{ borderLeftColor: s.color }}>
+                        <div>
+                            <div className="chq-kpi-label">{s.label}</div>
+                            <div className="chq-kpi-value" style={{ color: s.color }}>{s.val}</div>
+                        </div>
+                        <div className="chq-kpi-icon" style={{ background: s.bg }}>
+                            <BookOpen size={18} color={s.color} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {success && <div className="chq-success"><CheckCircle size={15} />{success}</div>}
+            {error && <div className="chq-error">{error}</div>}
+
+            <div className="chq-toolbar">
+                {!modoDetalleCuenta && (
+                    <select
+                        className="chq-filter-select chq-filter-account"
+                        value={filtroCuenta}
+                        onChange={(e) => setFiltroCuenta(e.target.value)}
+                    >
+                        <option value="">Todas las cuentas</option>
+                        {cuentas.map((c, idx) => {
+                            const id = getCuentaId(c);
+
+                            return (
+                                <option key={id ?? `cuenta-${idx}`} value={id ?? ''}>
+                                    {buildCuentaLabel(c, bancos)}
+                                </option>
+                            );
+                        })}
+                    </select>
+                )}
+
+                <div className="chq-search-wrap">
+                    <Search size={15} className="chq-search-icon" />
+                    <input
+                        className="chq-search-input"
+                        placeholder="Buscar por serie, banco, cuenta o titular..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
+
+                <span className="chq-toolbar-count">
+                    {filtered.length} registros
+                </span>
+            </div>
+
+            {loading ? (
+                <div className="chq-loading">
+                    <Loader size={22} color="#0284c7" />
+                    <span>Cargando chequeras...</span>
+                </div>
+            ) : (
+                <ChequeraTable
+                    chequeras={filtered}
+                    onVer={setDetalle}
+                    onToggle={handleToggle}
+                />
+            )}
+
+            <ChequeraModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleSave}
+                saving={saving}
+                cuentas={cuentasFiltradasModal}
+            />
         </div>
-      )}
-
-      {error && <div className="error-banner">{error}</div>}
-
-      <div className="toolbar">
-        <div className="search-bar">
-          <Search size={15} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Buscar por serie, cuenta o estado..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="loading-state">Cargando chequeras...</div>
-      ) : (
-        <ChequeraTable
-          chequeras={filtered}
-          onView={setChequeraDetalle}
-          onEdit={(c) => {
-            setChequeraEdit(c);
-            setIsModalOpen(true);
-          }}
-          onToggleStatus={handleToggleStatus}
-        />
-      )}
-
-      <ChequeraModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setChequeraEdit(null);
-        }}
-        onSave={handleSave}
-        chequeraToEdit={chequeraEdit}
-      />
-    </div>
-  );
+    );
 };
 
 export default ChequeraPage;
