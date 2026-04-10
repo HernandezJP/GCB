@@ -59,8 +59,6 @@ function App() {
           <Route path="/interes-frecuencias" element={<InteresFrecuenciaPage />} />
           <Route path="/conversiones-moneda" element={<ConversionMonedaPage />} />
           <Route path="/reglas-recargo" element={<ReglaRecargoPage />} />
-          <Route path="/chequeras" element={<ChequeraPage />} />
-          <Route path="/cheques" element={<ChequePage />} />
           <Route path="/conciliacion" element={<ConciliacionPage />} />
         </Routes>
       </main>
