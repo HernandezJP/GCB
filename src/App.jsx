@@ -25,8 +25,6 @@ import TasaInteresPage from './pages/TasaInteres/TasaInteresPage';
 import InteresFrecuenciaPage from './pages/InteresFrecuencia/InteresFrecuenciaPage';
 import ConversionMonedaPage from './pages/ConversionMoneda/ConversionMonedaPage';
 import ReglaRecargoPage from './pages/ReglaRecargo/ReglaRecargoPage';
-import ChequeraPage from './pages/Chequera/ChequeraPage';
-import ChequePage from './pages/Cheques/ChequePage';
 import ConciliacionPage from './pages/Conciliacion/ConciliacionPage';
 
 // Componentes temporales (Mock) para las rutas vacías//
