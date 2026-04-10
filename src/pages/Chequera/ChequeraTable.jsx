@@ -2,7 +2,14 @@ import React from 'react';
 import { Eye, ToggleRight, ToggleLeft } from 'lucide-react';
 
 // helpers casing
-const g = (o, ...ks) => { for (const k of ks) { const v = o?.[k]; if (v != null) return v; } return null; };
+const g = (o, ...ks) => {
+    for (const k of ks) {
+        const v = o?.[k];
+        if (v != null) return v;
+    }
+    return null;
+};
+
 export const getQId = q => g(q, 'cHQ_Chequera', 'chQ_Chequera', 'CHQ_Chequera');
 export const getQCuenta = q => g(q, 'cUB_Cuenta', 'cuB_Cuenta', 'CUB_Cuenta') ?? 0;
 export const getQSerie = q => g(q, 'cHQ_Serie', 'chQ_Serie', 'CHQ_Serie') ?? '';
@@ -13,20 +20,39 @@ export const getQEstado = q => g(q, 'cHQ_Estado', 'chQ_Estado', 'CHQ_Estado') ??
 export const getQFecRec = q => g(q, 'cHQ_Fecha_Recepcion', 'chQ_Fecha_Recepcion', 'CHQ_Fecha_Recepcion');
 
 const estadoPill = (estado) => {
-    const m = { A: 'chq-pill-green', I: 'chq-pill-red', Activa: 'chq-pill-green', Agotada: 'chq-pill-red', Pendiente: 'chq-pill-amber', Anulada: 'chq-pill-gray' };
+    const m = {
+        A: 'chq-pill-green',
+        I: 'chq-pill-red',
+        Activa: 'chq-pill-green',
+        Agotada: 'chq-pill-red',
+        Pendiente: 'chq-pill-amber',
+        Anulada: 'chq-pill-gray'
+    };
     return m[estado] ?? 'chq-pill-gray';
 };
 
 const estadoLabel = (e) => {
-    const m = { A: 'Activa', I: 'Inactiva', Activa: 'Activa', Agotada: 'Agotada', Pendiente: 'Pendiente', Anulada: 'Anulada' };
+    const m = {
+        A: 'Activa',
+        I: 'Inactiva',
+        Activa: 'Activa',
+        Agotada: 'Agotada',
+        Pendiente: 'Pendiente',
+        Anulada: 'Anulada'
+    };
     return m[e] ?? e;
 };
 
-const formatFecha = f => f ? new Date(f).toLocaleDateString('es-GT') : '—';
+const formatFecha = f => (f ? new Date(f).toLocaleDateString('es-GT') : '—');
 
 const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
-    if (!chequeras?.length)
-        return <div className="chq-empty"><span>No se encontraron chequeras.</span></div>;
+    if (!chequeras?.length) {
+        return (
+            <div className="chq-empty">
+                <span>No se encontraron chequeras.</span>
+            </div>
+        );
+    }
 
     return (
         <div className="chq-table-card">
@@ -61,41 +87,71 @@ const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
                                     className={!activo ? 'row-inactiva' : ''}
                                     onClick={() => onVer?.(q)}
                                 >
-                                    <td style={{ color: '#cbd5e1', fontSize: 11, fontWeight: 600 }}>{i + 1}</td>
+                                    <td style={{ color: '#cbd5e1', fontSize: 11, fontWeight: 600 }}>
+                                        {i + 1}
+                                    </td>
+
                                     <td>
-                                        <code style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 7px', borderRadius: 4, fontSize: 12 }}>
+                                        <code
+                                            style={{
+                                                fontFamily: 'monospace',
+                                                background: '#f1f5f9',
+                                                padding: '2px 7px',
+                                                borderRadius: 4,
+                                                fontSize: 12
+                                            }}
+                                        >
                                             {g(q, 'cUB_Numero_Cuenta', 'cuB_Numero_Cuenta', 'CUB_Numero_Cuenta') ?? `Cuenta #${getQCuenta(q)}`}
                                         </code>
                                     </td>
+
                                     <td>
-                                        <span style={{ fontWeight: 700, fontSize: 17, color: '#0284c7' }}>{getQSerie(q)}</span>
+                                        <span style={{ fontWeight: 700, fontSize: 17, color: '#0284c7' }}>
+                                            {getQSerie(q)}
+                                        </span>
                                     </td>
+
                                     <td>
                                         <code className="chq-num" style={{ fontSize: 11 }}>
                                             {String(getQDesde(q)).padStart(5, '0')} — {String(getQHasta(q)).padStart(5, '0')}
                                         </code>
                                     </td>
+
                                     <td>
                                         <div className="chq-bar-wrap">
                                             <div className="chq-bar">
-                                                <div className="chq-bar-fill" style={{ width: `${pct}%`, background: barColor }} />
+                                                <div
+                                                    className="chq-bar-fill"
+                                                    style={{ width: `${pct}%`, background: barColor }}
+                                                />
                                             </div>
-                                            <span style={{ fontSize: 12, color: '#64748b' }}>{usados}/{total}</span>
+                                            <span style={{ fontSize: 12, color: '#64748b' }}>
+                                                {usados}/{total}
+                                            </span>
                                         </div>
                                     </td>
+
                                     <td>
-                                        <span style={{ fontWeight: 600, color: disp === 0 ? '#b91c1c' : disp < 5 ? '#92400e' : '#15803d' }}>
+                                        <span
+                                            style={{
+                                                fontWeight: 600,
+                                                color: disp === 0 ? '#b91c1c' : disp < 5 ? '#92400e' : '#15803d'
+                                            }}
+                                        >
                                             {disp}
                                         </span>
                                     </td>
+
                                     <td>
                                         <span className={`chq-pill ${estadoPill(estado)}`}>
                                             {estadoLabel(estado)}
                                         </span>
                                     </td>
+
                                     <td style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>
                                         {formatFecha(getQFecRec(q))}
                                     </td>
+
                                     <td onClick={e => e.stopPropagation()}>
                                         <div className="chq-action-btns">
                                             <button
@@ -105,6 +161,7 @@ const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
                                             >
                                                 <Eye size={15} color="#0284c7" />
                                             </button>
+
                                             <button
                                                 className={`chq-icon-btn ${activo ? 'danger' : 'success'}`}
                                                 title={activo ? 'Desactivar' : 'Reactivar'}

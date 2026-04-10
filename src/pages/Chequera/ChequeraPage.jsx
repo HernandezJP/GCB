@@ -111,6 +111,7 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const fetchData = async () => {
         try {
             setLoading(true);
+            setError('');
 
             const [data, cuentasData, bancosData] = await Promise.all([
                 getChequeras(),
@@ -215,7 +216,7 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             showOk(`Chequera ${estaActivo ? 'desactivada' : 'reactivada'} correctamente.`);
             await fetchData();
         } catch (err) {
-            showErr(err.response?.data?.mensaje ?? 'Error al cambiar el estado.');
+            showErr(err?.response?.data?.mensaje ?? 'Error al cambiar el estado.');
         }
     };
 
@@ -232,7 +233,7 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             showOk('Chequera registrada correctamente.');
             await fetchData();
         } catch (err) {
-            showErr(err.response?.data?.mensaje ?? 'Error al registrar la chequera.');
+            showErr(err?.response?.data?.mensaje ?? 'Error al registrar la chequera.');
         } finally {
             setSaving(false);
         }

@@ -142,6 +142,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const fetchCheques = async () => {
         try {
             setLoading(true);
+            setError('');
 
             const data =
                 modoDetalleCuenta && cuentaId
@@ -214,8 +215,8 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         if (search.trim()) {
             const q = search.toLowerCase();
             result = result.filter(c =>
-                String(getChNumero(c)).toLowerCase().includes(q) ||
-                String(getChBenef(c)).toLowerCase().includes(q) ||
+                String(getChNumero(c) ?? '').toLowerCase().includes(q) ||
+                String(getChBenef(c) ?? '').toLowerCase().includes(q) ||
                 String(c?.chQ_Serie ?? '').toLowerCase().includes(q)
             );
         }
@@ -268,7 +269,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
         try {
             await cambiarEstadoCheque(chequeId, {
-                ESC_Estado_Cheque: parseInt(estadoId)
+                ESC_Estado_Cheque: parseInt(estadoId, 10)
             });
 
             showOk(`Estado del cheque actualizado a: ${desc}`);
@@ -277,7 +278,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
             await fetchCheques();
         } catch (err) {
-            showErr(err.response?.data?.mensaje ?? 'Error al cambiar el estado.');
+            showErr(err?.response?.data?.mensaje ?? 'Error al cambiar el estado.');
         }
     };
 
@@ -286,7 +287,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         try {
             const dtoFinal =
                 modoDetalleCuenta && cuentaId
-                    ? { ...dto, CUB_Cuenta: parseInt(cuentaId) }
+                    ? { ...dto, CUB_Cuenta: parseInt(cuentaId, 10) }
                     : dto;
 
             await createCheque(dtoFinal);
@@ -294,7 +295,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             showOk('Cheque emitido correctamente. Movimiento de egreso y saldo actualizados.');
             await fetchCheques();
         } catch (err) {
-            showErr(err.response?.data?.mensaje ?? 'Error al emitir el cheque.');
+            showErr(err?.response?.data?.mensaje ?? 'Error al emitir el cheque.');
         } finally {
             setSaving(false);
         }
@@ -318,7 +319,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
     const totalMonto = baseKpis
         .filter(c => getChEstado(c) !== 'Cancelado')
-        .reduce((s, c) => s + getChMonto(c), 0);
+        .reduce((s, c) => s + (Number(getChMonto(c)) || 0), 0);
 
     const estadosUnicos = [...new Set(chequesConSerie.map(getChEstado).filter(Boolean))];
 

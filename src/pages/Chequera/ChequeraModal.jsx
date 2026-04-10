@@ -101,6 +101,7 @@ const ChequeraModal = ({
                 zIndex: 1100,
                 padding: 16
             }}
+            onClick={onClose}
         >
             <div
                 style={{
@@ -403,7 +404,7 @@ const ChequeraModal = ({
                             {[
                                 [
                                     'Cuenta',
-                                    `${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', '') ?? ''} — ${g(cuentaSelec, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'}`
+                                    `${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? ''} — ${g(cuentaSelec, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'}`
                                 ],
                                 ['Serie', form.chQ_Serie || '—'],
                                 ['Desde', form.chQ_Numero_Desde || '—'],

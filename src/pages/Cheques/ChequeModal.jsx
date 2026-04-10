@@ -276,8 +276,8 @@ const ChequeModal = ({
         form.CHE_Numero_Cheque && String(form.CHE_Numero_Cheque).trim() !== ''
             ? String(form.CHE_Numero_Cheque).trim()
             : proximoNum != null
-              ? String(proximoNum).padStart(8, '0')
-              : '';
+                ? String(proximoNum).padStart(8, '0')
+                : '';
 
     const personasFiltradas = useMemo(() => {
         const q = personaSearch.trim().toLowerCase();
@@ -364,9 +364,9 @@ const ChequeModal = ({
         }
 
         onSave({
-            CUB_Cuenta: parseInt(form.CUB_Cuenta),
-            CHQ_Chequera: parseInt(form.CHQ_Chequera),
-            PER_Persona: parseInt(form.PER_Persona),
+            CUB_Cuenta: parseInt(form.CUB_Cuenta, 10),
+            CHQ_Chequera: parseInt(form.CHQ_Chequera, 10),
+            PER_Persona: parseInt(form.PER_Persona, 10),
             ESC_Estado_Cheque: estadoChequeFinal,
             CHE_Numero_Cheque: numeroChequeFinal,
             CHE_Monto_Letras: form.CHE_Monto_Letras.trim(),
@@ -395,6 +395,7 @@ const ChequeModal = ({
                 zIndex: 1100,
                 padding: 16
             }}
+            onClick={onClose}
         >
             <div
                 style={{
@@ -577,7 +578,7 @@ const ChequeModal = ({
 
                                         return (
                                             <option key={qid ?? `chequera-${idx}`} value={qid ?? ''} disabled={disp <= 0}>
-                                                Serie {serie} — {disp} disponibles{disp <= 0 ? ' (agotada)' : ''}
+                                                {`Serie ${serie} — ${disp} disponibles${disp <= 0 ? ' (agotada)' : ''}`}
                                             </option>
                                         );
                                     })}
@@ -945,47 +946,86 @@ const ChequeModal = ({
                                 padding: 16
                             }}
                         >
-                            <p style={{ margin: '0 0 12px', fontWeight: 600, color: '#0f172a', fontSize: 13 }}>
-                                Resumen del cheque a emitir
+                            <p style={{
+                                margin: '0 0 12px',
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: '#166534'
+                            }}>
+                                Confirma la información del cheque
                             </p>
 
-                            {[
-                                [
-                                    'Cuenta',
-                                    `${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', '')} — ${g(cuentaSelec, 'cUB_Numero_Cuenta', 'cuB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'}`
-                                ],
-                                [
-                                    'Chequera',
-                                    chequeraSelec ? `Serie ${g(chequeraSelec, 'chQ_Serie', 'cHQ_Serie', 'CHQ_Serie', '')}` : '—'
-                                ],
-                                ['N° Cheque', numeroChequeMostrado || '—'],
-                                ['Beneficiario', personaSelec ? getPersonaNombre(personaSelec) || '—' : '—'],
-                                ['NIT', personaSelec ? getPersonaNit(personaSelec) || '—' : '—'],
-                                ['DPI', personaSelec ? getPersonaDpi(personaSelec) || '—' : '—'],
-                                ['Estado', getEstadoChequeDesc(estadosCheque.find(e => String(getEstadoChequeId(e)) === String(form.ESC_Estado_Cheque))) || '—'],
-                                ['Monto', `Q ${monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}`],
-                                ['Monto letras', form.CHE_Monto_Letras || '—'],
-                                ['Saldo tras emisión', `Q ${(saldo - monto).toLocaleString('es-GT', { minimumFractionDigits: 2 })}`],
-                                ['Concepto', form.CHE_Concepto || '—'],
-                                ['Fecha', form.CHE_Fecha_Emision || '—']
-                            ].map(([k, v], idx) => (
-                                <div
-                                    key={`res-${idx}`}
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        padding: '7px 0',
-                                        borderBottom: '1px solid #dcfce7',
-                                        fontSize: 13,
-                                        gap: 16
-                                    }}
-                                >
-                                    <span style={{ color: '#64748b' }}>{k}</span>
-                                    <span style={{ fontWeight: 500, color: '#0f172a', textAlign: 'right', wordBreak: 'break-word' }}>
-                                        {v}
-                                    </span>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Cuenta</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? '—'} — {g(cuentaSelec, 'cUB_Numero_Cuenta', 'cuB_Numero_Cuenta', 'CUB_Numero_Cuenta') ?? '—'}
+                                    </div>
                                 </div>
-                            ))}
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Chequera</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        Serie {g(chequeraSelec, 'chQ_Serie', 'cHQ_Serie', 'CHQ_Serie') ?? '—'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Número de cheque</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a', fontFamily: 'monospace', fontWeight: 700 }}>
+                                        {numeroChequeMostrado || '—'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Beneficiario</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {personaSelec ? getPersonaNombre(personaSelec) : '—'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Monto</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a', fontWeight: 700 }}>
+                                        Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Estado</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {getEstadoChequeDesc(estadosCheque.find(e => String(getEstadoChequeId(e)) === String(form.ESC_Estado_Cheque))) ?? '—'}
+                                    </div>
+                                </div>
+
+                                <div style={{ gridColumn: '1 / -1' }}>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Monto en letras</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {form.CHE_Monto_Letras || '—'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Fecha emisión</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {form.CHE_Fecha_Emision || '—'}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Fecha vencimiento</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {form.CHE_Fecha_Vencimiento || '—'}
+                                    </div>
+                                </div>
+
+                                <div style={{ gridColumn: '1 / -1' }}>
+                                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Concepto</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>
+                                        {form.CHE_Concepto || '—'}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -995,12 +1035,7 @@ const ChequeModal = ({
                         display: 'flex',
                         justifyContent: 'flex-end',
                         gap: 10,
-                        padding: '16px 24px',
-                        background: '#f8fafc',
-                        borderTop: '1px solid #f1f5f9',
-                        borderRadius: '0 0 16px 16px',
-                        position: 'sticky',
-                        bottom: 0
+                        padding: '0 24px 20px'
                     }}
                 >
                     {step > 0 && (
