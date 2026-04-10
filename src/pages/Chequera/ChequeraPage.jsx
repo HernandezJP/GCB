@@ -6,7 +6,7 @@ import {
   updateChequera,
   deleteChequera,
   reactivarChequera
-} from '../../services/chequeraService';
+} from '../../services/ChequeraService';
 import ChequeraTable from './ChequeraTable';
 import ChequeraModal, {
   getId,
