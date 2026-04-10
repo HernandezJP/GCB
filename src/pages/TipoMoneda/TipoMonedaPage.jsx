@@ -13,12 +13,12 @@ import TipoMonedaModal   from './TipoMonedaModal';
 import TipoMonedaDetalle from './TipoMonedaDetalle';
 import './TipoMoneda.css';
 
-// ── Helpers: .NET serializa "TMO_*" → "tMO_*" (patrón confirmado)
+
 export const getId          = (t) => t?.tMO_Tipo_Moneda    ?? t?.tmO_Tipo_Moneda   ?? t?.tmo_tipo_moneda;
 export const getDescripcion = (t) => t?.tMO_Descripcion    ?? t?.tmO_Descripcion   ?? t?.tmo_descripcion  ?? '';
 export const getSimbolo     = (t) => t?.tMO_Simbolo        ?? t?.tmO_Simbolo       ?? t?.tmo_simbolo      ?? '';
 export const getEstado      = (t) => t?.tMO_Estado         ?? t?.tmO_Estado        ?? t?.tmo_estado       ?? 'I';
-export const getFecha       = (t) => t?.tMO_Fecha_Creacion ?? t?.tmO_Fecha_Creacion ?? null;
+export const getFecha       = (t) => t?.tMO_Fecha_Creacion ?? t?.tmO_Fecha_Creacion ?? t?.tmo_Fecha_Creacion;
 export const isActivo       = (t) => getEstado(t) === 'A';
 
 const TipoMonedaPage = () => {
