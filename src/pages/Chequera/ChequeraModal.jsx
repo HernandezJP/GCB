@@ -170,7 +170,7 @@ const ChequeraModal = ({
 
                 <div style={{ display: 'flex', alignItems: 'center', padding: '16px 24px 0' }}>
                     {STEPS.map((s, i) => (
-                        <React.Fragment key={step-${i}}>
+                        <React.Fragment key={`step-${i}`}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
                                 <div
                                     style={{
@@ -242,7 +242,7 @@ const ChequeraModal = ({
                                     const banco = g(c, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? '';
 
                                     return (
-                                        <option key={id ?? cuenta-${idx}} value={id ?? ''}>
+                                        <option key={id ?? `cuenta-${idx}`} value={id ?? ''}>
                                             {banco} — {numero}
                                         </option>
                                     );
@@ -401,7 +401,10 @@ const ChequeraModal = ({
                             </p>
 
                             {[
-                                ['Cuenta', ${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', '')} — ${g(cuentaSelec, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'}],
+                                [
+                                    'Cuenta',
+                                    `${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', '') ?? ''} — ${g(cuentaSelec, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'}`
+                                ],
                                 ['Serie', form.chQ_Serie || '—'],
                                 ['Desde', form.chQ_Numero_Desde || '—'],
                                 ['Hasta', form.chQ_Numero_Hasta || '—'],
@@ -409,7 +412,7 @@ const ChequeraModal = ({
                                 ['Fecha recepción', form.chQ_Fecha_Recepcion || '—'],
                             ].map(([k, v], idx) => (
                                 <div
-                                    key={res-${idx}}
+                                    key={`res-${idx}`}
                                     style={{
                                         display: 'flex',
                                         justifyContent: 'space-between',

@@ -206,13 +206,13 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     };
 
     const handleToggle = async (id, estaActivo) => {
-        if (!window.confirm(¿${estaActivo ? 'Desactivar' : 'Reactivar'} esta chequera?)) return;
+        if (!window.confirm(`¿${estaActivo ? 'Desactivar' : 'Reactivar'} esta chequera?`)) return;
 
         try {
             if (estaActivo) await deleteChequera(id);
             else await reactivarChequera(id);
 
-            showOk(Chequera ${estaActivo ? 'desactivada' : 'reactivada'} correctamente.);
+            showOk(`Chequera ${estaActivo ? 'desactivada' : 'reactivada'} correctamente.`);
             await fetchData();
         } catch (err) {
             showErr(err.response?.data?.mensaje ?? 'Error al cambiar el estado.');
@@ -314,7 +314,7 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                             const id = getCuentaId(c);
 
                             return (
-                                <option key={id ?? cuenta-${idx}} value={id ?? ''}>
+                                <option key={id ?? `cuenta-${idx}`} value={id ?? ''}>
                                     {buildCuentaLabel(c, bancos)}
                                 </option>
                             );
