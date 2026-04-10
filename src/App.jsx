@@ -17,6 +17,8 @@ import TipoMovimientoPage from './pages/TipoMovimiento/TipoMovimientoPage';
 import MedioMovimientoPage from './pages/MedioMovimiento/MedioMovimientoPage';
 import EstadoMovimientoPage from './pages/EstadoMovimiento/EstadoMovimientoPage';
 import CuentaBancariaPage from './pages/CuentaBancaria/CuentaBancariaPage';
+import ChequeraPage from './pages/Chequera/ChequeraPage';
+import ChequePage from './pages/Cheques/ChequePage';
 import PersonaPage from './pages/Persona/PersonaPage';
 import MovimientoPage from './pages/Movimiento/MovimientoPage';
 import TasaInteresPage from './pages/TasaInteres/TasaInteresPage';
@@ -52,6 +54,8 @@ function App() {
           <Route path="/tipos-movimiento" element={<TipoMovimientoPage />} />
           <Route path="/medios-movimiento" element={<MedioMovimientoPage />} />
           <Route path="/estados-movimiento" element={<EstadoMovimientoPage />} />
+          <Route path="/chequeras" element={<ChequeraPage />} />
+          <Route path="/cheques" element={<ChequePage />} />
           <Route path="/personas" element={<PersonaPage />} />
           <Route path="/movimientos" element={<MovimientoPage />} />
           <Route path="/tasas-interes" element={<TasaInteresPage />} />
