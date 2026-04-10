@@ -13,6 +13,7 @@ import { getPersonas } from '../../services/PersonaService';
 
 import MovimientoModal from './MovimientoModal';
 import MovimientoTable from './MovimientoTable';
+import MovimientoDetalle from './MovimientoDetalle';
 import {
   getDescripcion,
   getReferencia,
@@ -36,6 +37,7 @@ const MovimientoTab = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [movimientoDetalle, setMovimientoDetalle] = useState(null);
 
   const [tiposMovimiento, setTiposMovimiento] = useState([]);
   const [mediosMovimiento, setMediosMovimiento] = useState([]);
@@ -152,6 +154,16 @@ const MovimientoTab = ({
     return movimientos.reduce((sum, m) => sum + getRecargo(m), 0);
   }, [movimientos]);
 
+  if (movimientoDetalle) {
+    return (
+      <MovimientoDetalle
+        movimiento={movimientoDetalle}
+        onBack={() => setMovimientoDetalle(null)}
+        simbolo={simbolo}
+      />
+    );
+  }
+
   return (
     <div>
       <div className="tab-toolbar">
@@ -165,7 +177,11 @@ const MovimientoTab = ({
           />
         </div>
 
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)} type="button">
+        <button
+          className="btn-primary"
+          onClick={() => setIsModalOpen(true)}
+          type="button"
+        >
           <Plus size={16} />
           Nuevo movimiento
         </button>
@@ -237,6 +253,7 @@ const MovimientoTab = ({
       ) : (
         <MovimientoTable
           movimientos={filtered}
+          onView={setMovimientoDetalle}
           onAnular={handleAnular}
           simbolo={simbolo}
         />

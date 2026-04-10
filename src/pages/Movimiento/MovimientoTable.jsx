@@ -56,49 +56,65 @@ const MovimientoTable = ({ movimientos, onView, onAnular, simbolo = 'Q' }) => {
                   onClick={() => onView && onView(m)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <td style={{ color:'#cbd5e1', fontSize:11, fontWeight:600 }}>{idx + 1}</td>
+                  <td style={{ color: '#cbd5e1', fontSize: 11, fontWeight: 600 }}>
+                    {idx + 1}
+                  </td>
+
                   <td>{formatDate(getFecha(m))}</td>
+
                   <td>
                     <span className={`status-pill ${anulado ? 'pill-gray' : ingreso ? 'pill-green' : 'pill-red'}`}>
                       {getTipoDescripcion(m)}
                     </span>
                   </td>
+
                   <td>{getMedioDescripcion(m) || '—'}</td>
                   <td>{getPersonaNombre(m) || '—'}</td>
                   <td>{getDescripcion(m) || '—'}</td>
+
                   <td>
-                    <code style={{
-                      fontFamily:'monospace',
-                      background:'#f1f5f9',
-                      padding:'2px 8px',
-                      borderRadius:4,
-                      fontSize:12,
-                      fontWeight:600
-                    }}>
+                    <code
+                      style={{
+                        fontFamily: 'monospace',
+                        background: '#f1f5f9',
+                        padding: '2px 8px',
+                        borderRadius: 4,
+                        fontSize: 12,
+                        fontWeight: 600
+                      }}
+                    >
                       {getReferencia(m) || '—'}
                     </code>
                   </td>
-                  <td style={{
-                    fontWeight:600,
-                    color: ingreso ? '#15803d' : '#b91c1c',
-                    fontFamily:'monospace',
-                    fontSize:13
-                  }}>
+
+                  <td
+                    style={{
+                      fontWeight: 600,
+                      color: ingreso ? '#15803d' : '#b91c1c',
+                      fontFamily: 'monospace',
+                      fontSize: 13
+                    }}
+                  >
                     {ingreso ? '+' : '-'} {formatMoney(getMonto(m), simbolo)}
                   </td>
-                  <td style={{ fontFamily:'monospace', fontSize:13 }}>
+
+                  <td style={{ fontFamily: 'monospace', fontSize: 13 }}>
                     {getRecargo(m) > 0 ? formatMoney(getRecargo(m), simbolo) : '—'}
                   </td>
-                  <td style={{ fontWeight:600, fontFamily:'monospace', fontSize:13 }}>
+
+                  <td style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 13 }}>
                     {formatMoney(getSaldo(m), simbolo)}
                   </td>
+
                   <td>{getEstadoDescripcion(m) || '—'}</td>
-                  <td onClick={e => e.stopPropagation()}>
+
+                  <td onClick={(e) => e.stopPropagation()}>
                     <div className="action-buttons">
                       <button
                         className="icon-btn view"
                         title="Ver detalle"
                         onClick={() => onView && onView(m)}
+                        type="button"
                       >
                         <Eye size={16} />
                       </button>
@@ -108,6 +124,7 @@ const MovimientoTable = ({ movimientos, onView, onAnular, simbolo = 'Q' }) => {
                           className="icon-btn toggle-off"
                           title="Anular"
                           onClick={() => onAnular && onAnular(id)}
+                          type="button"
                         >
                           <Ban size={16} />
                         </button>

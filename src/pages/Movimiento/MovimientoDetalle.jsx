@@ -24,22 +24,31 @@ const MovimientoDetalle = ({ movimiento, onBack, simbolo = 'Q' }) => {
 
   return (
     <div>
-      <button className="btn-secondary" style={{ marginBottom: 16 }} onClick={onBack}>
+      <button
+        className="btn-secondary"
+        style={{ marginBottom: 16 }}
+        onClick={onBack}
+        type="button"
+      >
         <ArrowLeft size={15} /> Volver a movimientos
       </button>
 
       <div className="detalle-card">
         <div className="detalle-header">
-          <div className="detalle-icon"><ArrowLeftRight size={26} /></div>
+          <div className="detalle-icon">
+            <ArrowLeftRight size={26} />
+          </div>
+
           <div>
-            <h2>{getTipoDescripcion(movimiento)}</h2>
+            <h2>{getTipoDescripcion(movimiento) || 'Movimiento'}</h2>
             <p className="detalle-subtitle">
-              {getMedioDescripcion(movimiento)} · {formatDate(getFecha(movimiento))}
+              {getMedioDescripcion(movimiento) || '—'} {' · '} {formatDate(getFecha(movimiento))}
             </p>
           </div>
+
           <div className="detalle-status">
             <span className={`status-pill ${ingreso ? 'pill-green' : 'pill-red'}`}>
-              {getEstadoDescripcion(movimiento)}
+              {getEstadoDescripcion(movimiento) || '—'}
             </span>
           </div>
         </div>
@@ -48,12 +57,18 @@ const MovimientoDetalle = ({ movimiento, onBack, simbolo = 'Q' }) => {
           {[
             { label: 'Persona', val: getPersonaNombre(movimiento) || '—' },
             { label: 'Referencia', val: getReferencia(movimiento) || '—' },
-            { label: 'Monto', val: formatMoney(getMonto(movimiento), simbolo), color: ingreso ? '#15803d' : '#b91c1c' },
+            {
+              label: 'Monto',
+              val: formatMoney(getMonto(movimiento), simbolo),
+              color: ingreso ? '#15803d' : '#b91c1c'
+            },
             { label: 'Saldo', val: formatMoney(getSaldo(movimiento), simbolo) },
           ].map((s, i) => (
             <div key={i} className="detalle-stat">
               <div className="detalle-stat-label">{s.label}</div>
-              <div className="detalle-stat-value" style={{ color: s.color || '#0f172a' }}>{s.val}</div>
+              <div className="detalle-stat-value" style={{ color: s.color || '#0f172a' }}>
+                {s.val}
+              </div>
             </div>
           ))}
         </div>
