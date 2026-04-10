@@ -1,0 +1,37 @@
+@import '../cuentabancaria/CuentaBancaria.css';
+
+.conciliacion-container {
+  padding: 32px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp 0.35s ease both;
+}
+
+.conciliacion-container .btn-secondary {
+  white-space: nowrap;
+}
+
+.conciliacion-container .table-container .btn-secondary {
+  padding: 7px 10px;
+  font-size: 0.78rem;
+}
+
+.conciliacion-container .detalle-card .kpi-grid {
+  margin-bottom: 0;
+}
+
+.conciliacion-container .custom-table td code {
+  white-space: nowrap;
+}
+
+.conciliacion-container .tab-toolbar {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .conciliacion-container {
+    padding: 16px;
+  }
+}

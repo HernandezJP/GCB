@@ -4,7 +4,7 @@ import {
     getCuentas, createCuenta, updateCuenta,
     deleteCuenta, reactivarCuenta
 } from '../../services/CuentaBancariaService';
-import { getBancos }        from '../../services/BancoService';
+import { getBancos }        from '../../services/bancoService';
 import { getTiposCuenta }   from '../../services/TipoCuentaService';
 import { getTiposMoneda }   from '../../services/TipoMonedaService';
 import { getEstadosCuenta } from '../../services/EstadoCuentaService';

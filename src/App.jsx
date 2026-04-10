@@ -25,6 +25,9 @@ import TasaInteresPage from './pages/TasaInteres/TasaInteresPage';
 import InteresFrecuenciaPage from './pages/InteresFrecuencia/InteresFrecuenciaPage';
 import ConversionMonedaPage from './pages/ConversionMoneda/ConversionMonedaPage';
 import ReglaRecargoPage from './pages/ReglaRecargo/ReglaRecargoPage';
+import ChequeraPage from './pages/Chequera/ChequeraPage';
+import ChequePage from './pages/Cheques/ChequePage';
+import ConciliacionPage from './pages/Conciliacion/ConciliacionPage';
 
 // Componentes temporales (Mock) para las rutas vacías//
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -62,6 +65,9 @@ function App() {
           <Route path="/interes-frecuencias" element={<InteresFrecuenciaPage />} />
           <Route path="/conversiones-moneda" element={<ConversionMonedaPage />} />
           <Route path="/reglas-recargo" element={<ReglaRecargoPage />} />
+          <Route path="/chequeras" element={<ChequeraPage />} />
+          <Route path="/cheques" element={<ChequePage />} />
+          <Route path="/conciliacion" element={<ConciliacionPage />} />
         </Routes>
       </main>
     </Router>
