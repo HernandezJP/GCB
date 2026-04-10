@@ -47,14 +47,6 @@ const TasaInteresPage = () => {
             setLoading(true);
             const data = await getTasasInteres();
 
-            if (data?.length > 0) {
-                console.group('💰 TasaInteres API');
-                console.log('Objeto:', data[0]);
-                console.log('Claves:', Object.keys(data[0]));
-                console.log('ID detectado:', getId(data[0]));
-                console.groupEnd();
-            }
-
             setTasas(data || []);
             setFilteredTasas(data || []);
             setError(null);
@@ -81,13 +73,13 @@ const TasaInteresPage = () => {
 
             setFilteredTasas(
                 tasas.filter(t =>
-                    String(getId(t)).toLowerCase().includes(q) ||
-                    String(getCuentaId(t)).toLowerCase().includes(q) ||
+                    String(getId(t) ?? '').toLowerCase().includes(q) ||
+                    String(getCuentaId(t) ?? '').toLowerCase().includes(q) ||
                     getNumeroCuenta(t).toLowerCase().includes(q) ||
                     getBancoNombre(t).toLowerCase().includes(q) ||
                     getTipoCuenta(t).toLowerCase().includes(q) ||
                     getFrecuenciaDescripcion(t).toLowerCase().includes(q) ||
-                    String(getPorcentaje(t)).toLowerCase().includes(q)
+                    String(getPorcentaje(t) ?? '').toLowerCase().includes(q)
                 )
             );
         }, 300);

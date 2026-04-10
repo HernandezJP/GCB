@@ -2,20 +2,24 @@ import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import {
     getId,
-    getNumeroCuenta,
-    getBancoNombre,
-    getFrecuenciaDescripcion,
-    getPorcentaje,
+    getSimboloOrigen,
+    getDescripcionOrigen,
+    getIsoOrigen,
+    getSimboloDestino,
+    getDescripcionDestino,
+    getIsoDestino,
+    getTasaCambio,
+    getFuente,
     isActivo,
-    formatearPorcentaje
-} from './TasaInteresPage';
+    formatearTasa
+} from './ConversionMonedaPage';
 
-const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
-    if (!tasas || tasas.length === 0) {
+const ConversionMonedaTable = ({ conversiones, onEdit, onToggleStatus, onView }) => {
+    if (!conversiones || conversiones.length === 0) {
         return (
             <div className="table-container">
                 <div className="empty-state">
-                    <p>No se encontraron tasas de interés.</p>
+                    <p>No se encontraron conversiones de moneda.</p>
                 </div>
             </div>
         );
@@ -28,18 +32,18 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Cuenta</th>
-                            <th>Banco</th>
-                            <th>Frecuencia</th>
-                            <th className="text-center">Porcentaje</th>
+                            <th>Origen</th>
+                            <th>Destino</th>
+                            <th className="text-center">Tasa</th>
+                            <th className="text-center">Fuente</th>
                             <th className="text-center">Estado</th>
                             <th className="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {tasas.map((tasa, idx) => {
-                            const id = getId(tasa);
-                            const activo = isActivo(tasa);
+                        {conversiones.map((conversion, idx) => {
+                            const id = getId(conversion);
+                            const activo = isActivo(conversion);
                             const rowKey = id ?? `row-${idx}`;
 
                             return (
@@ -47,16 +51,20 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                                     <td className="col-id">{idx + 1}</td>
 
                                     <td className="font-semibold">
-                                        {getNumeroCuenta(tasa) || 'N/A'}
+                                        {getSimboloOrigen(conversion)} - {getDescripcionOrigen(conversion)} ({getIsoOrigen(conversion)})
                                     </td>
 
-                                    <td>{getBancoNombre(tasa) || 'N/A'}</td>
-
-                                    <td>{getFrecuenciaDescripcion(tasa) || 'N/A'}</td>
+                                    <td className="font-semibold">
+                                        {getSimboloDestino(conversion)} - {getDescripcionDestino(conversion)} ({getIsoDestino(conversion)})
+                                    </td>
 
                                     <td className="text-center">
-                                        <span className="percentage-badge">
-                                            {formatearPorcentaje(getPorcentaje(tasa))}
+                                        <span className="rate-badge">{formatearTasa(getTasaCambio(conversion))}</span>
+                                    </td>
+
+                                    <td className="text-center">
+                                        <span className={`source-pill ${getFuente(conversion) === 'API' ? 'source-api' : 'source-manual'}`}>
+                                            {getFuente(conversion) || 'N/A'}
                                         </span>
                                     </td>
 
@@ -72,7 +80,7 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                                             <button
                                                 className="icon-btn view"
                                                 title="Ver detalles"
-                                                onClick={() => onView(tasa)}
+                                                onClick={() => onView(conversion)}
                                             >
                                                 <Eye size={17} />
                                             </button>
@@ -80,7 +88,7 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                                             <button
                                                 className="icon-btn edit"
                                                 title="Editar"
-                                                onClick={() => onEdit(tasa)}
+                                                onClick={() => onEdit(conversion)}
                                             >
                                                 <Edit2 size={17} />
                                             </button>
@@ -104,4 +112,4 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
     );
 };
 
-export default TasaInteresTable;
+export default ConversionMonedaTable;

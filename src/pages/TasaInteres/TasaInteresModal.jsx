@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Percent, Repeat, Hash } from 'lucide-react';
+import { X, Percent, Repeat, Landmark } from 'lucide-react';
 import {
     getCuentaId,
     getFrecuenciaId,
     getPorcentaje
 } from './TasaInteresPage';
+
+import { getCuentas } from '../../services/CuentaBancariaService';
+import { getInteresFrecuencias } from '../../services/InteresFrecuenciaService';
 
 const INITIAL = {
     CUB_Cuenta: '',
@@ -13,9 +16,56 @@ const INITIAL = {
     TIN_Porcentaje: ''
 };
 
+const getCuentaEstado = (c) => c?.cuB_Estado ?? c?.CUB_Estado ?? 'I';
+const getCuentaIdValue = (c) => c?.cuB_Cuenta ?? c?.CUB_Cuenta;
+const getCuentaNumero = (c) => c?.cuB_Numero_Cuenta ?? c?.CUB_Numero_Cuenta ?? '';
+const getCuentaBanco = (c) => c?.baN_Nombre ?? c?.BAN_Nombre ?? '';
+const getCuentaTipo = (c) => c?.tcU_Descripcion ?? c?.TCU_Descripcion ?? '';
+
+const getFrecuenciaEstado = (f) => f?.inF_Estado ?? f?.INF_Estado ?? 'I';
+const getFrecuenciaIdValue = (f) =>
+    f?.inF_Interes_Frecuencia ??
+    f?.INF_Interes_Frecuencia ??
+    f?.inF_Frecuencia ??
+    f?.INF_Frecuencia;
+
+const getFrecuenciaDescripcion = (f) => f?.inF_Descripcion ?? f?.INF_Descripcion ?? '';
+
 const TasaInteresModal = ({ isOpen, onClose, onSave, tasaToEdit }) => {
     const [formData, setFormData] = useState(INITIAL);
     const [saving, setSaving] = useState(false);
+
+    const [cuentas, setCuentas] = useState([]);
+    const [frecuencias, setFrecuencias] = useState([]);
+    const [loadingCombos, setLoadingCombos] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const cargarCombos = async () => {
+            try {
+                setLoadingCombos(true);
+
+                const [cuentasData, frecuenciasData] = await Promise.all([
+                    getCuentas(),
+                    getInteresFrecuencias()
+                ]);
+
+                const cuentasActivas = (cuentasData || []).filter(c => getCuentaEstado(c) === 'A');
+                const frecuenciasActivas = (frecuenciasData || []).filter(f => getFrecuenciaEstado(f) === 'A');
+
+                setCuentas(cuentasActivas);
+                setFrecuencias(frecuenciasActivas);
+            } catch (error) {
+                console.error('Error al cargar cuentas y frecuencias:', error);
+                alert('No se pudieron cargar las cuentas bancarias o las frecuencias de interés.');
+            } finally {
+                setLoadingCombos(false);
+            }
+        };
+
+        cargarCombos();
+    }, [isOpen]);
 
     useEffect(() => {
         if (isOpen) {
@@ -37,12 +87,12 @@ const TasaInteresModal = ({ isOpen, onClose, onSave, tasaToEdit }) => {
         e.preventDefault();
 
         if (!tasaToEdit && !formData.CUB_Cuenta) {
-            alert('Debes ingresar el ID de la cuenta.');
+            alert('Debes seleccionar una cuenta bancaria.');
             return;
         }
 
         if (!formData.INF_Frecuencia) {
-            alert('Debes ingresar la frecuencia.');
+            alert('Debes seleccionar una frecuencia de interés.');
             return;
         }
 
@@ -80,14 +130,12 @@ const TasaInteresModal = ({ isOpen, onClose, onSave, tasaToEdit }) => {
                         {!tasaToEdit && (
                             <div className="input-group">
                                 <label htmlFor="cub-cuenta">
-                                    <Hash size={13} />
-                                    ID Cuenta Bancaria
+                                    <Landmark size={13} />
+                                    Cuenta Bancaria
                                 </label>
-                                <input
+                                <select
                                     id="cub-cuenta"
-                                    type="number"
                                     required
-                                    min="1"
                                     value={formData.CUB_Cuenta}
                                     onChange={(e) =>
                                         setFormData({
@@ -95,22 +143,31 @@ const TasaInteresModal = ({ isOpen, onClose, onSave, tasaToEdit }) => {
                                             CUB_Cuenta: e.target.value
                                         })
                                     }
-                                    placeholder="Ej. 1"
-                                    disabled={saving}
-                                />
+                                    disabled={saving || loadingCombos}
+                                >
+                                    <option value="">
+                                        {loadingCombos ? 'Cargando cuentas...' : 'Seleccione una cuenta'}
+                                    </option>
+                                    {cuentas.map((cuenta) => (
+                                        <option
+                                            key={getCuentaIdValue(cuenta)}
+                                            value={getCuentaIdValue(cuenta)}
+                                        >
+                                            {getCuentaNumero(cuenta)} - {getCuentaBanco(cuenta)} - {getCuentaTipo(cuenta)}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         )}
 
                         <div className="input-group">
                             <label htmlFor="inf-frecuencia">
                                 <Repeat size={13} />
-                                ID Frecuencia
+                                Frecuencia de Interés
                             </label>
-                            <input
+                            <select
                                 id="inf-frecuencia"
-                                type="number"
                                 required
-                                min="1"
                                 value={formData.INF_Frecuencia}
                                 onChange={(e) =>
                                     setFormData({
@@ -118,9 +175,20 @@ const TasaInteresModal = ({ isOpen, onClose, onSave, tasaToEdit }) => {
                                         INF_Frecuencia: e.target.value
                                     })
                                 }
-                                placeholder="Ej. 1"
-                                disabled={saving}
-                            />
+                                disabled={saving || loadingCombos}
+                            >
+                                <option value="">
+                                    {loadingCombos ? 'Cargando frecuencias...' : 'Seleccione una frecuencia'}
+                                </option>
+                                {frecuencias.map((frecuencia) => (
+                                    <option
+                                        key={getFrecuenciaIdValue(frecuencia)}
+                                        value={getFrecuenciaIdValue(frecuencia)}
+                                    >
+                                        {getFrecuenciaDescripcion(frecuencia)}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="input-group">
@@ -160,7 +228,7 @@ const TasaInteresModal = ({ isOpen, onClose, onSave, tasaToEdit }) => {
                         <button
                             type="submit"
                             className="btn-save"
-                            disabled={saving}
+                            disabled={saving || loadingCombos}
                         >
                             {saving
                                 ? 'Guardando...'

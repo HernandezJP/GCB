@@ -1,21 +1,13 @@
 import React from 'react';
 import { Edit2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
-import {
-    getId,
-    getNumeroCuenta,
-    getBancoNombre,
-    getFrecuenciaDescripcion,
-    getPorcentaje,
-    isActivo,
-    formatearPorcentaje
-} from './TasaInteresPage';
+import { getId, getDescripcion, isActivo } from './InteresFrecuenciaPage';
 
-const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
-    if (!tasas || tasas.length === 0) {
+const InteresFrecuenciaTable = ({ frecuencias, onEdit, onToggleStatus, onView }) => {
+    if (!frecuencias || frecuencias.length === 0) {
         return (
             <div className="table-container">
                 <div className="empty-state">
-                    <p>No se encontraron tasas de interés.</p>
+                    <p>No se encontraron frecuencias de interés.</p>
                 </div>
             </div>
         );
@@ -28,18 +20,15 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Cuenta</th>
-                            <th>Banco</th>
-                            <th>Frecuencia</th>
-                            <th className="text-center">Porcentaje</th>
+                            <th>Descripción</th>
                             <th className="text-center">Estado</th>
                             <th className="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {tasas.map((tasa, idx) => {
-                            const id = getId(tasa);
-                            const activo = isActivo(tasa);
+                        {frecuencias.map((frecuencia, idx) => {
+                            const id = getId(frecuencia);
+                            const activo = isActivo(frecuencia);
                             const rowKey = id ?? `row-${idx}`;
 
                             return (
@@ -47,17 +36,7 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                                     <td className="col-id">{idx + 1}</td>
 
                                     <td className="font-semibold">
-                                        {getNumeroCuenta(tasa) || 'N/A'}
-                                    </td>
-
-                                    <td>{getBancoNombre(tasa) || 'N/A'}</td>
-
-                                    <td>{getFrecuenciaDescripcion(tasa) || 'N/A'}</td>
-
-                                    <td className="text-center">
-                                        <span className="percentage-badge">
-                                            {formatearPorcentaje(getPorcentaje(tasa))}
-                                        </span>
+                                        {getDescripcion(frecuencia) || 'N/A'}
                                     </td>
 
                                     <td className="text-center">
@@ -72,7 +51,7 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                                             <button
                                                 className="icon-btn view"
                                                 title="Ver detalles"
-                                                onClick={() => onView(tasa)}
+                                                onClick={() => onView(frecuencia)}
                                             >
                                                 <Eye size={17} />
                                             </button>
@@ -80,7 +59,7 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
                                             <button
                                                 className="icon-btn edit"
                                                 title="Editar"
-                                                onClick={() => onEdit(tasa)}
+                                                onClick={() => onEdit(frecuencia)}
                                             >
                                                 <Edit2 size={17} />
                                             </button>
@@ -104,4 +83,4 @@ const TasaInteresTable = ({ tasas, onEdit, onToggleStatus, onView }) => {
     );
 };
 
-export default TasaInteresTable;
+export default InteresFrecuenciaTable;
