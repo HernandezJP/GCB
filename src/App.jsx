@@ -17,8 +17,6 @@ import TipoMovimientoPage from './pages/TipoMovimiento/TipoMovimientoPage';
 import MedioMovimientoPage from './pages/MedioMovimiento/MedioMovimientoPage';
 import EstadoMovimientoPage from './pages/EstadoMovimiento/EstadoMovimientoPage';
 import CuentaBancariaPage from './pages/CuentaBancaria/CuentaBancariaPage';
-import ChequeraPage from './pages/Chequera/ChequeraPage';
-import ChequePage from './pages/Cheques/ChequePage';
 import PersonaPage from './pages/Persona/PersonaPage';
 import MovimientoPage from './pages/Movimiento/MovimientoPage';
 import TasaInteresPage from './pages/TasaInteres/TasaInteresPage';
