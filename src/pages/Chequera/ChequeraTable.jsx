@@ -1,105 +1,124 @@
 import React from 'react';
-import { Eye, Edit2, ToggleRight, ToggleLeft } from 'lucide-react';
-import {
-  getId,
-  getCuenta,
-  getSerie,
-  getNumeroDesde,
-  getNumeroHasta,
-  getUltimoUsado,
-  getEstado,
-  getFechaRecepcion,
-  isActiva
-} from './ChequeraModal';
+import { Eye, ToggleRight, ToggleLeft } from 'lucide-react';
 
-const ChequeraTable = ({ chequeras, onView, onEdit, onToggleStatus }) => {
-  if (!chequeras || chequeras.length === 0) {
-    return <div className="empty-state">No hay chequeras registradas.</div>;
-  }
+// helpers casing
+const g  = (o, ...ks) => { for (const k of ks) { const v = o?.[k]; if (v != null) return v; } return null; };
+export const getQId      = q => g(q,'cHQ_Chequera','chQ_Chequera','CHQ_Chequera');
+export const getQCuenta  = q => g(q,'cUB_Cuenta','cuB_Cuenta','CUB_Cuenta') ?? 0;
+export const getQSerie   = q => g(q,'cHQ_Serie','chQ_Serie','CHQ_Serie') ?? '';
+export const getQDesde   = q => g(q,'cHQ_Numero_Desde','chQ_Numero_Desde','CHQ_Numero_Desde') ?? 0;
+export const getQHasta   = q => g(q,'cHQ_Numero_Hasta','chQ_Numero_Hasta','CHQ_Numero_Hasta') ?? 0;
+export const getQUsados  = q => g(q,'cHQ_Ultimo_Usado','chQ_Ultimo_Usado','CHQ_Ultimo_Usado') ?? 0;
+export const getQEstado  = q => g(q,'cHQ_Estado','chQ_Estado','CHQ_Estado') ?? '';
+export const getQFecRec  = q => g(q,'cHQ_Fecha_Recepcion','chQ_Fecha_Recepcion','CHQ_Fecha_Recepcion');
 
-  return (
-    <div className="table-container">
-      <div className="table-scroll">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Serie</th>
-              <th>Cuenta</th>
-              <th>Rango</th>
-              <th>Último usado</th>
-              <th>Disponibles</th>
-              <th>Fecha recepción</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
+const estadoPill = (estado) => {
+    const m = { A:'chq-pill-green', I:'chq-pill-red', Activa:'chq-pill-green', Agotada:'chq-pill-red', Pendiente:'chq-pill-amber', Anulada:'chq-pill-gray' };
+    return m[estado] ?? 'chq-pill-gray';
+};
 
-          <tbody>
-            {chequeras.map((c, idx) => {
-              const activo = isActiva(c);
-              const id = getId(c);
-              const desde = Number(getNumeroDesde(c));
-              const hasta = Number(getNumeroHasta(c));
-              const ultimo = Number(getUltimoUsado(c));
-              const disponibles = Math.max(hasta - ultimo, 0);
+const estadoLabel = (e) => {
+    const m = { A:'Activa', I:'Inactiva', Activa:'Activa', Agotada:'Agotada', Pendiente:'Pendiente', Anulada:'Anulada' };
+    return m[e] ?? e;
+};
 
-              return (
-                <tr
-                  key={id ?? `row-${idx}`}
-                  className={activo ? 'row-active' : 'row-inactive'}
-                  onClick={() => onView && onView(c)}
-                >
-                  <td style={{ color: '#cbd5e1', fontSize: 11, fontWeight: 600 }}>{idx + 1}</td>
+const formatFecha = f => f ? new Date(f).toLocaleDateString('es-GT') : '—';
 
-                  <td>
-                    <code style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
-                      {getSerie(c)}
-                    </code>
-                  </td>
+const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
+    if (!chequeras?.length)
+        return <div className="chq-empty"><span>No se encontraron chequeras.</span></div>;
 
-                  <td>{getCuenta(c)}</td>
-                  <td>{desde} - {hasta}</td>
-                  <td>{ultimo}</td>
-                  <td style={{ fontWeight: 700, color: disponibles > 0 ? '#16a34a' : '#dc2626' }}>
-                    {disponibles}
-                  </td>
-                  <td>{String(getFechaRecepcion(c)).split('T')[0]}</td>
+    return (
+        <div className="chq-table-card">
+            <div className="chq-table-scroll">
+                <table className="chq-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cuenta</th>
+                            <th>Serie</th>
+                            <th>Rango</th>
+                            <th>Uso</th>
+                            <th>Disponibles</th>
+                            <th>Estado</th>
+                            <th>Recepción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {chequeras.map((q, i) => {
+                            const total   = getQHasta(q) - getQDesde(q) + 1;
+                            const usados  = getQUsados(q);
+                            const disp    = total - usados;
+                            const pct     = total > 0 ? Math.min(100, Math.round((usados / total) * 100)) : 0;
+                            const estado  = getQEstado(q);
+                            const activo  = estado === 'A' || estado === 'Activa';
+                            const barColor= pct >= 80 ? '#b91c1c' : pct >= 50 ? '#92400e' : '#15803d';
 
-                  <td>
-                    <span className={`status-pill ${activo ? 'pill-green' : 'pill-red'}`}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: activo ? '#22c55e' : '#ef4444', display: 'inline-block' }} />
-                      {activo ? 'Activa' : 'Inactiva'}
-                    </span>
-                  </td>
-
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <div className="action-buttons">
-                      <button className="icon-btn view" title="Ver detalle" onClick={() => onView && onView(c)}>
-                        <Eye size={16} />
-                      </button>
-
-                      <button className="icon-btn edit" title="Editar" onClick={() => onEdit && onEdit(c)}>
-                        <Edit2 size={16} />
-                      </button>
-
-                      <button
-                        className={`icon-btn ${activo ? 'toggle-on' : 'toggle-off'}`}
-                        title={activo ? 'Desactivar' : 'Activar'}
-                        onClick={() => onToggleStatus && onToggleStatus(id, !activo)}
-                      >
-                        {activo ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+                            return (
+                                <tr key={getQId(q) ?? i}
+                                    className={!activo ? 'row-inactiva' : ''}
+                                    onClick={() => onVer?.(q)}>
+                                    <td style={{ color:'#cbd5e1', fontSize:11, fontWeight:600 }}>{i + 1}</td>
+                                    <td>
+                                        <code style={{ fontFamily:'monospace', background:'#f1f5f9', padding:'2px 7px', borderRadius:4, fontSize:12 }}>
+                                            {g(q,'cUB_Numero_Cuenta','cuB_Numero_Cuenta','CUB_Numero_Cuenta') ?? Cuenta #${getQCuenta(q)}}
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <span style={{ fontWeight:700, fontSize:17, color:'#0284c7' }}>{getQSerie(q)}</span>
+                                    </td>
+                                    <td>
+                                        <code className="chq-num" style={{ fontSize:11 }}>
+                                            {String(getQDesde(q)).padStart(5,'0')} — {String(getQHasta(q)).padStart(5,'0')}
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <div className="chq-bar-wrap">
+                                            <div className="chq-bar">
+                                                <div className="chq-bar-fill" style={{ width:${pct}%, background:barColor }}/>
+                                            </div>
+                                            <span style={{ fontSize:12, color:'#64748b' }}>{usados}/{total}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style={{ fontWeight:600, color: disp===0?'#b91c1c':disp<5?'#92400e':'#15803d' }}>
+                                            {disp}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={chq-pill ${estadoPill(estado)}}>
+                                            {estadoLabel(estado)}
+                                        </span>
+                                    </td>
+                                    <td style={{ fontSize:12, color:'#64748b', whiteSpace:'nowrap' }}>
+                                        {formatFecha(getQFecRec(q))}
+                                    </td>
+                                    <td onClick={e => e.stopPropagation()}>
+                                        <div className="chq-action-btns">
+                                            <button className="chq-icon-btn view" title="Ver detalle"
+                                                onClick={() => onVer?.(q)}>
+                                                <Eye size={15} color="#0284c7"/>
+                                            </button>
+                                            <button
+                                                className={chq-icon-btn ${activo ? 'danger' : 'success'}}
+                                                title={activo ? 'Desactivar' : 'Reactivar'}
+                                                onClick={() => onToggle?.(getQId(q), activo)}>
+                                                {activo
+                                                    ? <ToggleRight size={18} color="#15803d"/>
+                                                    : <ToggleLeft  size={18} color="#b91c1c"/>
+                                                }
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 };
 
 export default ChequeraTable;
