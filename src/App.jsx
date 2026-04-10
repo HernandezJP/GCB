@@ -17,12 +17,17 @@ import TipoMovimientoPage from './pages/TipoMovimiento/TipoMovimientoPage';
 import MedioMovimientoPage from './pages/MedioMovimiento/MedioMovimientoPage';
 import EstadoMovimientoPage from './pages/EstadoMovimiento/EstadoMovimientoPage';
 import CuentaBancariaPage from './pages/CuentaBancaria/CuentaBancariaPage';
+<<<<<<< HEAD
 import PersonaPage from './pages/Persona/PersonaPage';
 import MovimientoPage from './pages/Movimiento/MovimientoPage';
 import TasaInteresPage from './pages/TasaInteres/TasaInteresPage';
 import InteresFrecuenciaPage from './pages/InteresFrecuencia/InteresFrecuenciaPage';
 import ConversionMonedaPage from './pages/ConversionMoneda/ConversionMonedaPage';
 import ReglaRecargoPage from './pages/ReglaRecargo/ReglaRecargoPage';
+=======
+import ChequeraPage from './pages/Chequera/ChequeraPage';
+import ChequePage from './pages/Cheques/ChequePage';
+>>>>>>> 508c95e5e5750dc7c4e6524e82b6f4ebfd09db4e
 
 // Componentes temporales (Mock) para las rutas vacías//
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -52,12 +57,17 @@ function App() {
           <Route path="/tipos-movimiento" element={<TipoMovimientoPage />} />
           <Route path="/medios-movimiento" element={<MedioMovimientoPage />} />
           <Route path="/estados-movimiento" element={<EstadoMovimientoPage />} />
+<<<<<<< HEAD
           <Route path="/personas" element={<PersonaPage />} />
           <Route path="/movimientos" element={<MovimientoPage />} />
           <Route path="/tasas-interes" element={<TasaInteresPage />} />
           <Route path="/interes-frecuencias" element={<InteresFrecuenciaPage />} />
           <Route path="/conversiones-moneda" element={<ConversionMonedaPage />} />
           <Route path="/reglas-recargo" element={<ReglaRecargoPage />} />
+=======
+          <Route path="/chequeras" element={<ChequeraPage />} />
+          <Route path="/cheques" element={<ChequePage />} />
+>>>>>>> 508c95e5e5750dc7c4e6524e82b6f4ebfd09db4e
         </Routes>
       </main>
     </Router>

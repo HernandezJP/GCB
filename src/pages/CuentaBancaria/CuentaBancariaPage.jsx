@@ -5,9 +5,9 @@ import {
     deleteCuenta, reactivarCuenta
 } from '../../services/CuentaBancariaService';
 import { getBancos }        from '../../services/bancoService';
-import { getTiposCuenta }   from '../../services/tipoCuentaService';
-import { getTiposMoneda }   from '../../services/tipoMonedaService';
-import { getEstadosCuenta } from '../../services/estadoCuentaService';
+import { getTiposCuenta }   from '../../services/TipoCuentaService';
+import { getTiposMoneda }   from '../../services/TipoMonedaService';
+import { getEstadosCuenta } from '../../services/EstadoCuentaService';
 
 import CuentaBancariaTable  from './CuentaBancariaTable';
 import CuentaBancariaModal, { getId, getNumero, getBancoNombre, getNombre, getApellido, getTipoCuenta, getSimbolo, getSaldoActual, isActivo } from './CuentaBancariaModal';
@@ -15,7 +15,7 @@ import CuentaBancariaView   from './CuentaBancariaDetalle';
 import './CuentaBancaria.css';
 
 const CuentaBancariaPage = () => {
-    const [cuentas, setCuentas]             = useState([]);
+    const [cuentas, setCuentas]             = useState([]); 
     const [filtered, setFiltered]           = useState([]);
     const [search, setSearch]               = useState('');
     const [loading, setLoading]             = useState(true);
