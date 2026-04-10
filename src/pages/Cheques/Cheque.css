@@ -11,538 +11,260 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── KPIs ──────────────────────────────────────────────────────── */
-.kpi-grid {
+/* ── KPIs ─────────────────────────────────────────────────── */
+.che-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
 }
 
-.kpi-card {
+.che-kpi-card {
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 16px 20px;
+    padding: 14px 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-left: 4px solid currentColor;
 }
 
-.kpi-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
-}
+.che-kpi-label { font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:5px; }
+.che-kpi-value { font-size:20px; font-weight:600; }
+.che-kpi-icon  { border-radius:8px; padding:9px; display:flex; align-items:center; justify-content:center; }
 
-.kpi-value {
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.kpi-icon {
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ── Encabezado ────────────────────────────────────────────────── */
-.page-header {
+/* ── Page header ─────────────────────────────────────────── */
+.che-page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
     flex-wrap: wrap;
     gap: 12px;
 }
 
-.page-header-left {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.page-header h1 {
-    font-size: 1.6rem;
+.che-page-header h1 {
+    font-size: 1.55rem;
     font-weight: 700;
     color: #0f172a;
     margin: 0;
     letter-spacing: -0.02em;
 }
 
-.record-count {
-    font-size: 0.82rem;
-    color: #94a3b8;
-    font-weight: 500;
-}
+.che-page-subtitle { font-size: 0.82rem; color: #94a3b8; margin-top: 2px; }
 
-/* ── Botones ───────────────────────────────────────────────────── */
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: #fff;
-    border: none;
-    padding: 11px 22px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(2,132,199,0.25);
-    transition: all 0.25s ease;
-    white-space: nowrap;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(2,132,199,0.35);
-}
-
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.88rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.btn-secondary:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-}
-
-/* ── Toolbar ───────────────────────────────────────────────────── */
-.toolbar {
+/* ── Toolbar ─────────────────────────────────────────────── */
+.che-toolbar {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 18px;
     background: #fff;
-    padding: 14px 20px;
+    padding: 12px 18px;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     flex-wrap: wrap;
 }
 
-.search-bar {
-    position: relative;
-    flex: 1;
-    min-width: 200px;
-    max-width: 400px;
+.che-search-wrap { position:relative; flex:1; min-width:200px; max-width:380px; }
+.che-search-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none; }
+.che-search-input {
+    width:100%; padding:9px 13px 9px 40px;
+    border:1px solid #e2e8f0; border-radius:7px;
+    font-size:0.88rem; font-family:inherit; background:#f8fafc; color:#0f172a;
+    transition:all 0.2s; box-sizing:border-box;
 }
+.che-search-input:focus { outline:none; border-color:#38bdf8; background:#fff; box-shadow:0 0 0 3px rgba(56,189,248,0.12); }
 
-.search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-    pointer-events: none;
-}
-
-.search-bar input {
-    width: 100%;
-    padding: 10px 14px 10px 42px;
+/* ── Filtro de estado ────────────────────────────────────── */
+.che-filter-select {
+    padding: 9px 13px;
     border: 1px solid #e2e8f0;
     border-radius: 7px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-family: inherit;
     background: #f8fafc;
     color: #0f172a;
-    transition: all 0.2s;
-    box-sizing: border-box;
+    cursor: pointer;
 }
 
-.search-bar input:focus {
-    outline: none;
-    border-color: #38bdf8;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
-}
-
-/* ── Tabla ─────────────────────────────────────────────────────── */
-.table-container {
+/* ── Tabla ────────────────────────────────────────────────── */
+.che-table-card {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
     border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     overflow: hidden;
 }
 
-.table-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
+.che-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    min-width: 900px;
-}
+.che-table { width:100%; border-collapse:collapse; min-width:760px; }
 
-.custom-table th {
+.che-table th {
     background: #f8fafc;
-    padding: 12px 16px;
-    font-size: 0.78rem;
+    padding: 11px 14px;
+    font-size: 11px;
     font-weight: 700;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     border-bottom: 1px solid #e2e8f0;
+    text-align: left;
     white-space: nowrap;
 }
 
-.custom-table td {
-    padding: 13px 16px;
+.che-table td {
+    padding: 12px 14px;
     border-bottom: 1px solid #f1f5f9;
     color: #334155;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     vertical-align: middle;
 }
 
-.custom-table tbody tr:last-child td {
-    border-bottom: none;
-}
+.che-table tbody tr { transition:background 0.15s; cursor:pointer; }
+.che-table tbody tr:hover { background: #f8fafc; }
+.che-table tbody tr:last-child td { border-bottom: none; }
+.che-table tbody tr.row-cancelado { opacity: 0.6; }
 
-.custom-table tbody tr {
-    transition: background 0.15s;
-}
+/* ── Pills ────────────────────────────────────────────────── */
+.che-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap; }
+.che-pill-blue   { background:#dbeafe; color:#1d4ed8; }
+.che-pill-green  { background:#dcfce7; color:#15803d; }
+.che-pill-gray   { background:#f1f5f9; color:#475569; }
+.che-pill-amber  { background:#fef3c7; color:#92400e; }
+.che-pill-red    { background:#fee2e2; color:#b91c1c; }
 
-.custom-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-/* ── Status pills ──────────────────────────────────────────────── */
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.72rem;
+/* ── Números de cheque ────────────────────────────────────── */
+.che-num {
+    font-family: 'Courier New', monospace;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
+    letter-spacing: 1px;
+    font-size: 12px;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
-.pill-blue  { background: #dbeafe; color: #1d4ed8; }
+/* ── Botones ─────────────────────────────────────────────── */
+.che-icon-btn { background:transparent; border:none; cursor:pointer; padding:6px; border-radius:7px; display:inline-flex; align-items:center; transition:all 0.15s; color:#94a3b8; }
+.che-icon-btn:hover        { background:#f1f5f9; color:#0f172a; }
+.che-icon-btn.view:hover   { color:#0284c7; background:#eff6ff; }
+.che-icon-btn.print:hover  { color:#7c3aed; background:#ede9fe; }
+.che-icon-btn.cobrar:hover { color:#15803d; background:#dcfce7; }
+.che-icon-btn.anular:hover { color:#b91c1c; background:#fee2e2; }
 
-/* ── Botones de acción ─────────────────────────────────────────── */
-.action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+/* ── Empty / Loading ─────────────────────────────────────── */
+.che-empty, .che-loading { padding:52px 24px; text-align:center; color:#94a3b8; font-size:0.9rem; display:flex; flex-direction:column; align-items:center; gap:10px; }
+
+/* ── Banners ─────────────────────────────────────────────── */
+.che-success { background:#dcfce7; border:1px solid #bbf7d0; color:#15803d; border-radius:8px; padding:11px 16px; margin-bottom:16px; display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:500; }
+.che-error   { background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; border-radius:8px; padding:11px 16px; margin-bottom:16px; font-size:0.88rem; }
+
+/* ══════════════════════════════════════════════════════════
+   VISTA DE IMPRESIÓN DEL CHEQUE
+══════════════════════════════════════════════════════════ */
+.cheque-print-wrapper {
+    max-width: 620px;
+    margin: 0 auto;
 }
 
-.icon-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 7px;
-    border-radius: 7px;
-    color: #94a3b8;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-}
-
-.icon-btn.edit:hover {
-    color: #f59e0b;
-    background: #fffbeb;
-}
-
-.icon-btn.toggle-off:hover {
-    color: #ef4444;
-    background: #fee2e2;
-}
-
-/* ── Empty y Loading ───────────────────────────────────────────── */
-.empty-state,
-.loading-state {
-    padding: 60px 24px;
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.95rem;
-}
-
-.error-banner {
-    padding: 14px 18px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #dc2626;
+.cheque-fisico {
+    border: 2px solid #1e293b;
     border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
+    overflow: hidden;
+    font-family: Georgia, serif;
+    background: #fefefe;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
-.success-banner {
-    padding: 12px 16px;
-    background: #dcfce7;
-    border: 1px solid #bbf7d0;
-    color: #15803d;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 0.88rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-}
-
-/* ── Modal ─────────────────────────────────────────────────────── */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(15,23,42,0.45);
-    backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 16px;
-}
-
-.modal-card {
-    background: #fff;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 560px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    animation: slideUp 0.28s cubic-bezier(0.16,1,0.3,1);
-}
-
-@keyframes slideUp {
-    from { transform: translateY(18px) scale(0.98); opacity: 0; }
-    to   { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-.modal-header {
+.cheque-header-band {
+    background: #0b1221;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 22px 26px 18px;
-    border-bottom: 1px solid #f1f5f9;
-    position: sticky;
-    top: 0;
-    background: #fff;
-    z-index: 1;
-    border-radius: 16px 16px 0 0;
 }
 
-.modal-title-group {
+.cheque-banco-info { display:flex; align-items:center; gap:12px; }
+.cheque-banco-logo { width:30px; height:30px; background:linear-gradient(135deg,#38bdf8,#818cf8); border-radius:6px; display:flex; align-items:center; justify-content:center; }
+.cheque-banco-nombre { color:#f1f5f9; font-weight:700; font-size:13px; font-family:system-ui,sans-serif; }
+.cheque-banco-cuenta { color:#64748b; font-size:10px; font-family:system-ui,sans-serif; }
+.cheque-num-box { text-align:right; }
+.cheque-num-label { color:#94a3b8; font-size:9px; font-family:system-ui,sans-serif; text-transform:uppercase; }
+.cheque-num-value { color:#38bdf8; font-family:monospace; font-size:18px; font-weight:700; letter-spacing:2px; }
+
+.cheque-body {
+    padding: 18px 22px;
+    background: repeating-linear-gradient(0deg,#fff,#fff 19px,#e8f4fd 20px);
+}
+
+.cheque-fecha-row { display:flex; justify-content:flex-end; margin-bottom:14px; font-size:12px; }
+.cheque-fecha-lbl { color:#64748b; margin-right:8px; }
+.cheque-fecha-val { border-bottom:1px solid #334155; min-width:100px; font-family:monospace; font-weight:700; }
+
+.cheque-pagese { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:5px; }
+.cheque-beneficiario-row {
+    border-bottom: 2px solid #334155;
+    padding-bottom: 5px;
     display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 14px;
+}
+.cheque-beneficiario-nombre { font-size:15px; font-weight:700; color:#0f172a; font-family:monospace; }
+.cheque-monto-box { border:1px solid #334155; padding:3px 12px; border-radius:4px; font-family:monospace; font-size:15px; font-weight:700; }
+
+.cheque-letras-row { font-size:11px; color:#334155; font-style:italic; border-bottom:1px solid #94a3b8; padding-bottom:4px; margin-bottom:14px; }
+
+.cheque-concepto-row { font-size:11px; margin-bottom:18px; }
+.cheque-concepto-lbl { color:#64748b; }
+.cheque-concepto-val { border-bottom:1px solid #94a3b8; display:inline-block; min-width:200px; font-family:monospace; }
+
+.cheque-firmas { display:flex; justify-content:space-between; align-items:flex-end; margin-top:16px; }
+.cheque-firma-box { text-align:center; }
+.cheque-firma-linea { border-top:1px solid #334155; width:160px; margin-bottom:4px; }
+.cheque-firma-lbl { font-size:10px; color:#64748b; text-transform:uppercase; font-family:system-ui,sans-serif; }
+
+.cheque-micr-band {
+    background: #1e293b;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
 }
+.cheque-micr { font-family:monospace; color:#64748b; font-size:11px; letter-spacing:2px; }
+.cheque-no-neg { color:#475569; font-size:9px; text-transform:uppercase; font-family:system-ui,sans-serif; }
 
-.modal-icon {
-    width: 38px;
-    height: 38px;
-    background: #eff6ff;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0284c7;
-    flex-shrink: 0;
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.05rem;
-    color: #0f172a;
-    font-weight: 700;
-}
-
-.modal-header p {
-    margin: 2px 0 0;
-    font-size: 0.78rem;
-    color: #64748b;
-}
-
-.close-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s;
-}
-
-.close-btn:hover {
-    background: #f1f5f9;
-    color: #ef4444;
-}
-
-.modal-body {
-    padding: 22px 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.input-group label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #475569;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.input-group input,
-.input-group select {
-    padding: 10px 13px;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-family: inherit;
-    color: #0f172a;
-    background: #f8fafc;
-    transition: all 0.2s;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-    outline: none;
-    border-color: #38bdf8;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 16px 26px;
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    border-radius: 0 0 16px 16px;
-    position: sticky;
-    bottom: 0;
-}
-
-.btn-cancel {
-    background: transparent;
-    border: 1px solid #e2e8f0;
-    color: #475569;
-    font-weight: 600;
-    font-size: 0.88rem;
-    cursor: pointer;
-    padding: 10px 18px;
-    border-radius: 7px;
-    transition: all 0.2s;
-}
-
-.btn-cancel:hover {
-    background: #f1f5f9;
-}
-
-.btn-save {
-    background: linear-gradient(135deg, #0284c7, #0369a1);
-    border: none;
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.88rem;
-    cursor: pointer;
-    padding: 10px 22px;
-    border-radius: 7px;
-    transition: all 0.2s;
+/* Botón imprimir */
+.btn-print {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-print:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(124,58,237,0.3); }
+
+/* Print media */
+@media print {
+    body > *:not(.cheque-print-region) { display: none !important; }
+    .cheque-print-region { display: block !important; }
+    .cheque-fisico { box-shadow: none; border: 1px solid #000; }
+    .no-print { display: none !important; }
 }
 
-.btn-save:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(2,132,199,0.35);
-}
-
-.btn-save:disabled,
-.btn-cancel:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* ── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .cheque-container {
-        padding: 16px;
-    }
-
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .btn-primary {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .search-bar {
-        max-width: 100%;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-backdrop {
-        padding: 0;
-        align-items: flex-end;
-    }
-
-    .modal-card {
-        border-radius: 20px 20px 0 0;
-        max-width: 100%;
-        max-height: 92vh;
-    }
-
-    .modal-footer {
-        flex-direction: row;
-    }
-
-    .modal-footer .btn-cancel,
-    .modal-footer .btn-save {
-        flex: 1;
-        justify-content: center;
-    }
+    .cheque-container { padding: 16px; }
+    .che-page-header  { flex-direction: column; align-items: flex-start; }
+    .che-search-wrap  { max-width: 100%; }
+    .che-kpi-grid     { grid-template-columns: 1fr 1fr; }
 }
