@@ -21,6 +21,12 @@ import '../Movimiento/Movimiento.css';
 import ConciliacionTab from '../Conciliacion/ConciliacionTab';
 import '../Conciliacion/Conciliacion.css';
 
+import ChequeraPage from '../Chequera/ChequeraPage';
+import '../Chequera/Chequera.css';
+
+import ChequePage from '../Cheques/ChequePage';
+import '../Cheques/Cheque.css';
+
 const TABS = [
   { key: 'movimientos', label: 'Movimientos', icon: <ArrowLeftRight size={14} /> },
   { key: 'cheques', label: 'Cheques', icon: <FileText size={14} /> },
@@ -134,8 +140,13 @@ const CuentaBancariaView = ({ cuenta, onBack }) => {
             />
           )}
 
-          {tab === 'cheques' && <TabPlaceholder label="Cheques" />}
-          {tab === 'chequeras' && <TabPlaceholder label="Chequeras" />}
+          {tab === 'cheques' && (
+            <ChequePage cuentaId={cuentaId} modoDetalleCuenta={true} />
+          )}
+
+          {tab === 'chequeras' && (
+            <ChequeraPage cuentaId={cuentaId} modoDetalleCuenta={true} />
+          )}
           {tab === 'conciliacion' && (
             <ConciliacionTab
               cuentaId={cuentaId}
