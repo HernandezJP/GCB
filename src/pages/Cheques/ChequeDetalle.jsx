@@ -1,39 +1,54 @@
 import React, { useRef } from 'react';
 import { ArrowLeft, Printer, Check, Ban, Building2 } from 'lucide-react';
 
-const g = (o, ...ks) => { for (const k of ks) { const v = o?.[k]; if (v != null) return v; } return null; };
-const formatFecha = f => f ? new Date(f).toLocaleDateString('es-GT') : '—';
+const g = (o, ...ks) => {
+    for (const k of ks) {
+        const v = o?.[k];
+        if (v != null) return v;
+    }
+    return null;
+};
+
+const formatFecha = (f) => (f ? new Date(f).toLocaleDateString('es-GT') : '—');
 
 const estadoPill = (e) => {
-    const m = { Emitido:'che-pill-blue', Activo:'che-pill-blue', Cancelado:'che-pill-gray', Depositado:'che-pill-green', Cobrado:'che-pill-green' };
+    const m = {
+        Emitido: 'che-pill-blue',
+        Activo: 'che-pill-blue',
+        Cancelado: 'che-pill-gray',
+        Depositado: 'che-pill-green',
+        Cobrado: 'che-pill-green'
+    };
     return m[e] ?? 'che-pill-amber';
 };
 
 // Convierte monto a letras de forma simple
 const toLetras = (n) => {
     if (!n) return '';
-    return `${n.toLocaleString('es-GT', { minimumFractionDigits:2 })} quetzales`;
+    return `${n.toLocaleString('es-GT', { minimumFractionDigits: 2 })} quetzales`;
 };
 
 const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
     const printRef = useRef(null);
 
-    const numCheque = g(cheque,'cHE_Numero_Cheque','chE_Numero_Cheque','CHE_Numero_Cheque') ?? '—';
-    const benef     = g(cheque,'beneficiario','Beneficiario') ?? '—';
-    const monto     = Math.abs(g(cheque,'mOV_Monto','moV_Monto','MOV_Monto') ?? 0);
-    const letras    = g(cheque,'cHE_Monto_Letras','chE_Monto_Letras','CHE_Monto_Letras') || toLetras(monto);
-    const concepto  = g(cheque,'cHE_Concepto','chE_Concepto','CHE_Concepto') ?? '';
-    const fEmision  = g(cheque,'cHE_Fecha_Emision','chE_Fecha_Emision','CHE_Fecha_Emision');
-    const fCobro    = g(cheque,'cHE_Fecha_Cobro','chE_Fecha_Cobro','CHE_Fecha_Cobro');
-    const fVenc     = g(cheque,'cHE_Fecha_Vencimiento','chE_Fecha_Vencimiento','CHE_Fecha_Vencimiento');
-    const estado    = g(cheque,'estadoCheque','EstadoCheque') ?? g(cheque,'eSC_Descripcion','esC_Descripcion') ?? '';
-    const banco     = g(cheque,'bAN_Nombre','ban_nombre','BAN_Nombre') ?? '—';
-    const numCuenta = g(cheque,'cUB_Numero_Cuenta','cuB_Numero_Cuenta','CUB_Numero_Cuenta') ?? '';
-    const serie     = g(cheque,'cHQ_Serie','chQ_Serie','CHQ_Serie') ?? '';
+    const numCheque = g(cheque, 'cHE_Numero_Cheque', 'chE_Numero_Cheque', 'CHE_Numero_Cheque') ?? '—';
+    const benef = g(cheque, 'beneficiario', 'Beneficiario') ?? '—';
+    const monto = Math.abs(g(cheque, 'mOV_Monto', 'moV_Monto', 'MOV_Monto') ?? 0);
+    const letras = g(cheque, 'cHE_Monto_Letras', 'chE_Monto_Letras', 'CHE_Monto_Letras') || toLetras(monto);
+    const concepto = g(cheque, 'cHE_Concepto', 'chE_Concepto', 'CHE_Concepto') ?? '';
+    const fEmision = g(cheque, 'cHE_Fecha_Emision', 'chE_Fecha_Emision', 'CHE_Fecha_Emision');
+    const fCobro = g(cheque, 'cHE_Fecha_Cobro', 'chE_Fecha_Cobro', 'CHE_Fecha_Cobro');
+    const fVenc = g(cheque, 'cHE_Fecha_Vencimiento', 'chE_Fecha_Vencimiento', 'CHE_Fecha_Vencimiento');
+    const estado = g(cheque, 'estadoCheque', 'EstadoCheque') ?? g(cheque, 'eSC_Descripcion', 'esC_Descripcion') ?? '';
+    const banco = g(cheque, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? '—';
+    const numCuenta = g(cheque, 'cUB_Numero_Cuenta', 'cuB_Numero_Cuenta', 'CUB_Numero_Cuenta') ?? '';
+    const serie = g(cheque, 'cHQ_Serie', 'chQ_Serie', 'CHQ_Serie') ?? '';
     const esEmitido = estado === 'Emitido' || estado === 'Activo';
 
     const handlePrint = () => {
         const win = window.open('', '_blank');
+        if (!win) return;
+
         const html = `
             <!DOCTYPE html>
             <html>
@@ -97,7 +112,7 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                     <div class="pagese">Páguese a la orden de</div>
                     <div class="benef-row">
                         <span class="benef-nm">${benef}</span>
-                        <span class="monto-bx">Q ${monto.toLocaleString('es-GT',{minimumFractionDigits:2})}</span>
+                        <span class="monto-bx">Q ${monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div class="letras">La suma de: ${letras}</div>
                     <div class="concepto-row">
@@ -116,63 +131,77 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                     </div>
                 </div>
                 <div class="micr">
-                    <span class="micr-txt">⑆${(numCuenta || '').replace(/-/g,'')}⑆${numCheque}⑈</span>
+                    <span class="micr-txt">⑆${(numCuenta || '').replace(/-/g, '')}⑆${numCheque}⑈</span>
                     <span class="no-neg">No negociable</span>
                 </div>
             </div>
             </body>
             </html>`;
+
         win.document.write(html);
         win.document.close();
         win.focus();
-        setTimeout(() => { win.print(); win.close(); }, 400);
+        setTimeout(() => {
+            win.print();
+            win.close();
+        }, 400);
     };
 
     return (
         <div>
-            <button className="btn-secondary" style={{ marginBottom:16 }} onClick={onBack}>
-                <ArrowLeft size={15}/> Volver a cheques
+            <button className="btn-secondary" style={{ marginBottom: 16 }} onClick={onBack}>
+                <ArrowLeft size={15} /> Volver a cheques
             </button>
 
             <div className="detalle-card">
-                {/* Header */}
                 <div className="detalle-header">
-                    <div className="detalle-icon" style={{ background:'#1d4ed8' }}>
-                        <span style={{ fontFamily:'monospace', fontSize:11, fontWeight:700, color:'#fff' }}>CHQ</span>
+                    <div className="detalle-icon" style={{ background: '#1d4ed8' }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: '#fff' }}>CHQ</span>
                     </div>
                     <div>
                         <h2>Cheque #{numCheque}</h2>
                         <p className="detalle-subtitle">
                             Serie {serie} · {banco}
-                            {numCuenta && <> · <code style={{ fontFamily:'monospace', color:'#0284c7', fontWeight:700 }}>{numCuenta}</code></>}
+                            {numCuenta && (
+                                <>
+                                    {' '}·{' '}
+                                    <code style={{ fontFamily: 'monospace', color: '#0284c7', fontWeight: 700 }}>
+                                        {numCuenta}
+                                    </code>
+                                </>
+                            )}
                         </p>
                     </div>
-                    <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:10 }}>
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span className={`che-pill ${estadoPill(estado)}`}>{estado}</span>
                         <button className="btn-print" onClick={handlePrint}>
-                            <Printer size={14}/> Imprimir
+                            <Printer size={14} /> Imprimir
                         </button>
                     </div>
                 </div>
 
-                {/* Monto destacado */}
-                <div style={{ background:'linear-gradient(135deg,#f0f9ff,#e0f2fe)', borderBottom:'1px solid #bae6fd', padding:'20px 24px', textAlign:'center' }}>
-                    <div style={{ fontSize:10, color:'#0369a1', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:6 }}>Monto del cheque</div>
-                    <div style={{ fontSize:30, fontWeight:700, color:'#b91c1c', fontFamily:'monospace' }}>
-                        Q {monto.toLocaleString('es-GT',{minimumFractionDigits:2})}
+                <div style={{ background: 'linear-gradient(135deg,#f0f9ff,#e0f2fe)', borderBottom: '1px solid #bae6fd', padding: '20px 24px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, color: '#0369a1', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                        Monto del cheque
                     </div>
-                    {letras && <div style={{ fontSize:12, color:'#0369a1', marginTop:6, fontStyle:'italic' }}>{letras}</div>}
+                    <div style={{ fontSize: 30, fontWeight: 700, color: '#b91c1c', fontFamily: 'monospace' }}>
+                        Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                    </div>
+                    {letras && (
+                        <div style={{ fontSize: 12, color: '#0369a1', marginTop: 6, fontStyle: 'italic' }}>
+                            {letras}
+                        </div>
+                    )}
                 </div>
 
-                {/* Stats */}
                 <div className="detalle-stats">
                     {[
-                        { label:'Beneficiario',    val: benef },
-                        { label:'Concepto',        val: concepto || '—' },
-                        { label:'Fecha emisión',   val: formatFecha(fEmision) },
-                        { label:'Fecha cobro',     val: fCobro ? formatFecha(fCobro) : '—' },
-                        { label:'Vencimiento',     val: fVenc ? formatFecha(fVenc) : '—' },
-                    ].map((s,i) => (
+                        { label: 'Beneficiario', val: benef },
+                        { label: 'Concepto', val: concepto || '—' },
+                        { label: 'Fecha emisión', val: formatFecha(fEmision) },
+                        { label: 'Fecha cobro', val: fCobro ? formatFecha(fCobro) : '—' },
+                        { label: 'Vencimiento', val: fVenc ? formatFecha(fVenc) : '—' },
+                    ].map((s, i) => (
                         <div key={i} className="detalle-stat">
                             <div className="detalle-stat-label">{s.label}</div>
                             <div className="detalle-stat-value">{s.val}</div>
@@ -180,16 +209,17 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                     ))}
                 </div>
 
-                {/* Vista del cheque (previa) */}
-                <div style={{ padding:'20px 24px', borderTop:'1px solid #f1f5f9' }}>
-                    <div style={{ fontSize:11, color:'#64748b', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:12 }}>
+                <div style={{ padding: '20px 24px', borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
                         Vista previa del cheque físico
                     </div>
                     <div className="cheque-print-wrapper">
                         <div className="cheque-fisico" ref={printRef}>
                             <div className="cheque-header-band">
                                 <div className="cheque-banco-info">
-                                    <div className="cheque-banco-logo"><Building2 size={14} color="#fff"/></div>
+                                    <div className="cheque-banco-logo">
+                                        <Building2 size={14} color="#fff" />
+                                    </div>
                                     <div>
                                         <div className="cheque-banco-nombre">{banco}</div>
                                         <div className="cheque-banco-cuenta">{numCuenta}</div>
@@ -209,7 +239,9 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                                 <div className="cheque-pagese">Páguese a la orden de</div>
                                 <div className="cheque-beneficiario-row">
                                     <span className="cheque-beneficiario-nombre">{benef}</span>
-                                    <span className="cheque-monto-box">Q {monto.toLocaleString('es-GT',{minimumFractionDigits:2})}</span>
+                                    <span className="cheque-monto-box">
+                                        Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                    </span>
                                 </div>
                                 <div className="cheque-letras-row">La suma de: {letras}</div>
                                 <div className="cheque-concepto-row">
@@ -229,26 +261,28 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                             </div>
 
                             <div className="cheque-micr-band">
-                                <span className="cheque-micr">⑆{numCuenta.replace(/-/g,'')}⑆{numCheque}⑈</span>
+                                <span className="cheque-micr">⑆{(numCuenta || '').replace(/-/g, '')}⑆{numCheque}⑈</span>
                                 <span className="cheque-no-neg">No negociable</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Acciones de estado */}
                 {esEmitido && (
-                    <div style={{ padding:'0 24px 20px', display:'flex', gap:10, borderTop:'1px solid #f1f5f9', paddingTop:16 }}>
-                        {estadosCheque.map(e => {
-                            const eid   = g(e,'eSC_Estado_Cheque','esC_Estado_Cheque','ESC_Estado_Cheque');
-                            const edesc = g(e,'eSC_Descripcion','esC_Descripcion','ESC_Descripcion') ?? '';
+                    <div style={{ padding: '0 24px 20px', display: 'flex', gap: 10, borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+                        {estadosCheque.map((e) => {
+                            const eid = g(e, 'eSC_Estado_Cheque', 'esC_Estado_Cheque', 'ESC_Estado_Cheque');
+                            const edesc = g(e, 'eSC_Descripcion', 'esC_Descripcion', 'ESC_Descripcion') ?? '';
                             const esBaja = edesc.toLowerCase().includes('cancel');
+
                             return (
-                                <button key={eid}
+                                <button
+                                    key={eid}
                                     className={esBaja ? 'btn-secondary' : 'btn-primary'}
-                                    style={esBaja ? { color:'#b91c1c', borderColor:'#fecaca' } : {}}
-                                    onClick={() => onCambiarEstado(eid)}>
-                                    {esBaja ? <Ban size={14}/> : <Check size={14}/>}
+                                    style={esBaja ? { color: '#b91c1c', borderColor: '#fecaca' } : {}}
+                                    onClick={() => onCambiarEstado(eid)}
+                                >
+                                    {esBaja ? <Ban size={14} /> : <Check size={14} />}
                                     {edesc}
                                 </button>
                             );

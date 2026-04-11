@@ -55,8 +55,6 @@ function App() {
           <Route path="/tipos-movimiento" element={<TipoMovimientoPage />} />
           <Route path="/medios-movimiento" element={<MedioMovimientoPage />} />
           <Route path="/estados-movimiento" element={<EstadoMovimientoPage />} />
-          <Route path="/chequeras" element={<ChequeraPage />} />
-          <Route path="/cheques" element={<ChequePage />} />
           <Route path="/personas" element={<PersonaPage />} />
           <Route path="/movimientos" element={<MovimientoPage />} />
           <Route path="/tasas-interes" element={<TasaInteresPage />} />
