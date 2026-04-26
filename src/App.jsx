@@ -26,6 +26,9 @@ import ReglaRecargoPage from './pages/ReglaRecargo/ReglaRecargoPage';
 import ChequeraPage from './pages/Chequera/ChequeraPage';
 import ChequePage from './pages/Cheques/ChequePage';
 import ConciliacionPage from './pages/Conciliacion/ConciliacionPage';
+import ReporteCuentaBancariaPage from './pages/ReporteCuentaBancaria/ReporteCuentaBancariaPage';
+import DashboardPage from "./pages/Dashboard/DashboardPage";
+
 
 // Componentes temporales (Mock) para las rutas vacías//
 const Dashboard = () => <div style={{ padding: '2rem' }}><h1>Dashboard Principal</h1><p>Bienvenido al Sistema de Gestión.</p></div>;
@@ -37,7 +40,7 @@ function App() {
       <Sidebar />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/cuentas-bancarias" element={<CuentaBancariaPage />} />
           <Route path="/bancos" element={<BancoPage />} />
           <Route path="/tipos-cuenta" element={<TipoCuentaPage />} />
@@ -64,6 +67,7 @@ function App() {
           <Route path="/chequeras" element={<ChequeraPage />} />
           <Route path="/cheques" element={<ChequePage />} />
           <Route path="/conciliacion" element={<ConciliacionPage />} />
+          <Route path="/reportes/cuentas-bancarias" element={<ReporteCuentaBancariaPage />}/>
         </Routes>
       </main>
     </Router>
