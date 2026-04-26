@@ -1,0 +1,88 @@
+.reporte-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reporte-toolbar {
+    align-items: flex-end;
+}
+
+.filtro-select {
+    min-width: 220px;
+}
+
+.reporte-search {
+    max-width: none;
+    min-width: 320px;
+}
+
+.reporte-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kpi-blue {
+    border-left: 5px solid #0284c7;
+}
+
+.kpi-green {
+    border-left: 5px solid #15803d;
+}
+
+.kpi-amber {
+    border-left: 5px solid #d97706;
+}
+
+.kpi-red {
+    border-left: 5px solid #dc2626;
+}
+
+.icon-blue {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.icon-green {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.icon-amber {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.icon-red {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .reporte-actions {
+        width: 100%;
+    }
+
+    .reporte-actions .btn-primary,
+    .reporte-actions .btn-secondary {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .filtro-select,
+    .reporte-search {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .reporte-filter-actions {
+        width: 100%;
+    }
+
+    .reporte-filter-actions .btn-primary,
+    .reporte-filter-actions .btn-secondary {
+        flex: 1;
+        justify-content: center;
+    }
+}

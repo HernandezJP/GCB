@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import DashboardKpis from "./DashboardKpis";
-import DashboardCharts from "./DashboardCharts";
-import { getDashboardCuentas } from "../../services/dashboardService";
+import DashboardCharts from "./DashboardChartsCuentasBancarias";
+import DashboardConciliacionCharts from "./DashboardChartsConciliacion";
+import {
+    getDashboardCuentas,
+    getDashboardConciliaciones,
+} from "../../services/DashboardService";
 import "./Dashboard.css";
 
 export default function DashboardPage() {
     const [cuentas, setCuentas] = useState([]);
+    const [conciliaciones, setConciliaciones] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -14,8 +19,13 @@ export default function DashboardPage() {
             setLoading(true);
             setError("");
 
-            const data = await getDashboardCuentas();
-            setCuentas(data);
+            const [cuentasData, conciliacionesData] = await Promise.all([
+                getDashboardCuentas(),
+                getDashboardConciliaciones(),
+            ]);
+
+            setCuentas(cuentasData);
+            setConciliaciones(conciliacionesData);
         } catch (error) {
             console.error("Error al cargar dashboard:", error);
             setError("No se pudo cargar el dashboard.");
@@ -48,6 +58,26 @@ export default function DashboardPage() {
             cuentas.map(x => x.banco).filter(Boolean)
         ).size;
 
+        const totalConciliaciones = conciliaciones.length;
+
+        const diferenciaConciliacion = conciliaciones.reduce(
+            (acc, item) => acc + Number(item.coN_Diferencia ?? 0),
+            0
+        );
+
+        const movimientosConciliados = conciliaciones.reduce(
+            (acc, item) => acc + Number(item.totalConciliados ?? 0),
+            0
+        );
+
+        const pendientesConciliacion = conciliaciones.reduce(
+            (acc, item) =>
+                acc +
+                Number(item.totalPendientesBanco ?? 0) +
+                Number(item.totalPendientesLibros ?? 0),
+            0
+        );
+
         return {
             totalCuentas,
             saldoTotal,
@@ -55,8 +85,12 @@ export default function DashboardPage() {
             cuentasActivas,
             cuentasInactivas,
             bancosUtilizados,
+            totalConciliaciones,
+            diferenciaConciliacion,
+            movimientosConciliados,
+            pendientesConciliacion,
         };
-    }, [cuentas]);
+    }, [cuentas, conciliaciones]);
 
     return (
         <div className="dashboard-container">
@@ -86,6 +120,15 @@ export default function DashboardPage() {
                         <DashboardCharts cuentas={cuentas} />
                     </div>
 
+                    <div className="dashboard-section">
+                        <div className="dashboard-section-header">
+                            <h2>Conciliación Bancaria</h2>
+                            <span>Resumen de conciliaciones, diferencias y movimientos pendientes</span>
+                        </div>
+
+                        <DashboardConciliacionCharts conciliaciones={conciliaciones} />
+                    </div>
+
                     <div className="dashboard-section dashboard-disabled">
                         <div className="dashboard-section-header">
                             <h2>Movimientos</h2>
@@ -97,13 +140,6 @@ export default function DashboardPage() {
                         <div className="dashboard-section-header">
                             <h2>Cheques</h2>
                             <span>Próximamente: pendientes, cobrados, anulados y emitidos</span>
-                        </div>
-                    </div>
-
-                    <div className="dashboard-section dashboard-disabled">
-                        <div className="dashboard-section-header">
-                            <h2>Conciliación Bancaria</h2>
-                            <span>Próximamente: conciliaciones pendientes, diferencias y ajustes</span>
                         </div>
                     </div>
                 </>
