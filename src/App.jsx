@@ -28,6 +28,7 @@ import ChequePage from './pages/Cheques/ChequePage';
 import ConciliacionPage from './pages/Conciliacion/ConciliacionPage';
 import ReporteCuentaBancariaPage from './pages/ReporteCuentaBancaria/ReporteCuentaBancariaPage';
 import ReporteConciliacionPage from "./pages/ReporteConciliacion/ReporteConciliacionPage";
+import ReporteMovimientosPage from './pages/ReporteMovimientos/ReporteMovimientosPage';
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 
 
@@ -70,7 +71,7 @@ function App() {
           <Route path="/conciliacion" element={<ConciliacionPage />} />
           <Route path="/reportes/cuentas-bancarias" element={<ReporteCuentaBancariaPage />}/>
           <Route path="/reportes/conciliaciones" element={<ReporteConciliacionPage />}/>
-        </Routes>
+          <Route path="/reportes/movimientos" element={<ReporteMovimientosPage />} />          </Routes>
       </main>
     </Router>
   )

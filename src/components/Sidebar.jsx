@@ -35,6 +35,7 @@ const menuGroups = [
         items: [
             {title: 'Reporte Cuentas Bancarias',icon: <BarChart3 size={18} />, path: '/reportes/cuentas-bancarias'},
             {title: 'Reporte Conciliaciones', icon: <Wallet size={18} />, path: '/reportes/conciliaciones'},
+            { title: 'Reporte Movimientos', icon: <ArrowLeftRight size={18} />, path: '/reportes/movimientos' },
         ]
     },
     {

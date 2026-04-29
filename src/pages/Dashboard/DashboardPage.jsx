@@ -2,15 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import DashboardKpis from "./DashboardKpis";
 import DashboardCharts from "./DashboardChartsCuentasBancarias";
 import DashboardConciliacionCharts from "./DashboardChartsConciliacion";
+import DashboardChartsMovimientos from "./DashboardChartsMovimientos";
 import {
     getDashboardCuentas,
     getDashboardConciliaciones,
 } from "../../services/DashboardService";
+import { getMovimientos } from "../../services/MovimientoService";
 import "./Dashboard.css";
 
 export default function DashboardPage() {
     const [cuentas, setCuentas] = useState([]);
     const [conciliaciones, setConciliaciones] = useState([]);
+    const [movimientos, setMovimientos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -19,13 +22,15 @@ export default function DashboardPage() {
             setLoading(true);
             setError("");
 
-            const [cuentasData, conciliacionesData] = await Promise.all([
+            const [cuentasData, conciliacionesData, movimientosData] = await Promise.all([
                 getDashboardCuentas(),
                 getDashboardConciliaciones(),
+                getMovimientos(),
             ]);
 
             setCuentas(cuentasData);
             setConciliaciones(conciliacionesData);
+            setMovimientos(Array.isArray(movimientosData) ? movimientosData : []);
         } catch (error) {
             console.error("Error al cargar dashboard:", error);
             setError("No se pudo cargar el dashboard.");
@@ -129,11 +134,13 @@ export default function DashboardPage() {
                         <DashboardConciliacionCharts conciliaciones={conciliaciones} />
                     </div>
 
-                    <div className="dashboard-section dashboard-disabled">
+                    <div className="dashboard-section">
                         <div className="dashboard-section-header">
                             <h2>Movimientos</h2>
-                            <span>Próximamente: ingresos, egresos y comportamiento mensual</span>
+                            <span>Ingresos, egresos, medios y recargos registrados</span>
                         </div>
+
+                        <DashboardChartsMovimientos movimientos={movimientos} />
                     </div>
 
                     <div className="dashboard-section dashboard-disabled">
