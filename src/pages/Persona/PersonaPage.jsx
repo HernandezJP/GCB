@@ -260,7 +260,7 @@ const PersonaPage = () => {
           >
             <div>
               <div className="kpi-label">{k.label}</div>
-              <div className="kpi-value">{k.val}</div>
+              <div className="kpi-value">{k.val} </div>
             </div>
             <div className="kpi-icon" style={{ background: k.bg }}>
               <User size={20} color={k.color} />

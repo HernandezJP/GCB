@@ -9,9 +9,16 @@ import {
 
 import ReporteCuentaBancariaFilter from "./ReporteCuentaBancariaFilter";
 import ReporteCuentaBancariaTable from "./ReporteCuentaBancariaTable";
-import { exportToExcel, exportToPDF } from "./ReporteCuentaBancariaUtils";
 
-import { getReporteCuentasBancarias } from "../../services/reporteCuentaBancariaService";
+import {
+    exportToExcel,
+    exportToPDF,
+} from "./ReporteCuentaBancariaUtils";
+
+import {
+    getReporteCuentasBancarias,
+} from "../../services/reporteCuentaBancariaService";
+
 import { getBancos } from "../../services/bancoService";
 import { getTiposCuenta } from "../../services/tipoCuentaService";
 import { getTiposMoneda } from "../../services/tipoMonedaService";
@@ -21,6 +28,7 @@ import "./ReporteCuentaBancaria.css";
 
 export default function ReporteCuentaBancariaPage() {
     const [data, setData] = useState([]);
+
     const [bancos, setBancos] = useState([]);
     const [tiposCuenta, setTiposCuenta] = useState([]);
     const [tiposMoneda, setTiposMoneda] = useState([]);
@@ -52,13 +60,16 @@ export default function ReporteCuentaBancariaPage() {
                 getEstadosCuenta(),
             ]);
 
-            setBancos(bancosResult);
-            setTiposCuenta(tiposCuentaResult);
-            setTiposMoneda(tiposMonedaResult);
-            setEstadosCuenta(estadosCuentaResult);
+            setBancos(bancosResult || []);
+            setTiposCuenta(tiposCuentaResult || []);
+            setTiposMoneda(tiposMonedaResult || []);
+            setEstadosCuenta(estadosCuentaResult || []);
         } catch (error) {
             console.error("Error al cargar catálogos:", error);
-            setError("No se pudieron cargar los catálogos del reporte.");
+
+            setError(
+                "No se pudieron cargar los catálogos del reporte."
+            );
         }
     };
 
@@ -67,11 +78,16 @@ export default function ReporteCuentaBancariaPage() {
             setLoading(true);
             setError("");
 
-            const result = await getReporteCuentasBancarias(filtros);
-            setData(result);
+            const result =
+                await getReporteCuentasBancarias(filtros);
+
+            setData(Array.isArray(result) ? result : []);
         } catch (error) {
             console.error("Error al obtener reporte:", error);
-            setError("No se pudo cargar el reporte de cuentas bancarias.");
+
+            setError(
+                "No se pudo cargar el reporte de cuentas bancarias."
+            );
         } finally {
             setLoading(false);
         }
@@ -83,7 +99,9 @@ export default function ReporteCuentaBancariaPage() {
     }, []);
 
     const dataFiltrada = useMemo(() => {
-        const texto = filtros.busqueda.trim().toLowerCase();
+        const texto = filtros.busqueda
+            .trim()
+            .toLowerCase();
 
         if (!texto) return data;
 
@@ -98,26 +116,37 @@ export default function ReporteCuentaBancariaPage() {
             ]
                 .filter(Boolean)
                 .some((valor) =>
-                    String(valor).toLowerCase().includes(texto)
+                    String(valor)
+                        .toLowerCase()
+                        .includes(texto)
                 )
         );
     }, [data, filtros.busqueda]);
 
-    const totalSaldoInicial = dataFiltrada.reduce(
-        (acc, item) => acc + Number(item.cuB_Saldo_Inicial ?? 0),
-        0
-    );
+    const totalSaldoInicial =
+        dataFiltrada.reduce(
+            (acc, item) =>
+                acc +
+                Number(item.cuB_Saldo_Inicial ?? 0),
+            0
+        );
 
-    const totalSaldoActual = dataFiltrada.reduce(
-        (acc, item) => acc + Number(item.cuB_Saldo_Actual ?? 0),
-        0
-    );
+    const totalSaldoActual =
+        dataFiltrada.reduce(
+            (acc, item) =>
+                acc +
+                Number(item.cuB_Saldo_Actual ?? 0),
+            0
+        );
 
     return (
         <div className="cuentabancaria-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Reporte de Cuentas Bancarias</h1>
+                    <h1>
+                        Reporte de Cuentas Bancarias
+                    </h1>
+
                     <span className="record-count">
                         {dataFiltrada.length} registros
                     </span>
@@ -127,7 +156,9 @@ export default function ReporteCuentaBancariaPage() {
                     <button
                         className="btn-secondary"
                         disabled={!dataFiltrada.length}
-                        onClick={() => exportToExcel(dataFiltrada)}
+                        onClick={() =>
+                            exportToExcel(dataFiltrada)
+                        }
                     >
                         <FileSpreadsheet size={18} />
                         Excel
@@ -136,7 +167,9 @@ export default function ReporteCuentaBancariaPage() {
                     <button
                         className="btn-primary"
                         disabled={!dataFiltrada.length}
-                        onClick={() => exportToPDF(dataFiltrada)}
+                        onClick={() =>
+                            exportToPDF(dataFiltrada)
+                        }
                     >
                         <FileText size={18} />
                         PDF
@@ -144,7 +177,11 @@ export default function ReporteCuentaBancariaPage() {
                 </div>
             </div>
 
-            {error && <div className="error-banner">{error}</div>}
+            {error && (
+                <div className="error-banner">
+                    {error}
+                </div>
+            )}
 
             <ReporteCuentaBancariaFilter
                 filtros={filtros}
@@ -157,45 +194,108 @@ export default function ReporteCuentaBancariaPage() {
             />
 
             <div className="kpi-grid">
-                <div className="kpi-card kpi-blue">
-                    <div>
-                        <div className="kpi-label">Total Cuentas</div>
-                        <div className="kpi-value">{dataFiltrada.length}</div>
-                    </div>
-                    <div className="kpi-icon icon-blue">
-                        <CreditCard size={24} />
-                    </div>
-                </div>
+                {[
+                    {
+                        label: "Total cuentas",
+                        val: dataFiltrada.length,
+                        color: "#0284c7",
+                        bg: "#e6f1fb",
+                        icon: (
+                            <CreditCard
+                                size={20}
+                                color="#0284c7"
+                            />
+                        ),
+                    },
 
-                <div className="kpi-card kpi-green">
-                    <div>
-                        <div className="kpi-label">Saldo Inicial</div>
-                        <div className="kpi-value">
-                            Q {totalSaldoInicial.toFixed(2)}
+                    {
+                        label: "Saldo inicial",
+                        val: `Q ${totalSaldoInicial.toLocaleString(
+                            "es-GT",
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            }
+                        )}`,
+
+                        color: "#15803d",
+                        bg: "#dcfce7",
+
+                        icon: (
+                            <Wallet
+                                size={20}
+                                color="#15803d"
+                            />
+                        ),
+                    },
+
+                    {
+                        label: "Saldo actual",
+                        val: `Q ${totalSaldoActual.toLocaleString(
+                            "es-GT",
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            }
+                        )}`,
+
+                        color: "#d97706",
+                        bg: "#fef3c7",
+
+                        icon: (
+                            <Building2
+                                size={20}
+                                color="#d97706"
+                            />
+                        ),
+                    },
+                ].map((s, i) => (
+                    <div
+                        key={i}
+                        className="kpi-card"
+                        style={{
+                            borderLeft: `4px solid ${s.color}`,
+                        }}
+                    >
+                        <div>
+                            <div className="kpi-label">
+                                {s.label}
+                            </div>
+
+                            <div
+                                className="kpi-value"
+                                style={{
+                                    color: s.color,
+                                    fontSize:
+                                        i === 0
+                                            ? "22px"
+                                            : "15px",
+                                }}
+                            >
+                                {s.val}
+                            </div>
+                        </div>
+
+                        <div
+                            className="kpi-icon"
+                            style={{
+                                background: s.bg,
+                            }}
+                        >
+                            {s.icon}
                         </div>
                     </div>
-                    <div className="kpi-icon icon-green">
-                        <Wallet size={24} />
-                    </div>
-                </div>
-
-                <div className="kpi-card kpi-amber">
-                    <div>
-                        <div className="kpi-label">Saldo Actual</div>
-                        <div className="kpi-value">
-                            Q {totalSaldoActual.toFixed(2)}
-                        </div>
-                    </div>
-                    <div className="kpi-icon icon-amber">
-                        <Building2 size={24} />
-                    </div>
-                </div>
+                ))}
             </div>
 
             {loading ? (
-                <div className="loading-state">Cargando reporte...</div>
+                <div className="loading-state">
+                    Cargando reporte...
+                </div>
             ) : (
-                <ReporteCuentaBancariaTable data={dataFiltrada} />
+                <ReporteCuentaBancariaTable
+                    data={dataFiltrada}
+                />
             )}
         </div>
     );

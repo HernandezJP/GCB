@@ -62,7 +62,8 @@ export default function ReporteMovimientosTable({ data }) {
                             <th>Medio</th>
                             <th>Descripción</th>
                             <th>Referencia</th>
-                            <th>Monto</th>
+                            <th>Débito</th>
+                            <th>Crédito</th>
                             <th>Recargo</th>
                             <th>Saldo</th>
                             <th>Estado</th>
@@ -74,40 +75,122 @@ export default function ReporteMovimientosTable({ data }) {
                             const tipo = getValue(item, ["tipoMovimiento", "TipoMovimiento"]);
                             const estado = getValue(item, ["estadoMovimiento", "EstadoMovimiento"]);
 
+                            const monto = Number(
+                                getValue(item, ["moV_Monto", "mOV_Monto", "mov_monto"]) || 0
+                            );
+
+                            const esIngreso = String(tipo)
+                                .toLowerCase()
+                                .includes("ingreso");
+
+                            const debito = esIngreso ? 0 : monto;
+                            const credito = esIngreso ? monto : 0;
+
                             return (
-                                <tr key={getValue(item, ["moV_Movimiento", "mOV_Movimiento", "mov_movimiento"]) || index}>
-                                    <td>{formatDate(getValue(item, ["moV_Fecha", "mOV_Fecha", "mov_fecha"]))}</td>
+                                <tr
+                                    key={
+                                        getValue(item, [
+                                            "moV_Movimiento",
+                                            "mOV_Movimiento",
+                                            "mov_movimiento",
+                                        ]) || index
+                                    }
+                                >
+                                    <td>
+                                        {formatDate(
+                                            getValue(item, [
+                                                "moV_Fecha",
+                                                "mOV_Fecha",
+                                                "mov_fecha",
+                                            ])
+                                        )}
+                                    </td>
 
                                     <td>
                                         <code className="report-code">
-                                            {getValue(item, ["cuB_Numero_Cuenta", "cUB_Numero_Cuenta", "cub_numero_cuenta"]) || "—"}
+                                            {getValue(item, [
+                                                "cuB_Numero_Cuenta",
+                                                "cUB_Numero_Cuenta",
+                                                "cub_numero_cuenta",
+                                            ]) || "—"}
                                         </code>
                                     </td>
 
-                                    <td>{getValue(item, ["persona", "Persona"]) || "—"}</td>
+                                    <td>
+                                        {getValue(item, ["persona", "Persona"]) || "—"}
+                                    </td>
 
                                     <td>
-                                        <span className={`status-pill ${getTipoClass(tipo)}`}>
+                                        <span
+                                            className={`status-pill ${getTipoClass(tipo)}`}
+                                        >
                                             {tipo || "—"}
                                         </span>
                                     </td>
 
-                                    <td>{getValue(item, ["medioMovimiento", "MedioMovimiento"]) || "—"}</td>
+                                    <td>
+                                        {getValue(item, [
+                                            "medioMovimiento",
+                                            "MedioMovimiento",
+                                        ]) || "—"}
+                                    </td>
 
-                                    <td>{getValue(item, ["moV_Descripcion", "mOV_Descripcion", "mov_descripcion"]) || "—"}</td>
+                                    <td className="description-cell">
+                                        {getValue(item, [
+                                            "moV_Descripcion",
+                                            "mOV_Descripcion",
+                                            "mov_descripcion",
+                                        ]) || "—"}
+                                    </td>
 
                                     <td>
                                         <code className="report-code">
-                                            {getValue(item, ["moV_Numero_Referencia", "mOV_Numero_Referencia", "mov_numero_referencia"]) || "—"}
+                                            {getValue(item, [
+                                                "moV_Numero_Referencia",
+                                                "mOV_Numero_Referencia",
+                                                "mov_numero_referencia",
+                                            ]) || "—"}
                                         </code>
                                     </td>
 
-                                    <td>{formatMoney(getValue(item, ["moV_Monto", "mOV_Monto", "mov_monto"]))}</td>
-                                    <td>{formatMoney(getValue(item, ["moV_Recargo", "mOV_Recargo", "mov_recargo"]))}</td>
-                                    <td>{formatMoney(getValue(item, ["moV_Saldo", "mOV_Saldo", "mov_saldo"]))}</td>
+                                    <td className="money money-red">
+                                        {debito > 0
+                                            ? formatMoney(debito)
+                                            : "—"}
+                                    </td>
+
+                                    <td className="money money-green">
+                                        {credito > 0
+                                            ? formatMoney(credito)
+                                            : "—"}
+                                    </td>
+
+                                    <td className="money">
+                                        {formatMoney(
+                                            getValue(item, [
+                                                "moV_Recargo",
+                                                "mOV_Recargo",
+                                                "mov_recargo",
+                                            ])
+                                        )}
+                                    </td>
+
+                                    <td className="money money-strong">
+                                        {formatMoney(
+                                            getValue(item, [
+                                                "moV_Saldo",
+                                                "mOV_Saldo",
+                                                "mov_saldo",
+                                            ])
+                                        )}
+                                    </td>
 
                                     <td>
-                                        <span className={`status-pill ${getEstadoClass(estado)}`}>
+                                        <span
+                                            className={`status-pill ${getEstadoClass(
+                                                estado
+                                            )}`}
+                                        >
                                             {estado || "—"}
                                         </span>
                                     </td>

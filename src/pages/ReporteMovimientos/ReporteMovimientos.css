@@ -69,6 +69,28 @@
     color: #334155;
 }
 
+.money {
+    text-align: right;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.money-green {
+    color: #15803d;
+}
+
+.money-red {
+    color: #dc2626;
+}
+
+.money-strong {
+    color: #334155;
+}
+
+.description-cell {
+    min-width: 220px;
+}
+
 @media (max-width: 768px) {
     .reporte-actions {
         width: 100%;

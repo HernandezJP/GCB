@@ -14,29 +14,65 @@ import { exportToExcel, exportToPDF } from "./ReporteConciliacionUtils";
 
 import { getReporteConciliaciones } from "../../services/ReporteConciliacionService";
 import { getCuentas } from "../../services/CuentaBancariaService";
+import { getEstadosConciliacion } from "../../services/EstadoConciliacionService";
 
 import "./ReporteConciliacion.css";
+
+const getPeriodoActual = () => {
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = String(hoy.getMonth() + 1).padStart(2, "0");
+
+    return `${year}-${month}`;
+};
+
+const normalizarPeriodo = (periodo) => {
+    if (!periodo) return "";
+
+    return String(periodo).slice(0, 7);
+};
+
+const getFechaConciliacion = (item) => {
+    return (
+        item.coN_Fecha_Creacion ||
+        item.coN_Fecha ||
+        item.con_Fecha_Creacion ||
+        item.fechaCreacion ||
+        item.fecha ||
+        ""
+    );
+};
 
 export default function ReporteConciliacionPage() {
     const [data, setData] = useState([]);
     const [cuentas, setCuentas] = useState([]);
+    const [estados, setEstados] = useState([]);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
     const [filtros, setFiltros] = useState({
         cuentaId: "",
         estadoConciliacion: "",
-        periodo: "",
+        modoFecha: "mes",
+        periodo: getPeriodoActual(),
+        fechaInicio: "",
+        fechaFin: "",
         busqueda: "",
     });
 
     const cargarCatalogos = async () => {
         try {
-            const cuentasResult = await getCuentas();
-            setCuentas(cuentasResult);
+            const [cuentasResult, estadosResult] = await Promise.all([
+                getCuentas(),
+                getEstadosConciliacion(),
+            ]);
+
+            setCuentas(cuentasResult ?? []);
+            setEstados(estadosResult ?? []);
         } catch (error) {
-            console.error("Error al cargar cuentas:", error);
-            setError("No se pudieron cargar las cuentas bancarias.");
+            console.error("Error al cargar catálogos:", error);
+            setError("No se pudieron cargar los catálogos del reporte.");
         }
     };
 
@@ -46,7 +82,7 @@ export default function ReporteConciliacionPage() {
             setError("");
 
             const result = await getReporteConciliaciones(filtros);
-            setData(result);
+            setData(result ?? []);
         } catch (error) {
             console.error("Error al obtener reporte:", error);
             setError("No se pudo cargar el reporte de conciliaciones.");
@@ -65,14 +101,50 @@ export default function ReporteConciliacionPage() {
 
         if (filtros.estadoConciliacion) {
             result = result.filter(
-                x => x.estadoConciliacion === filtros.estadoConciliacion
+                (x) =>
+                    String(x.estadoConciliacion ?? "").toLowerCase() ===
+                    String(filtros.estadoConciliacion).toLowerCase()
             );
         }
 
-        if (filtros.periodo) {
-            result = result.filter(
-                x => x.coN_Periodo?.includes(filtros.periodo)
-            );
+        if (filtros.modoFecha === "mes" && filtros.periodo) {
+            result = result.filter((x) => {
+                const periodoItem = normalizarPeriodo(x.coN_Periodo);
+
+                return periodoItem === filtros.periodo;
+            });
+        }
+
+        if (filtros.modoFecha === "rango") {
+            result = result.filter((x) => {
+                const fechaValor = getFechaConciliacion(x);
+
+                if (!fechaValor) return true;
+
+                const fecha = new Date(fechaValor);
+
+                if (Number.isNaN(fecha.getTime())) return true;
+
+                const fechaSolo = new Date(
+                    fecha.getFullYear(),
+                    fecha.getMonth(),
+                    fecha.getDate()
+                );
+
+                if (filtros.fechaInicio) {
+                    const inicio = new Date(filtros.fechaInicio);
+
+                    if (fechaSolo < inicio) return false;
+                }
+
+                if (filtros.fechaFin) {
+                    const fin = new Date(filtros.fechaFin);
+
+                    if (fechaSolo > fin) return false;
+                }
+
+                return true;
+            });
         }
 
         const texto = filtros.busqueda.trim().toLowerCase();
@@ -86,7 +158,7 @@ export default function ReporteConciliacionPage() {
                     item.estadoConciliacion,
                 ]
                     .filter(Boolean)
-                    .some(valor =>
+                    .some((valor) =>
                         String(valor).toLowerCase().includes(texto)
                     )
             );
@@ -122,10 +194,6 @@ export default function ReporteConciliacionPage() {
             Number(item.totalPendientesLibros ?? 0),
         0
     );
-
-    const estados = [
-        ...new Set(data.map(x => x.estadoConciliacion).filter(Boolean)),
-    ];
 
     return (
         <div className="cuentabancaria-container">
@@ -169,71 +237,86 @@ export default function ReporteConciliacionPage() {
             />
 
             <div className="kpi-grid">
-                <div className="kpi-card kpi-blue">
-                    <div>
-                        <div className="kpi-label">Conciliaciones</div>
-                        <div className="kpi-value">{dataFiltrada.length}</div>
-                    </div>
-                    <div className="kpi-icon icon-blue">
-                        <Wallet size={24} />
-                    </div>
-                </div>
+                {[
+                    {
+                        label: "Conciliaciones",
+                        val: dataFiltrada.length,
+                        color: "#0284c7",
+                        bg: "#e6f1fb",
+                        icon: <Wallet size={20} color="#0284c7" />,
+                    },
+                    {
+                        label: "Saldo Banco",
+                        val: `Q ${totalSaldoBanco.toLocaleString("es-GT", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`,
+                        color: "#15803d",
+                        bg: "#dcfce7",
+                        icon: <Wallet size={20} color="#15803d" />,
+                    },
+                    {
+                        label: "Saldo Libros",
+                        val: `Q ${totalSaldoLibros.toLocaleString("es-GT", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`,
+                        color: "#d97706",
+                        bg: "#fef3c7",
+                        icon: <FileText size={20} color="#d97706" />,
+                    },
+                    {
+                        label: "Diferencia",
+                        val: `Q ${totalDiferencia.toLocaleString("es-GT", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`,
+                        color: "#dc2626",
+                        bg: "#fee2e2",
+                        icon: <AlertTriangle size={20} color="#dc2626" />,
+                    },
+                    {
+                        label: "Conciliados",
+                        val: totalConciliados,
+                        color: "#7c3aed",
+                        bg: "#ede9fe",
+                        icon: <CheckCircle size={20} color="#7c3aed" />,
+                    },
+                    {
+                        label: "Pendientes",
+                        val: totalPendientes,
+                        color: "#64748b",
+                        bg: "#f1f5f9",
+                        icon: <Clock size={20} color="#64748b" />,
+                    },
+                ].map((s, i) => (
+                    <div
+                        key={i}
+                        className="kpi-card"
+                        style={{ borderLeft: `4px solid ${s.color}` }}
+                    >
+                        <div>
+                            <div className="kpi-label">{s.label}</div>
 
-                <div className="kpi-card kpi-green">
-                    <div>
-                        <div className="kpi-label">Saldo Banco</div>
-                        <div className="kpi-value">
-                            Q {totalSaldoBanco.toFixed(2)}
+                            <div
+                                className="kpi-value"
+                                style={{
+                                    color: s.color,
+                                    fontSize:
+                                        typeof s.val === "number"
+                                            ? "22px"
+                                            : "15px",
+                                }}
+                            >
+                                {s.val}
+                            </div>
+                        </div>
+
+                        <div className="kpi-icon" style={{ background: s.bg }}>
+                            {s.icon}
                         </div>
                     </div>
-                    <div className="kpi-icon icon-green">
-                        <Wallet size={24} />
-                    </div>
-                </div>
-
-                <div className="kpi-card kpi-amber">
-                    <div>
-                        <div className="kpi-label">Saldo Libros</div>
-                        <div className="kpi-value">
-                            Q {totalSaldoLibros.toFixed(2)}
-                        </div>
-                    </div>
-                    <div className="kpi-icon icon-amber">
-                        <FileText size={24} />
-                    </div>
-                </div>
-
-                <div className="kpi-card kpi-red">
-                    <div>
-                        <div className="kpi-label">Diferencia</div>
-                        <div className="kpi-value">
-                            Q {totalDiferencia.toFixed(2)}
-                        </div>
-                    </div>
-                    <div className="kpi-icon icon-red">
-                        <AlertTriangle size={24} />
-                    </div>
-                </div>
-
-                <div className="kpi-card kpi-green">
-                    <div>
-                        <div className="kpi-label">Conciliados</div>
-                        <div className="kpi-value">{totalConciliados}</div>
-                    </div>
-                    <div className="kpi-icon icon-green">
-                        <CheckCircle size={24} />
-                    </div>
-                </div>
-
-                <div className="kpi-card kpi-amber">
-                    <div>
-                        <div className="kpi-label">Pendientes</div>
-                        <div className="kpi-value">{totalPendientes}</div>
-                    </div>
-                    <div className="kpi-icon icon-amber">
-                        <Clock size={24} />
-                    </div>
-                </div>
+                ))}
             </div>
 
             {loading ? (
