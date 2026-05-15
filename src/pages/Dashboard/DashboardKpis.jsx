@@ -10,6 +10,12 @@ import {
     Clock,
 } from "lucide-react";
 
+import {
+  FileText,
+  BadgeCheck,
+  Ban,
+} from "lucide-react";
+
 const formatMoney = (value) =>
     `Q ${Number(value ?? 0).toLocaleString("es-GT", {
         minimumFractionDigits: 2,

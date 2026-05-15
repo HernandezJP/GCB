@@ -10,27 +10,38 @@ import {
 import { getMovimientos } from "../../services/MovimientoService";
 import "./Dashboard.css";
 
+import DashboardChartsCheques from "./DashboardChartsCheques";
+import { getCheques } from "../../services/ChequeService";
+
 export default function DashboardPage() {
     const [cuentas, setCuentas] = useState([]);
     const [conciliaciones, setConciliaciones] = useState([]);
     const [movimientos, setMovimientos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [cheques, setCheques] = useState([]);
 
     const cargarDashboard = async () => {
         try {
             setLoading(true);
             setError("");
 
-            const [cuentasData, conciliacionesData, movimientosData] = await Promise.all([
-                getDashboardCuentas(),
-                getDashboardConciliaciones(),
-                getMovimientos(),
-            ]);
+            const [
+            cuentasData,
+            conciliacionesData,
+            movimientosData,
+            chequesData
+        ] = await Promise.all([
+            getDashboardCuentas(),
+            getDashboardConciliaciones(),
+            getMovimientos(),
+            getCheques(),
+        ]);
 
             setCuentas(cuentasData);
             setConciliaciones(conciliacionesData);
             setMovimientos(Array.isArray(movimientosData) ? movimientosData : []);
+            setCheques(Array.isArray(chequesData) ? chequesData : []);
         } catch (error) {
             console.error("Error al cargar dashboard:", error);
             setError("No se pudo cargar el dashboard.");
@@ -83,6 +94,16 @@ export default function DashboardPage() {
             0
         );
 
+        const totalCheques = cheques.length;
+
+        const chequesCobrados = cheques.filter((c) =>
+        String(c.estadoCheque ?? c.EstadoCheque ?? "").toLowerCase().includes("cobrado")
+        ).length;
+
+        const chequesCancelados = cheques.filter((c) =>
+        String(c.estadoCheque ?? c.EstadoCheque ?? "").toLowerCase().includes("cancelado")
+        ).length;
+
         return {
             totalCuentas,
             saldoTotal,
@@ -94,8 +115,11 @@ export default function DashboardPage() {
             diferenciaConciliacion,
             movimientosConciliados,
             pendientesConciliacion,
+            totalCheques,
+            chequesCobrados,
+            chequesCancelados,
         };
-    }, [cuentas, conciliaciones]);
+    }, [cuentas, conciliaciones, cheques]);
 
     return (
         <div className="dashboard-container">
@@ -143,11 +167,13 @@ export default function DashboardPage() {
                         <DashboardChartsMovimientos movimientos={movimientos} />
                     </div>
 
-                    <div className="dashboard-section dashboard-disabled">
-                        <div className="dashboard-section-header">
-                            <h2>Cheques</h2>
-                            <span>Próximamente: pendientes, cobrados, anulados y emitidos</span>
-                        </div>
+                    <div className="dashboard-section">
+                    <div className="dashboard-section-header">
+                        <h2>Cheques</h2>
+                        <span>Resumen de cheques emitidos, cobrados, cancelados y rechazados</span>
+                    </div>
+
+                    <DashboardChartsCheques cheques={cheques} />
                     </div>
                 </>
             )}
