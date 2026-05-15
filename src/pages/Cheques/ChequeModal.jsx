@@ -31,30 +31,25 @@ const getPersonaId = (p) =>
     g(p, 'peR_Persona', 'pER_Persona', 'per_persona', 'PER_Persona');
 
 const getPersonaNombre = (p) => {
-    const nombreCompleto =
-        g(
-            p,
-            'peR_Nombre_Completo',
-            'pER_Nombre_Completo',
-            'PER_Nombre_Completo',
-            'nombreCompleto',
-            'NombreCompleto'
-        ) ?? '';
-
-    if (nombreCompleto && String(nombreCompleto).trim().toLowerCase() !== 'string') {
-        return String(nombreCompleto).trim();
-    }
-
-    return [
-        g(p, 'peR_Primer_Nombre', 'pER_Primer_Nombre', 'PER_Primer_Nombre'),
-        g(p, 'peR_Segundo_Nombre', 'pER_Segundo_Nombre', 'PER_Segundo_Nombre'),
-        g(p, 'peR_Primer_Apellido', 'pER_Primer_Apellido', 'PER_Primer_Apellido'),
-        g(p, 'peR_Segundo_Apellido', 'pER_Segundo_Apellido', 'PER_Segundo_Apellido'),
+    const nombre = [
+        g(p, "peR_Primer_Nombre", "pER_Primer_Nombre", "PER_Primer_Nombre"),
+        g(p, "peR_Segundo_Nombre", "pER_Segundo_Nombre", "PER_Segundo_Nombre"),
+        g(p, "peR_Primer_Apellido", "pER_Primer_Apellido", "PER_Primer_Apellido"),
+        g(p, "peR_Segundo_Apellido", "pER_Segundo_Apellido", "PER_Segundo_Apellido"),
     ]
-        .filter(v => v && String(v).trim().toLowerCase() !== 'string')
-        .join(' ')
+        .filter(Boolean)
+        .join(" ")
+        .replace(/\s+/g, " ")
         .trim();
-};
+
+    if (nombre) return nombre;
+
+    return (
+        g(p, "peR_Razon_Social", "pER_Razon_Social", "PER_Razon_Social") ||
+        g(p, "nombreCompleto", "NombreCompleto") ||
+        "Sin nombre"
+    );
+    };
 
 const getPersonaNit = (p) =>
     g(p, 'peR_NIT', 'pER_NIT', 'PER_NIT', 'nit', 'NIT') ?? '';
@@ -63,10 +58,13 @@ const getPersonaDpi = (p) =>
     g(p, 'peR_DPI', 'pER_DPI', 'PER_DPI', 'dpi', 'DPI') ?? '';
 
 const getCuentaId = (c) =>
-    g(c, 'cuB_Cuenta', 'cUB_Cuenta', 'CUB_Cuenta');
+    g(c, 'cuB_Cuenta', 'cUB_Cuenta', 'cub_Cuenta', 'cub_cuenta', 'CUB_Cuenta');
 
 const getChequeraId = (q) =>
-    g(q, 'chQ_Chequera', 'cHQ_Chequera', 'CHQ_Chequera');
+    g(q, 'chQ_Chequera', 'cHQ_Chequera', 'chq_Chequera', 'chq_chequera', 'CHQ_Chequera');
+
+const getChequeraCuentaId = (q) =>
+    g(q, 'cuB_Cuenta', 'cUB_Cuenta', 'cub_Cuenta', 'cub_cuenta', 'CUB_Cuenta');
 
 const getEstadoChequeId = (e) =>
     g(e, 'esC_Estado_Cheque', 'eSC_Estado_Cheque', 'ESC_Estado_Cheque');
@@ -533,14 +531,36 @@ const ChequeModal = ({
                                 >
                                     <option value="">Seleccionar cuenta...</option>
                                     {cuentas.map((c, idx) => {
-                                        const cid = getCuentaId(c);
-                                        const num = g(c, 'cUB_Numero_Cuenta', 'cuB_Numero_Cuenta', 'CUB_Numero_Cuenta');
-                                        const ban = g(c, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? '';
-                                        return (
-                                            <option key={cid ?? `cuenta-${idx}`} value={cid ?? ''}>
-                                                {ban} — {num}
-                                            </option>
-                                        );
+                                    const cid = getCuentaId(c);
+
+                                    const num = g(
+                                        c,
+                                        "cUB_Numero_Cuenta",
+                                        "cuB_Numero_Cuenta",
+                                        "CUB_Numero_Cuenta"
+                                    );
+
+                                    const primerNombre = g(c, "cUB_Primer_Nombre", "cuB_Primer_Nombre", "CUB_Primer_Nombre");
+                                    const segundoNombre = g(c, "cUB_Segundo_Nombre", "cuB_Segundo_Nombre", "CUB_Segundo_Nombre");
+                                    const primerApellido = g(c, "cUB_Primer_Apellido", "cuB_Primer_Apellido", "CUB_Primer_Apellido");
+                                    const segundoApellido = g(c, "cUB_Segundo_Apellido", "cuB_Segundo_Apellido", "CUB_Segundo_Apellido");
+
+                                    const titular = [
+                                        primerNombre,
+                                        segundoNombre,
+                                        primerApellido,
+                                        segundoApellido,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ")
+                                        .replace(/\s+/g, " ")
+                                        .trim();
+
+                                    return (
+                                        <option key={cid ?? `cuenta-${idx}`} value={cid ?? ""}>
+                                        {num || "Sin número"} — {titular || "Sin titular"}
+                                        </option>
+                                    );
                                     })}
                                 </select>
                             </div>

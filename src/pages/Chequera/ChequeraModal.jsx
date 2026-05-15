@@ -23,6 +23,32 @@ const STEPS = ['Cuenta', 'Datos de chequera', 'Confirmar'];
 const getCuentaId = (c) =>
     g(c, 'cuB_Cuenta', 'cUB_Cuenta', 'CUB_Cuenta');
 
+const getCuentaTitular = (c) => {
+    const nombreCompleto = g(
+        c,
+        'nombreCompleto',
+        'NombreCompleto',
+        'cUB_Nombre_Completo',
+        'cuB_Nombre_Completo',
+        'CUB_Nombre_Completo'
+    );
+
+    if (nombreCompleto && String(nombreCompleto).trim().toLowerCase() !== 'string') {
+        return String(nombreCompleto).trim();
+    }
+
+    return [
+        g(c, 'cuB_Primer_Nombre', 'cUB_Primer_Nombre', 'CUB_Primer_Nombre'),
+        g(c, 'cuB_Segundo_Nombre', 'cUB_Segundo_Nombre', 'CUB_Segundo_Nombre'),
+        g(c, 'cuB_Primer_Apellido', 'cUB_Primer_Apellido', 'CUB_Primer_Apellido'),
+        g(c, 'cuB_Segundo_Apellido', 'cUB_Segundo_Apellido', 'CUB_Segundo_Apellido'),
+    ]
+        .filter(Boolean)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
 const ChequeraModal = ({
     isOpen,
     onClose,
@@ -240,11 +266,23 @@ const ChequeraModal = ({
                                 {cuentas.map((c, idx) => {
                                     const id = getCuentaId(c);
                                     const numero = g(c, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta');
-                                    const banco = g(c, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? '';
+                                    const banco = g(
+                                    c,
+                                    'baN_Nombre',
+                                    'bAN_Nombre',
+                                    'ban_Nombre',
+                                    'ban_nombre',
+                                    'BAN_Nombre',
+                                    'BAN_NOMBRE',
+                                    'bancoNombre',
+                                    'BancoNombre',
+                                    'banco',
+                                    'Banco'
+                                    ) ?? '';
 
                                     return (
                                         <option key={id ?? `cuenta-${idx}`} value={id ?? ''}>
-                                            {banco} — {numero}
+                                            {numero || 'Sin número'} — {banco || 'Sin banco'} — {getCuentaTitular(c) || 'Sin titular'}
                                         </option>
                                     );
                                 })}
@@ -404,7 +442,7 @@ const ChequeraModal = ({
                             {[
                                 [
                                     'Cuenta',
-                                    `${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') ?? ''} — ${g(cuentaSelec, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'}`
+                                    `${g(cuentaSelec, 'cuB_Numero_Cuenta', 'cUB_Numero_Cuenta', 'CUB_Numero_Cuenta') || '—'} — ${g(cuentaSelec, 'bAN_Nombre', 'ban_nombre', 'BAN_Nombre') || 'Sin banco'} — ${getCuentaTitular(cuentaSelec) || 'Sin titular'}`
                                 ],
                                 ['Serie', form.chQ_Serie || '—'],
                                 ['Desde', form.chQ_Numero_Desde || '—'],
