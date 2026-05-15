@@ -55,6 +55,12 @@ const getApellido = (c) =>
 const getSegundoApellido = (c) =>
   c?.cUB_Segundo_Apellido ?? c?.cuB_Segundo_Apellido ?? c?.cub_segundo_apellido ?? "";
 
+const getSaldoInicial = (c) =>
+  Number(c?.cUB_Saldo_Inicial ?? c?.cuB_Saldo_Inicial ?? c?.cub_saldo_inicial ?? 0);
+
+const getSaldoActual = (c) =>
+  Number(c?.cUB_Saldo_Actual ?? c?.cuB_Saldo_Actual ?? c?.cub_saldo_actual ?? 0);
+
 const getTitular = (c) =>
   [
     getNombre(c),
@@ -126,9 +132,10 @@ const MovimientoPage = () => {
       setPersonas(Array.isArray(personasResp) ? personasResp : []);
       setCuentas(listaCuentas);
 
-      if (listaCuentas.length > 0) {
-        setCuentaSeleccionadaId(String(getCuentaLocalId(listaCuentas[0])));
-      }
+      setCuentaSeleccionadaId((actual) => {
+          if (actual) return actual;
+          return listaCuentas.length > 0 ? String(getCuentaLocalId(listaCuentas[0])) : "";
+        });
     } catch (err) {
       console.error("Error cargando catálogos:", err);
     }
@@ -215,6 +222,8 @@ const MovimientoPage = () => {
       setIsModalOpen(false);
 
       await fetchMovimientos();
+      await fetchCatalogos();
+
     } catch (err) {
       console.error("Error guardando movimiento:", err);
       alert(err?.response?.data?.mensaje || "Error al guardar el movimiento.");
@@ -230,6 +239,8 @@ const MovimientoPage = () => {
       showSuccess("Movimiento anulado correctamente.");
 
       await fetchMovimientos();
+      await fetchCatalogos();
+
     } catch (err) {
       console.error("Error anulando movimiento:", err);
       alert(err?.response?.data?.mensaje || "Error al anular el movimiento.");
@@ -247,6 +258,14 @@ const MovimientoPage = () => {
   const simboloMoneda = cuentaSeleccionada
     ? getSimboloMoneda(cuentaSeleccionada)
     : "Q";
+
+  const saldoInicial = cuentaSeleccionada
+  ? getSaldoInicial(cuentaSeleccionada)
+  : 0;
+
+const saldoActual = cuentaSeleccionada
+  ? getSaldoActual(cuentaSeleccionada)
+  : 0;
 
   if (movimientoDetalle) {
     return (
@@ -303,6 +322,50 @@ const MovimientoPage = () => {
             <ArrowLeftRight size={20} color="#0284c7" />
           </div>
         </div>
+
+        <div
+        className="kpi-card"
+        style={{ borderLeft: "4px solid #64748b" }}
+      >
+        <div>
+          <div className="kpi-label">Saldo inicial</div>
+          <div
+            className="kpi-value"
+            style={{ color: "#334155" }}
+          >
+            {formatMoney(saldoInicial, simboloMoneda)}
+          </div>
+        </div>
+
+        <div
+          className="kpi-icon"
+          style={{ background: "#f1f5f9" }}
+        >
+          <ArrowLeftRight size={20} color="#64748b" />
+        </div>
+      </div>
+
+      <div
+        className="kpi-card"
+        style={{ borderLeft: "4px solid #0f766e" }}
+      >
+        <div>
+          <div className="kpi-label">Saldo actual</div>
+          <div
+            className="kpi-value"
+            style={{ color: "#0f766e" }}
+          >
+            {formatMoney(saldoActual, simboloMoneda)}
+          </div>
+        </div>
+
+        <div
+          className="kpi-icon"
+          style={{ background: "#ccfbf1" }}
+        >
+          <ArrowLeftRight size={20} color="#0f766e" />
+        </div>
+      </div>
 
         <div
           className="kpi-card"
