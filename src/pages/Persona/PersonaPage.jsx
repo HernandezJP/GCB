@@ -25,12 +25,26 @@ const getDpi = (p) => p?.peR_DPI ?? "";
 const getTipoPersona = (p) => p?.tipoPersonaDescripcion ?? "";
 
 const getNombreCompleto = (p) => {
-  const nombreApi = p?.nombreCompleto ?? "";
-  if (nombreApi.trim()) return nombreApi;
-
-  return `${p?.peR_Primer_Nombre ?? ""} ${p?.peR_Segundo_Nombre ?? ""} ${p?.peR_Primer_Apellido ?? ""} ${p?.peR_Segundo_Apellido ?? ""}`
+  const nombreArmado = [
+    p?.peR_Primer_Nombre ?? p?.PER_Primer_Nombre,
+    p?.peR_Segundo_Nombre ?? p?.PER_Segundo_Nombre,
+    p?.peR_Primer_Apellido ?? p?.PER_Primer_Apellido,
+    p?.peR_Segundo_Apellido ?? p?.PER_Segundo_Apellido,
+  ]
+    .filter(Boolean)
+    .join(" ")
     .replace(/\s+/g, " ")
     .trim();
+
+  if (nombreArmado) return nombreArmado;
+
+  return (
+    p?.peR_Razon_Social ??
+    p?.PER_Razon_Social ??
+    p?.nombreCompleto ??
+    p?.NombreCompleto ??
+    "—"
+  );
 };
 
 const PersonaPage = () => {
