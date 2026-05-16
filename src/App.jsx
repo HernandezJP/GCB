@@ -41,6 +41,7 @@ import ReporteMovimientosPage from "./pages/ReporteMovimientos/ReporteMovimiento
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import RolPage from "./pages/Rol/RolPage";
 import UsuarioPage from "./pages/Usuario/UsuarioPage";
+import ReporteChequesPage from "./pages/ReporteCheques/ReporteChequesPage";
 
 const Perfil = () => (
     <div style={{ padding: "2rem" }}>
@@ -158,6 +159,15 @@ function AppContent() {
                             </ProtectedRoute>
                         }
                     />
+                        <Route
+                            path="/reportes/cheques"
+                            element={
+                                <ProtectedRoute roles={["Administrador", "Contador"]}>
+                                    <ReporteChequesPage />
+                                </ProtectedRoute>
+                            }
+                        />
+
 
                     <Route
                         path="/rol"

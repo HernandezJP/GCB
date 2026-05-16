@@ -115,6 +115,12 @@ const menuGroups = [
                 path: "/reportes/movimientos",
                 roles: ["Administrador", "Contador"],
             },
+            {
+                title: "Reporte Cheques",
+                icon: <FileText size={18} />,
+                path: "/reportes/cheques",
+                roles: ["Administrador", "Contador"],
+            },
         ],
     },
     {
