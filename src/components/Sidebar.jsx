@@ -335,7 +335,7 @@ const Sidebar = () => {
 
                     {showLabels && (
                         <span className="logo-text">
-                            Core<span className="dot">Bank</span>
+                            GCB<span className="dot">BANK</span>
                         </span>
                     )}
                 </div>

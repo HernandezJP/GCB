@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CreditCard, Check, ArrowLeft, ChevronRight } from 'lucide-react';
+import {
+    X,
+    CreditCard,
+    Check,
+    ArrowLeft,
+    ChevronRight,
+    Search,
+    Plus
+} from 'lucide-react';
 
 // ── Helpers cuenta bancaria ───────────────────────────────────────
 export const getId        = (c) => c?.cUB_Cuenta          ?? c?.cuB_Cuenta         ?? c?.cub_cuenta;
@@ -18,12 +26,7 @@ export const getEstadoDesc= (c) => c?.eSC_Descripcion      ?? c?.esC_Descripcion
 export const getCubEstado = (c) => c?.cUB_Estado           ?? c?.cuB_Estado         ?? c?.cub_estado         ?? 'A';
 export const isActivo     = (c) => getCubEstado(c) === 'A';
 
-// ── Helpers catálogos con claves EXACTAS de la API ────────────────
-// bancos:        { baN_Banco, baN_Nombre }
-// tiposCuenta:   { tcU_Tipo_Cuenta, tcU_Descripcion }
-// tiposMoneda:   { tmO_Tipo_Moneda, tmO_Descripcion, tmO_Simbolo }
-// estadosCuenta: { esC_Estado_Cuenta, esC_Descripcion }
-
+// ── Helpers catálogos ────────────────────────────────────────────
 const getBancoId    = (b) => b?.baN_Banco        ?? b?.bAN_Banco        ?? b?.ban_banco;
 const getBancoNom   = (b) => b?.baN_Nombre       ?? b?.bAN_Nombre       ?? b?.ban_nombre       ?? '';
 
@@ -37,7 +40,6 @@ const getTMOSimbolo = (m) => m?.tmO_Simbolo      ?? m?.tMO_Simbolo      ?? m?.tm
 const getESCId      = (e) => e?.esC_Estado_Cuenta?? e?.eSC_Estado_Cuenta?? e?.esc_estado_cuenta;
 const getESCDesc    = (e) => e?.esC_Descripcion  ?? e?.eSC_Descripcion  ?? e?.esc_descripcion  ?? '';
 
-// ─────────────────────────────────────────────────────────────────
 const INITIAL = {
     BAN_Banco:            '',
     CUB_Numero_Cuenta:    '',
@@ -53,6 +55,138 @@ const INITIAL = {
 
 const STEPS = ['Datos bancarios', 'Titular y saldo', 'Confirmar'];
 
+const normalize = (value) =>
+    String(value ?? '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+
+const SearchableSelect = ({
+    label,
+    value,
+    options = [],
+    getOptionId,
+    getOptionText,
+    getSearchText,
+    onChange,
+    placeholder = 'Seleccionar...',
+    disabled = false,
+}) => {
+    const boxRef = useRef(null);
+    const [query, setQuery] = useState('');
+    const [open, setOpen] = useState(false);
+
+    const selected = useMemo(
+        () => options.find(item => String(getOptionId(item)) === String(value)),
+        [options, value, getOptionId]
+    );
+
+    useEffect(() => {
+        if (selected) {
+            setQuery(getOptionText(selected));
+        }
+    }, [selected, getOptionText]);
+
+    useEffect(() => {
+        const handleOutside = (event) => {
+            if (boxRef.current && !boxRef.current.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutside);
+        return () => document.removeEventListener('mousedown', handleOutside);
+    }, []);
+
+    const filteredOptions = useMemo(() => {
+        const q = normalize(query);
+
+        if (!q) return options.slice(0, 10);
+
+        return options
+            .filter(item => {
+                const visible = normalize(getOptionText(item));
+                const search = normalize(getSearchText ? getSearchText(item) : getOptionText(item));
+
+                return visible.includes(q) || search.includes(q);
+            })
+            .slice(0, 10);
+    }, [query, options, getOptionText, getSearchText]);
+
+    const handleChange = (e) => {
+        const text = e.target.value;
+        const q = normalize(text);
+
+        setQuery(text);
+        setOpen(true);
+
+        const exact = options.find(item => {
+            const visible = normalize(getOptionText(item));
+            const search = normalize(getSearchText ? getSearchText(item) : getOptionText(item));
+
+            return visible === q || search === q;
+        });
+
+        onChange(exact ? String(getOptionId(exact)) : '');
+    };
+
+    const handleSelect = (item) => {
+        onChange(String(getOptionId(item)));
+        setQuery(getOptionText(item));
+        setOpen(false);
+    };
+
+    return (
+        <div className="input-group searchable-select" ref={boxRef}>
+            <label>{label} *</label>
+
+            <div className={`searchable-control ${open ? 'is-open' : ''}`}>
+                <Search size={15} className="searchable-control-icon" />
+
+                <input
+                    type="text"
+                    value={query}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    autoComplete="off"
+                    onFocus={() => setOpen(true)}
+                    onChange={handleChange}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') setOpen(false);
+                    }}
+                />
+            </div>
+
+            {!disabled && open && (
+                <div className="searchable-menu">
+                    {filteredOptions.length > 0 ? (
+                        filteredOptions.map(item => {
+                            const id = String(getOptionId(item));
+
+                            return (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className={`searchable-item ${String(value) === id ? 'selected' : ''}`}
+                                    onClick={() => handleSelect(item)}
+                                >
+                                    <span>{getOptionText(item)}</span>
+                                    {String(value) === id && <Check size={14} />}
+                                </button>
+                            );
+                        })
+                    ) : (
+                        <div className="searchable-empty">
+                            No se encontraron resultados.
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const CuentaBancariaModal = ({
     isOpen, onClose, onSave, cuentaToEdit,
     bancos = [], tiposCuenta = [], tiposMoneda = [], estadosCuenta = []
@@ -65,51 +199,75 @@ const CuentaBancariaModal = ({
         if (isOpen) {
             if (cuentaToEdit) {
                 setForm({
-                    BAN_Banco:            String(getBanco(cuentaToEdit)    ?? ''),
-                    CUB_Numero_Cuenta:    getNumero(cuentaToEdit),
+                    BAN_Banco:            String(getBanco(cuentaToEdit) ?? ''),
+                    CUB_Numero_Cuenta:    String(getNumero(cuentaToEdit) ?? '').replace(/\D/g, ''),
                     CUB_Primer_Nombre:    getNombre(cuentaToEdit),
                     CUB_Segundo_Nombre:   cuentaToEdit?.cUB_Segundo_Nombre ?? cuentaToEdit?.cuB_Segundo_Nombre ?? '',
                     CUB_Primer_Apellido:  getApellido(cuentaToEdit),
                     CUB_Segundo_Apellido: cuentaToEdit?.cUB_Segundo_Apellido ?? cuentaToEdit?.cuB_Segundo_Apellido ?? '',
                     TCU_Tipo_Cuenta:      String(cuentaToEdit?.tCU_Tipo_Cuenta ?? cuentaToEdit?.tcU_Tipo_Cuenta ?? cuentaToEdit?.tcu_tipo_cuenta ?? ''),
                     TMO_Tipo_Moneda:      String(cuentaToEdit?.tMO_Tipo_Moneda ?? cuentaToEdit?.tmO_Tipo_Moneda ?? cuentaToEdit?.tmo_tipo_moneda ?? ''),
-                    CUB_Saldo_Inicial:    getSaldoInicial(cuentaToEdit),
+                    CUB_Saldo_Inicial:    String(getSaldoInicial(cuentaToEdit) ?? ''),
                     ESC_Estado_Cuenta:    String(cuentaToEdit?.eSC_Estado_Cuenta ?? cuentaToEdit?.esC_Estado_Cuenta ?? cuentaToEdit?.esc_estado_cuenta ?? ''),
                 });
             } else {
                 setForm(INITIAL);
             }
+
             setStep(0);
         }
     }, [isOpen, cuentaToEdit]);
 
     if (!isOpen) return null;
 
-    const setText = key => e => setForm(f => ({ ...f, [key]: e.target.value }));
+    const setValue = (key, value) => {
+        setForm(prev => ({ ...prev, [key]: value }));
+    };
 
-    // ── Validaciones ─────────────────────────────────────────────
+    const onlyNumbers = key => e => {
+        setValue(key, e.target.value.replace(/\D/g, ''));
+    };
+
+    const onlyNames = key => e => {
+        const value = e.target.value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]/g, '');
+        setValue(key, value.replace(/\s{2,}/g, ' '));
+    };
+
+    const onlyPositiveMoney = key => e => {
+        const value = e.target.value.replace(',', '.');
+
+        if (value === '') {
+            setValue(key, '');
+            return;
+        }
+
+        if (/^\d*\.?\d{0,2}$/.test(value) && Number(value) >= 0) {
+            setValue(key, value);
+        }
+    };
+
     const ok0 =
-        form.BAN_Banco.trim()        !== '' &&
-        form.CUB_Numero_Cuenta.trim()!== '' &&
-        form.TCU_Tipo_Cuenta.trim()  !== '' &&
-        form.TMO_Tipo_Moneda.trim()  !== '';
+        form.BAN_Banco.trim()         !== '' &&
+        form.CUB_Numero_Cuenta.trim() !== '' &&
+        form.TCU_Tipo_Cuenta.trim()   !== '' &&
+        form.TMO_Tipo_Moneda.trim()   !== '';
 
     const ok1 =
         form.CUB_Primer_Nombre.trim()   !== '' &&
         form.CUB_Primer_Apellido.trim() !== '' &&
         form.CUB_Saldo_Inicial          !== '' &&
+        Number(form.CUB_Saldo_Inicial)  >= 0 &&
         form.ESC_Estado_Cuenta.trim()   !== '';
 
-    // ── Lookups para el resumen ───────────────────────────────────
-    const bancoSel   = bancos.find(b        => String(getBancoId(b)) === form.BAN_Banco);
-    const tipoCueSel = tiposCuenta.find(t   => String(getTCUId(t))   === form.TCU_Tipo_Cuenta);
-    const tipoMonSel = tiposMoneda.find(m   => String(getTMOId(m))   === form.TMO_Tipo_Moneda);
-    const estadoSel  = estadosCuenta.find(e => String(getESCId(e))   === form.ESC_Estado_Cuenta);
+    const bancoSel   = bancos.find(b => String(getBancoId(b)) === form.BAN_Banco);
+    const tipoCueSel = tiposCuenta.find(t => String(getTCUId(t)) === form.TCU_Tipo_Cuenta);
+    const tipoMonSel = tiposMoneda.find(m => String(getTMOId(m)) === form.TMO_Tipo_Moneda);
+    const estadoSel  = estadosCuenta.find(e => String(getESCId(e)) === form.ESC_Estado_Cuenta);
     const simbolo    = getTMOSimbolo(tipoMonSel);
 
-    // ── Submit: convierte a Number para la BD ─────────────────────
     const handleSubmit = async () => {
         setSaving(true);
+
         try {
             await onSave({
                 ...form,
@@ -127,12 +285,14 @@ const CuentaBancariaModal = ({
     const StepDot = ({ idx }) => {
         const done   = idx < step;
         const active = idx === step;
+
         return (
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
-                <div className={`step-dot ${done?'done':active?'active':'idle'}`}>
-                    {done ? <Check size={13}/> : idx+1}
+                <div className={`step-dot ${done ? 'done' : active ? 'active' : 'idle'}`}>
+                    {done ? <Check size={13}/> : idx + 1}
                 </div>
-                <span className="step-label" style={{ color: active?'#0284c7':done?'#15803d':'#64748b' }}>
+
+                <span className="step-label" style={{ color: active ? '#0284c7' : done ? '#15803d' : '#64748b' }}>
                     {STEPS[idx]}
                 </span>
             </div>
@@ -141,167 +301,195 @@ const CuentaBancariaModal = ({
 
     return createPortal(
         <div className="modal-backdrop">
-            <div className="modal-card">
+            <div className="modal-card cuenta-modal-card">
                 <div className="modal-header">
                     <div className="modal-title-group">
-                        <div className="modal-icon"><CreditCard size={20}/></div>
+                        <div className="modal-icon">
+                            <CreditCard size={20}/>
+                        </div>
+
                         <div>
                             <h2>{cuentaToEdit ? 'Editar cuenta' : 'Nueva cuenta bancaria'}</h2>
-                            <p>Paso {step+1} de {STEPS.length}</p>
+                            <p>Paso {step + 1} de {STEPS.length}</p>
                         </div>
                     </div>
-                    <button className="close-btn" onClick={onClose} disabled={saving}><X size={18}/></button>
+
+                    <button className="close-btn" onClick={onClose} disabled={saving} type="button">
+                        <X size={18}/>
+                    </button>
                 </div>
 
                 <div className="modal-body">
                     <div className="stepper">
-                        {STEPS.map((_,i) => (
+                        {STEPS.map((_, i) => (
                             <React.Fragment key={i}>
                                 <StepDot idx={i}/>
-                                {i < STEPS.length-1 && (
-                                    <div className="step-line" style={{ background: i<step?'#15803d':'#e2e8f0' }}/>
+
+                                {i < STEPS.length - 1 && (
+                                    <div
+                                        className="step-line"
+                                        style={{ background: i < step ? '#15803d' : '#e2e8f0' }}
+                                    />
                                 )}
                             </React.Fragment>
                         ))}
                     </div>
 
-                    {/* ── PASO 0 ── */}
                     {step === 0 && (
                         <>
                             <div className="form-row">
-                                <div className="input-group">
-                                    <label>Banco *</label>
-                                    <select value={form.BAN_Banco} onChange={setText('BAN_Banco')} disabled={saving}>
-                                        <option value="">Seleccionar banco...</option>
-                                        {bancos.map(b => (
-                                            <option key={getBancoId(b)} value={String(getBancoId(b))}>
-                                                {getBancoNom(b)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <SearchableSelect
+                                    label="Banco"
+                                    value={form.BAN_Banco}
+                                    options={bancos}
+                                    getOptionId={getBancoId}
+                                    getOptionText={getBancoNom}
+                                    getSearchText={getBancoNom}
+                                    onChange={(value) => setValue('BAN_Banco', value)}
+                                    placeholder="Seleccionar banco..."
+                                    disabled={saving}
+                                />
+
                                 <div className="input-group">
                                     <label>Número de cuenta *</label>
                                     <input
                                         value={form.CUB_Numero_Cuenta}
-                                        onChange={setText('CUB_Numero_Cuenta')}
-                                        placeholder="Ej. 041-001234-5"
+                                        onChange={onlyNumbers('CUB_Numero_Cuenta')}
+                                        placeholder="Ej. 0410012345"
+                                        inputMode="numeric"
                                         disabled={saving || !!cuentaToEdit}
                                     />
                                 </div>
                             </div>
+
                             <div className="form-row">
-                                <div className="input-group">
-                                    <label>Tipo de cuenta *</label>
-                                    <select
-                                        value={form.TCU_Tipo_Cuenta}
-                                        onChange={setText('TCU_Tipo_Cuenta')}
-                                        disabled={saving || !!cuentaToEdit}
-                                    >
-                                        <option value="">Seleccionar tipo...</option>
-                                        {tiposCuenta.map(t => (
-                                            <option key={getTCUId(t)} value={String(getTCUId(t))}>
-                                                {getTCUDesc(t)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="input-group">
-                                    <label>Moneda *</label>
-                                    <select
-                                        value={form.TMO_Tipo_Moneda}
-                                        onChange={setText('TMO_Tipo_Moneda')}
-                                        disabled={saving || !!cuentaToEdit}
-                                    >
-                                        <option value="">Seleccionar moneda...</option>
-                                        {tiposMoneda.map(m => (
-                                            <option key={getTMOId(m)} value={String(getTMOId(m))}>
-                                                {getTMOSimbolo(m)} — {getTMODesc(m)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <SearchableSelect
+                                    label="Tipo de cuenta"
+                                    value={form.TCU_Tipo_Cuenta}
+                                    options={tiposCuenta}
+                                    getOptionId={getTCUId}
+                                    getOptionText={getTCUDesc}
+                                    getSearchText={getTCUDesc}
+                                    onChange={(value) => setValue('TCU_Tipo_Cuenta', value)}
+                                    placeholder="Seleccionar tipo..."
+                                    disabled={saving || !!cuentaToEdit}
+                                />
+
+                                <SearchableSelect
+                                    label="Moneda"
+                                    value={form.TMO_Tipo_Moneda}
+                                    options={tiposMoneda}
+                                    getOptionId={getTMOId}
+                                    getOptionText={(m) => `${getTMOSimbolo(m)} — ${getTMODesc(m)}`}
+                                    getSearchText={(m) => getTMODesc(m)}
+                                    onChange={(value) => setValue('TMO_Tipo_Moneda', value)}
+                                    placeholder="Seleccionar moneda..."
+                                    disabled={saving || !!cuentaToEdit}
+                                />
                             </div>
                         </>
                     )}
 
-                    {/* ── PASO 1 ── */}
                     {step === 1 && (
                         <>
-                            <div style={{ background:'#f0f9ff', border:'1px solid #bae6fd', borderRadius:8, padding:'10px 14px', fontSize:12, color:'#0369a1', marginBottom:15 }}>
+                            <div className="account-summary-strip">
                                 <strong>{getBancoNom(bancoSel)}</strong>
-                                {' · '}{getTCUDesc(tipoCueSel)}
-                                {' · '}<code style={{ fontFamily:'monospace' }}>{form.CUB_Numero_Cuenta}</code>
+                                <span>{getTCUDesc(tipoCueSel)}</span>
+                                <code>{form.CUB_Numero_Cuenta}</code>
                             </div>
+
                             <div className="form-row">
                                 <div className="input-group">
                                     <label>Primer nombre *</label>
-                                    <input value={form.CUB_Primer_Nombre} onChange={setText('CUB_Primer_Nombre')} placeholder="Nombre" disabled={saving}/>
+                                    <input
+                                        value={form.CUB_Primer_Nombre}
+                                        onChange={onlyNames('CUB_Primer_Nombre')}
+                                        placeholder="Nombre"
+                                        disabled={saving}
+                                    />
                                 </div>
+
                                 <div className="input-group">
                                     <label>Segundo nombre</label>
-                                    <input value={form.CUB_Segundo_Nombre} onChange={setText('CUB_Segundo_Nombre')} placeholder="Segundo nombre" disabled={saving}/>
+                                    <input
+                                        value={form.CUB_Segundo_Nombre}
+                                        onChange={onlyNames('CUB_Segundo_Nombre')}
+                                        placeholder="Segundo nombre"
+                                        disabled={saving}
+                                    />
                                 </div>
                             </div>
+
                             <div className="form-row">
                                 <div className="input-group">
                                     <label>Primer apellido *</label>
-                                    <input value={form.CUB_Primer_Apellido} onChange={setText('CUB_Primer_Apellido')} placeholder="Apellido" disabled={saving}/>
+                                    <input
+                                        value={form.CUB_Primer_Apellido}
+                                        onChange={onlyNames('CUB_Primer_Apellido')}
+                                        placeholder="Apellido"
+                                        disabled={saving}
+                                    />
                                 </div>
+
                                 <div className="input-group">
                                     <label>Segundo apellido</label>
-                                    <input value={form.CUB_Segundo_Apellido} onChange={setText('CUB_Segundo_Apellido')} placeholder="Segundo apellido" disabled={saving}/>
+                                    <input
+                                        value={form.CUB_Segundo_Apellido}
+                                        onChange={onlyNames('CUB_Segundo_Apellido')}
+                                        placeholder="Segundo apellido"
+                                        disabled={saving}
+                                    />
                                 </div>
                             </div>
+
                             <div className="form-row">
                                 <div className="input-group">
                                     <label>Saldo inicial *</label>
-                                    <div style={{ position:'relative' }}>
-                                        <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'#0284c7', fontWeight:700, fontSize:13 }}>
-                                            {simbolo}
-                                        </span>
+
+                                    <div className="money-input">
+                                        <span>{simbolo}</span>
+
                                         <input
                                             value={form.CUB_Saldo_Inicial}
-                                            onChange={setText('CUB_Saldo_Inicial')}
+                                            onChange={onlyPositiveMoney('CUB_Saldo_Inicial')}
                                             placeholder="0.00"
-                                            type="number"
-                                            step="0.01"
-                                            style={{ paddingLeft:28 }}
+                                            inputMode="decimal"
                                             disabled={saving || !!cuentaToEdit}
                                         />
                                     </div>
                                 </div>
-                                <div className="input-group">
-                                    <label>Estado de cuenta *</label>
-                                    <select value={form.ESC_Estado_Cuenta} onChange={setText('ESC_Estado_Cuenta')} disabled={saving}>
-                                        <option value="">Seleccionar estado...</option>
-                                        {estadosCuenta.map(e => (
-                                            <option key={getESCId(e)} value={String(getESCId(e))}>
-                                                {getESCDesc(e)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+
+                                <SearchableSelect
+                                    label="Estado de cuenta"
+                                    value={form.ESC_Estado_Cuenta}
+                                    options={estadosCuenta}
+                                    getOptionId={getESCId}
+                                    getOptionText={getESCDesc}
+                                    getSearchText={getESCDesc}
+                                    onChange={(value) => setValue('ESC_Estado_Cuenta', value)}
+                                    placeholder="Seleccionar estado..."
+                                    disabled={saving}
+                                />
                             </div>
                         </>
                     )}
 
-                    {/* ── PASO 2: Resumen ── */}
                     {step === 2 && (
-                        <div style={{ background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:10, padding:16 }}>
-                            <p style={{ margin:'0 0 12px', fontWeight:600, color:'#0f172a', fontSize:13 }}>Resumen de la cuenta</p>
+                        <div className="confirm-card">
+                            <p>Resumen de la cuenta</p>
+
                             {[
-                                ['Banco',          getBancoNom(bancoSel)],
-                                ['Número',         form.CUB_Numero_Cuenta],
+                                ['Banco', getBancoNom(bancoSel)],
+                                ['Número', form.CUB_Numero_Cuenta],
                                 ['Tipo de cuenta', getTCUDesc(tipoCueSel)],
-                                ['Moneda',         `${simbolo} — ${getTMODesc(tipoMonSel)}`],
-                                ['Titular',        `${form.CUB_Primer_Nombre} ${form.CUB_Primer_Apellido}`],
-                                ['Saldo inicial',  `${simbolo} ${parseFloat(form.CUB_Saldo_Inicial||0).toLocaleString('es-GT',{minimumFractionDigits:2})}`],
-                                ['Estado',         getESCDesc(estadoSel)],
-                            ].map(([k,v]) => (
-                                <div key={k} style={{ display:'flex', justifyContent:'space-between', padding:'7px 0', borderBottom:'1px solid #dcfce7', fontSize:13 }}>
-                                    <span style={{ color:'#64748b' }}>{k}</span>
-                                    <span style={{ fontWeight:500, color:'#0f172a' }}>{v}</span>
+                                ['Moneda', `${simbolo} — ${getTMODesc(tipoMonSel)}`],
+                                ['Titular', `${form.CUB_Primer_Nombre} ${form.CUB_Primer_Apellido}`],
+                                ['Saldo inicial', `${simbolo} ${parseFloat(form.CUB_Saldo_Inicial || 0).toLocaleString('es-GT', { minimumFractionDigits: 2 })}`],
+                                ['Estado', getESCDesc(estadoSel)],
+                            ].map(([k, v]) => (
+                                <div key={k} className="confirm-row">
+                                    <span>{k}</span>
+                                    <strong>{v || '—'}</strong>
                                 </div>
                             ))}
                         </div>
@@ -310,26 +498,36 @@ const CuentaBancariaModal = ({
 
                 <div className="modal-footer">
                     {step > 0 && (
-                        <button className="btn-secondary" onClick={() => setStep(s => s-1)} disabled={saving}>
+                        <button className="btn-secondary" onClick={() => setStep(s => s - 1)} disabled={saving} type="button">
                             <ArrowLeft size={14}/> Atrás
                         </button>
                     )}
-                    <button className="btn-cancel" onClick={onClose} disabled={saving}>Cancelar</button>
-                    {step < 2
-                        ? <button
+
+                    <button className="btn-cancel" onClick={onClose} disabled={saving} type="button">
+                        Cancelar
+                    </button>
+
+                    {step < 2 ? (
+                        <button
                             className="btn-save"
-                            style={{ opacity: (step===0 ? ok0 : ok1) ? 1 : 0.5 }}
-                            onClick={() => { if (step===0 ? ok0 : ok1) setStep(s => s+1); }}
-                            disabled={saving || (step===0 ? !ok0 : !ok1)}
-                          >
-                            Siguiente <ChevronRight size={14}/>
-                          </button>
-                        : <button className="btn-save" onClick={handleSubmit} disabled={saving}>
+                            style={{ opacity: (step === 0 ? ok0 : ok1) ? 1 : 0.5 }}
+                            onClick={() => {
+                                if (step === 0 ? ok0 : ok1) setStep(s => s + 1);
+                            }}
+                            disabled={saving || (step === 0 ? !ok0 : !ok1)}
+                            type="button"
+                        >
+                            Siguiente <Plus size={14}/>
+                        </button>
+                    ) : (
+                        <button className="btn-save" onClick={handleSubmit} disabled={saving} type="button">
                             {saving ? 'Guardando...' : (
-                                <><Check size={14}/> {cuentaToEdit ? 'Guardar cambios' : 'Crear cuenta'}</>
+                                <>
+                                    <Check size={14}/> {cuentaToEdit ? 'Guardar cambios' : 'Crear cuenta'}
+                                </>
                             )}
-                          </button>
-                    }
+                        </button>
+                    )}
                 </div>
             </div>
         </div>,
