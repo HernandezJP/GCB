@@ -5,8 +5,24 @@ const getValue = (obj, keys) => {
     return "";
 };
 
-const formatMoney = (value) => {
-    return `Q ${Number(value ?? 0).toFixed(2)}`;
+const getSimboloMoneda = (item) => {
+    const moneda = String(
+        getValue(item, [
+            "tmO_Descripcion",
+            "tMO_Descripcion",
+            "TMO_Descripcion",
+            "tmo_descripcion",
+            "moneda",
+            "Moneda",
+        ])
+    ).toLowerCase();
+
+    if (moneda.includes("dólar") || moneda.includes("dolar") || moneda.includes("usd")) return "$";
+    return "Q";
+};
+
+const formatMoney = (value, item) => {
+    return `${getSimboloMoneda(item)} ${Number(value ?? 0).toFixed(2)}`;
 };
 
 const formatDate = (fecha) => {
@@ -65,7 +81,7 @@ export default function ReporteMovimientosTable({ data }) {
                             <th>Débito</th>
                             <th>Crédito</th>
                             <th>Recargo</th>
-                            <th>Saldo</th>
+                            <th>Saldo después del movimiento</th>
                             <th>Estado</th>
                         </tr>
                     </thead>
@@ -155,34 +171,22 @@ export default function ReporteMovimientosTable({ data }) {
 
                                     <td className="money money-red">
                                         {debito > 0
-                                            ? formatMoney(debito)
+                                            ? formatMoney(debito, item)
                                             : "—"}
                                     </td>
 
                                     <td className="money money-green">
                                         {credito > 0
-                                            ? formatMoney(credito)
+                                            ? formatMoney(credito, item)
                                             : "—"}
                                     </td>
 
                                     <td className="money">
-                                        {formatMoney(
-                                            getValue(item, [
-                                                "moV_Recargo",
-                                                "mOV_Recargo",
-                                                "mov_recargo",
-                                            ])
-                                        )}
+                                        {formatMoney(getValue(item, ["moV_Recargo", "mOV_Recargo", "mov_recargo"]), item)}
                                     </td>
 
                                     <td className="money money-strong">
-                                        {formatMoney(
-                                            getValue(item, [
-                                                "moV_Saldo",
-                                                "mOV_Saldo",
-                                                "mov_saldo",
-                                            ])
-                                        )}
+                                        {formatMoney(getValue(item, ["moV_Saldo", "mOV_Saldo", "mov_saldo"]), item)}
                                     </td>
 
                                     <td>

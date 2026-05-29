@@ -33,7 +33,6 @@ const g = (o, ...ks) => {
         const v = o?.[k];
         if (v != null) return v;
     }
-
     return null;
 };
 
@@ -75,10 +74,7 @@ const getCuentaTitular = (c) => {
             'CUB_Nombre_Completo'
         ) ?? '';
 
-    if (
-        nombreCompleto &&
-        String(nombreCompleto).trim().toLowerCase() !== 'string'
-    ) {
+    if (nombreCompleto && String(nombreCompleto).trim().toLowerCase() !== 'string') {
         return String(nombreCompleto).trim();
     }
 
@@ -109,15 +105,34 @@ const buildCuentaLabel = (c, bancos) => {
 
     let label = numero;
 
-    if (bancoNombre) {
-        label += ` - ${bancoNombre}`;
-    }
-
-    if (titular) {
-        label += ` - ${titular}`;
-    }
+    if (bancoNombre) label += ` - ${bancoNombre}`;
+    if (titular) label += ` - ${titular}`;
 
     return label;
+};
+
+const getSimboloMoneda = (c) =>
+    c?.tMO_Simbolo ??
+    c?.tmO_Simbolo ??
+    c?.TMO_Simbolo ??
+    c?.tmo_simbolo ??
+    'Q';
+
+const getDescripcionMoneda = (c) =>
+    c?.tMO_Descripcion ??
+    c?.tmO_Descripcion ??
+    c?.TMO_Descripcion ??
+    c?.tmo_descripcion ??
+    '';
+
+const getLabelMoneda = (simbolo, descripcion = '') => {
+    const desc = String(descripcion).toLowerCase();
+
+    if (simbolo === '$' || desc.includes('dolar') || desc.includes('dólar') || desc.includes('usd')) {
+        return `Dólares (${simbolo})`;
+    }
+
+    return `Quetzales (${simbolo})`;
 };
 
 const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
@@ -125,9 +140,8 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const [filtered, setFiltered] = useState([]);
     const [search, setSearch] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('');
-    const [filtroCuenta, setFiltroCuenta] = useState(
-        cuentaId ? String(cuentaId) : ''
-    );
+    const [filtroMoneda, setFiltroMoneda] = useState('');
+    const [filtroCuenta, setFiltroCuenta] = useState(cuentaId ? String(cuentaId) : '');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -196,9 +210,14 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const chequesConSerie = useMemo(() => {
         return cheques.map((ch) => {
             const chequeraId = getChequeChequeraId(ch);
+            const cuentaIdCheque = getChequeCuentaId(ch);
 
             const chequera = chequeras.find(
                 (q) => String(getChequeraId(q)) === String(chequeraId)
+            );
+
+            const cuenta = cuentas.find(
+                (c) => String(getCuentaId(c)) === String(cuentaIdCheque)
             );
 
             const serie = getChequeraSerie(chequera);
@@ -211,9 +230,27 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                     ch?.CHQ_Serie ??
                     serie ??
                     '',
+
+                tMO_Simbolo:
+                    ch?.tMO_Simbolo ??
+                    ch?.tmO_Simbolo ??
+                    ch?.TMO_Simbolo ??
+                    cuenta?.tMO_Simbolo ??
+                    cuenta?.tmO_Simbolo ??
+                    cuenta?.TMO_Simbolo ??
+                    'Q',
+
+                tMO_Descripcion:
+                    ch?.tMO_Descripcion ??
+                    ch?.tmO_Descripcion ??
+                    ch?.TMO_Descripcion ??
+                    cuenta?.tMO_Descripcion ??
+                    cuenta?.tmO_Descripcion ??
+                    cuenta?.TMO_Descripcion ??
+                    'Quetzales',
             };
         });
-    }, [cheques, chequeras]);
+    }, [cheques, chequeras, cuentas]);
 
     useEffect(() => {
         let result = [...chequesConSerie];
@@ -228,6 +265,12 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             result = result.filter((c) => getChEstado(c) === filtroEstado);
         }
 
+        if (filtroMoneda) {
+            result = result.filter(
+                (c) => String(getSimboloMoneda(c)) === String(filtroMoneda)
+            );
+        }
+
         if (search.trim()) {
             const q = search.toLowerCase();
 
@@ -240,7 +283,14 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         }
 
         setFiltered(result);
-    }, [chequesConSerie, search, filtroEstado, filtroCuenta, modoDetalleCuenta]);
+    }, [
+        chequesConSerie,
+        search,
+        filtroEstado,
+        filtroMoneda,
+        filtroCuenta,
+        modoDetalleCuenta,
+    ]);
 
     const cuentasFiltradasModal = useMemo(() => {
         if (!modoDetalleCuenta || !cuentaId) return cuentas;
@@ -257,6 +307,31 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                 String(cuentaId)
         );
     }, [chequeras, cuentaId, modoDetalleCuenta]);
+
+    const estadosCatalogo = estadosCheque
+        .map((e) =>
+            e?.eSC_Descripcion ??
+            e?.esC_Descripcion ??
+            e?.ESC_Descripcion
+        )
+        .filter(Boolean);
+
+    const monedasDisponibles = [
+        ...new Map(
+            chequesConSerie.map((c) => {
+                const simbolo = getSimboloMoneda(c);
+                const descripcion = getDescripcionMoneda(c);
+                return [
+                    simbolo,
+                    {
+                        simbolo,
+                        descripcion,
+                        label: getLabelMoneda(simbolo, descripcion),
+                    },
+                ];
+            })
+        ).values(),
+    ];
 
     const showOk = (msg) => {
         setSuccess(msg);
@@ -289,15 +364,21 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         }
 
         try {
+            const cuentaActual = filtroCuenta;
+
             await cambiarEstadoCheque(chequeId, {
                 ESC_Estado_Cheque: parseInt(estadoId, 10),
             });
 
             showOk(`Estado del cheque actualizado a: ${desc}`);
-
-            if (detalle) setDetalle(null);
+            setDetalle(null);
 
             await fetchCheques();
+            await fetchCatalogos();
+
+            if (cuentaActual) {
+                setFiltroCuenta(cuentaActual);
+            }
         } catch (err) {
             showErr(err?.response?.data?.mensaje ?? 'Error al cambiar el estado.');
         }
@@ -307,6 +388,8 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         setSaving(true);
 
         try {
+            const cuentaActual = filtroCuenta;
+
             const dtoFinal =
                 modoDetalleCuenta && cuentaId
                     ? { ...dto, CUB_Cuenta: parseInt(cuentaId, 10) }
@@ -315,10 +398,14 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             await createCheque(dtoFinal);
 
             setModalOpen(false);
-
-            showOk('Cheque emitido correctamente. Movimiento de egreso y saldo actualizados.');
+            showOk('Cheque emitido correctamente. Movimiento de egreso y saldo actualizado.');
 
             await fetchCheques();
+            await fetchCatalogos();
+
+            if (cuentaActual) {
+                setFiltroCuenta(cuentaActual);
+            }
         } catch (err) {
             showErr(err?.response?.data?.mensaje ?? 'Error al emitir el cheque.');
         } finally {
@@ -345,10 +432,6 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const totalMonto = baseKpis
         .filter((c) => getChEstado(c) !== 'Cancelado')
         .reduce((s, c) => s + (Number(getChMonto(c)) || 0), 0);
-
-    const estadosUnicos = [
-        ...new Set(chequesConSerie.map(getChEstado).filter(Boolean)),
-    ];
 
     if (detalle) {
         return (
@@ -403,35 +486,13 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
             <div className="che-kpi-grid">
                 {[
-                    {
-                        label: 'Total',
-                        val: filtered.length,
-                        color: '#0284c7',
-                        bg: '#e0f2fe',
-                    },
-                    {
-                        label: 'Emitidos',
-                        val: emitidos,
-                        color: '#1d4ed8',
-                        bg: '#dbeafe',
-                    },
-                    {
-                        label: 'Cobrados',
-                        val: cobrados,
-                        color: '#15803d',
-                        bg: '#dcfce7',
-                    },
-                    {
-                        label: 'Cancelados',
-                        val: cancelados,
-                        color: '#64748b',
-                        bg: '#f1f5f9',
-                    },
+                    { label: 'Total', val: filtered.length, color: '#0284c7', bg: '#e0f2fe' },
+                    { label: 'Emitidos', val: emitidos, color: '#1d4ed8', bg: '#dbeafe' },
+                    { label: 'Cobrados', val: cobrados, color: '#15803d', bg: '#dcfce7' },
+                    { label: 'Cancelados', val: cancelados, color: '#64748b', bg: '#f1f5f9' },
                     {
                         label: 'Total emitido',
-                        val: `Q ${totalMonto.toLocaleString('es-GT', {
-                            minimumFractionDigits: 2,
-                        })}`,
+                        val: `Q ${totalMonto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}`,
                         color: '#b91c1c',
                         bg: '#fee2e2',
                     },
@@ -443,7 +504,6 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                     >
                         <div>
                             <div className="che-kpi-label">{s.label}</div>
-
                             <div
                                 className="che-kpi-value"
                                 style={{
@@ -505,14 +565,28 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
                 <select
                     className="che-filter-select"
+                    value={filtroMoneda}
+                    onChange={(e) => setFiltroMoneda(e.target.value)}
+                >
+                    <option value="">Todas las monedas</option>
+
+                    {monedasDisponibles.map((m) => (
+                        <option key={m.simbolo} value={m.simbolo}>
+                            {m.label}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    className="che-filter-select"
                     value={filtroEstado}
                     onChange={(e) => setFiltroEstado(e.target.value)}
                 >
                     <option value="">Todos los estados</option>
 
-                    {estadosUnicos.map((e) => (
-                        <option key={e} value={e}>
-                            {e}
+                    {estadosCatalogo.map((estado) => (
+                        <option key={estado} value={estado}>
+                            {estado}
                         </option>
                     ))}
                 </select>

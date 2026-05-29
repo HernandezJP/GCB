@@ -13,8 +13,24 @@ const getValue = (obj, keys) => {
     return "";
 };
 
-const formatMoney = (value) =>
-    `Q ${Number(value ?? 0).toLocaleString("es-GT", {
+const getSimboloMoneda = (item) => {
+    const moneda = String(
+        getValue(item, [
+            "tmO_Descripcion",
+            "tMO_Descripcion",
+            "TMO_Descripcion",
+            "tmo_descripcion",
+            "moneda",
+            "Moneda",
+        ])
+    ).toLowerCase();
+
+    if (moneda.includes("dólar") || moneda.includes("dolar") || moneda.includes("usd")) return "$";
+    return "Q";
+};
+
+const formatMoney = (value, item = {}) =>
+    `${getSimboloMoneda(item)} ${Number(value ?? 0).toLocaleString("es-GT", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
@@ -220,23 +236,23 @@ export const exportToExcel = (
         ["RESUMEN FINANCIERO"],
         [
             "Saldo inicial",
-            formatMoney(resumen.saldoInicial),
+            formatMoney(resumen.saldoInicial, dataOrdenada[0]),
         ],
         [
             "Total créditos",
-            formatMoney(resumen.totalCreditos),
+            formatMoney(resumen.totalCreditos, dataOrdenada[0]),
         ],
         [
             "Total débitos",
-            formatMoney(resumen.totalDebitos),
+            formatMoney(resumen.totalDebitos, dataOrdenada[0]),
         ],
         [
             "Total recargos",
-            formatMoney(resumen.totalRecargos),
+            formatMoney(resumen.totalRecargos, dataOrdenada[0]),
         ],
         [
             "Saldo final",
-            formatMoney(resumen.saldoFinal),
+            formatMoney(resumen.saldoFinal, dataOrdenada[0]),
         ],
         [
             "Total movimientos",
@@ -287,24 +303,20 @@ export const exportToExcel = (
 
                 Débito:
                     debito > 0
-                        ? formatMoney(debito)
+                        ? formatMoney(debito, item)
                         : "",
 
                 Crédito:
                     credito > 0
-                        ? formatMoney(credito)
+                        ? formatMoney(credito, item)
                         : "",
 
                 Recargo:
                     getRecargo(item) > 0
-                        ? formatMoney(
-                              getRecargo(item)
-                          )
+                        ? formatMoney(getRecargo(item), item)
                         : "",
 
-                Saldo: formatMoney(
-                    getSaldo(item)
-                ),
+                Saldo: formatMoney(getSaldo(item), item),
 
                 Estado: getEstado(item),
             };
@@ -373,11 +385,11 @@ export const exportToPDF = (
     const pageWidth =
         doc.internal.pageSize.getWidth();
 
-    doc.setFillColor(224, 242, 254);
+    doc.setFillColor(15, 23, 42);
+    doc.setTextColor(255, 255, 255);
 
     doc.rect(0, 0, pageWidth, 36, "F");
 
-    doc.setTextColor(2, 132, 199);
 
     doc.setFontSize(24);
 
@@ -385,7 +397,7 @@ export const exportToPDF = (
 
     doc.text("GCB", 14, 18);
 
-    doc.setTextColor(15, 23, 42);
+    doc.setTextColor(255, 255, 255);
 
     doc.setFontSize(17);
 
@@ -483,8 +495,10 @@ export const exportToPDF = (
         },
 
         headStyles: {
-            fillColor: [2, 132, 199],
-            textColor: 255,
+            fillColor: [15, 23, 42],
+            textColor: [255, 255, 255],
+            fontStyle: "bold",
+            halign: "center",
         },
 
         head: [["Concepto", "Valor"]],
@@ -492,37 +506,27 @@ export const exportToPDF = (
         body: [
             [
                 "Saldo inicial",
-                formatMoney(
-                    resumen.saldoInicial
-                ),
+                formatMoney(resumen.saldoInicial, dataOrdenada[0]),
             ],
 
             [
                 "Total créditos",
-                formatMoney(
-                    resumen.totalCreditos
-                ),
+                formatMoney(resumen.totalCreditos, dataOrdenada[0]),
             ],
 
             [
                 "Total débitos",
-                formatMoney(
-                    resumen.totalDebitos
-                ),
+                formatMoney(resumen.totalDebitos, dataOrdenada[0]),
             ],
 
             [
                 "Total recargos",
-                formatMoney(
-                    resumen.totalRecargos
-                ),
+                formatMoney(resumen.totalRecargos, dataOrdenada[0]),
             ],
 
             [
                 "Saldo final",
-                formatMoney(
-                    resumen.saldoFinal
-                ),
+                formatMoney(resumen.saldoFinal, dataOrdenada[0]),
             ],
 
             [
@@ -583,22 +587,18 @@ export const exportToPDF = (
                 ]) || "—",
 
                 debito > 0
-                    ? formatMoney(debito)
+                    ? formatMoney(debito, item)
                     : "—",
 
                 credito > 0
-                    ? formatMoney(credito)
+                    ? formatMoney(credito, item)
                     : "—",
 
                 getRecargo(item) > 0
-                    ? formatMoney(
-                          getRecargo(item)
-                      )
+                 ? formatMoney(getRecargo(item), item)
                     : "—",
 
-                formatMoney(
-                    getSaldo(item)
-                ),
+                formatMoney(getSaldo(item), item),
 
                 getEstado(item) || "—",
             ];

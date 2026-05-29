@@ -1,6 +1,20 @@
 export default function ReporteCuentaBancariaTable({ data }) {
-    const formatMoney = (value) => {
-        return `Q ${Number(value ?? 0).toFixed(2)}`;
+    const getSimboloMoneda = (item) => {
+    const moneda = String(item.tipoMoneda ?? "").toLowerCase();
+
+    if (
+            moneda.includes("dólar") ||
+            moneda.includes("dolar") ||
+            moneda.includes("usd")
+        ) {
+            return "$";
+        }
+
+        return "Q";
+    };
+
+    const formatMoney = (value, item) => {
+        return `${getSimboloMoneda(item)} ${Number(value ?? 0).toFixed(2)}`;
     };
 
     const getEstadoClass = (estado) => {
@@ -72,8 +86,8 @@ export default function ReporteCuentaBancariaTable({ data }) {
                                 <td>{item.titular}</td>
                                 <td>{item.tipoCuenta}</td>
                                 <td>{item.tipoMoneda}</td>
-                                <td>{formatMoney(item.cuB_Saldo_Inicial)}</td>
-                                <td>{formatMoney(item.cuB_Saldo_Actual)}</td>
+                                <td>{formatMoney(item.cuB_Saldo_Inicial, item)}</td>
+                                <td>{formatMoney(item.cuB_Saldo_Actual, item)}</td>
                                 <td>
                                     <span
                                         className={`status-pill ${getEstadoClass(

@@ -99,29 +99,53 @@ export default function ReporteCuentaBancariaPage() {
     }, []);
 
     const dataFiltrada = useMemo(() => {
+        let resultado = [...data];
+
+        // FILTRO MONEDA EN TIEMPO REAL
+        if (filtros.tipoMonedaId) {
+            resultado = resultado.filter((item) => {
+                const monedaId =
+                    item.tmO_Tipo_Moneda ??
+                    item.TMO_Tipo_Moneda ??
+                    item.tipoMonedaId;
+
+                return (
+                    String(monedaId) ===
+                    String(filtros.tipoMonedaId)
+                );
+            });
+        }
+
+        // FILTRO TEXTO
         const texto = filtros.busqueda
             .trim()
             .toLowerCase();
 
-        if (!texto) return data;
+        if (texto) {
+            resultado = resultado.filter((item) =>
+                [
+                    item.cuB_Numero_Cuenta,
+                    item.banco,
+                    item.titular,
+                    item.tipoCuenta,
+                    item.tipoMoneda,
+                    item.estadoCuenta,
+                ]
+                    .filter(Boolean)
+                    .some((valor) =>
+                        String(valor)
+                            .toLowerCase()
+                            .includes(texto)
+                    )
+            );
+        }
 
-        return data.filter((item) =>
-            [
-                item.cuB_Numero_Cuenta,
-                item.banco,
-                item.titular,
-                item.tipoCuenta,
-                item.tipoMoneda,
-                item.estadoCuenta,
-            ]
-                .filter(Boolean)
-                .some((valor) =>
-                    String(valor)
-                        .toLowerCase()
-                        .includes(texto)
-                )
-        );
-    }, [data, filtros.busqueda]);
+        return resultado;
+    }, [
+        data,
+        filtros.busqueda,
+        filtros.tipoMonedaId,
+    ]);
 
     const totalSaldoInicial =
         dataFiltrada.reduce(
@@ -138,6 +162,70 @@ export default function ReporteCuentaBancariaPage() {
                 Number(item.cuB_Saldo_Actual ?? 0),
             0
         );
+
+    const getSimboloReporte = () => {
+    const monedaSeleccionada = tiposMoneda.find((m) => {
+        const id =
+            m.tmO_Tipo_Moneda ??
+            m.TMO_Tipo_Moneda ??
+            m.tmo_Tipo_Moneda ??
+            m.id;
+
+            return String(id) === String(filtros.tipoMonedaId);
+        });
+
+        const descripcion =
+            monedaSeleccionada?.tmO_Descripcion ??
+            monedaSeleccionada?.TMO_Descripcion ??
+            monedaSeleccionada?.tmo_Descripcion ??
+            monedaSeleccionada?.Descripcion ??
+            "";
+
+        if (
+            descripcion.toLowerCase().includes("dólar") ||
+            descripcion.toLowerCase().includes("dolar") ||
+            descripcion.toLowerCase().includes("usd")
+        ) {
+            return "$";
+        }
+
+        return "Q";
+    };
+
+    const simboloReporte = getSimboloReporte();
+
+    const getSimboloMonedaSeleccionada = () => {
+    const monedaSeleccionada = tiposMoneda.find(
+        (m) =>
+            String(
+                m.tmO_Tipo_Moneda ??
+                m.TMO_Tipo_Moneda
+            ) === String(filtros.tipoMonedaId)
+    );
+
+    const descripcion =
+        monedaSeleccionada?.tmO_Descripcion ??
+        monedaSeleccionada?.TMO_Descripcion ??
+        "";
+
+    const texto = descripcion.toLowerCase();
+
+    if (texto.includes("dólar") || texto.includes("dolar")) {
+        return "$";
+    }
+
+    if (texto.includes("quetzal")) {
+        return "Q";
+    }
+
+    if (texto.includes("euro")) {
+        return "€";
+    }
+
+    return "Q";
+};
+
+const simboloMoneda = getSimboloMonedaSeleccionada();
 
     return (
         <div className="cuentabancaria-container">
@@ -210,7 +298,7 @@ export default function ReporteCuentaBancariaPage() {
 
                     {
                         label: "Saldo inicial",
-                        val: `Q ${totalSaldoInicial.toLocaleString(
+                        val: `${simboloReporte} ${totalSaldoInicial.toLocaleString(
                             "es-GT",
                             {
                                 minimumFractionDigits: 2,
@@ -231,7 +319,7 @@ export default function ReporteCuentaBancariaPage() {
 
                     {
                         label: "Saldo actual",
-                        val: `Q ${totalSaldoActual.toLocaleString(
+                        val: `${simboloReporte} ${totalSaldoActual.toLocaleString(
                             "es-GT",
                             {
                                 minimumFractionDigits: 2,

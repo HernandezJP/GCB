@@ -182,3 +182,67 @@
     border-right-color: var(--border);
   }
 }
+
+.searchable-select {
+  position: relative;
+}
+
+.searchable-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 9999;
+
+  max-height: 180px;
+  overflow-y: auto;
+
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  padding: 6px;
+}
+
+.searchable-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.searchable-menu::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 20px;
+}
+
+.searchable-menu::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.searchable-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 11px 12px;
+  border-radius: 9px;
+  text-align: left;
+  font-size: 14px;
+  color: #0f172a;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.searchable-item:hover,
+.searchable-item.selected {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.modal-body {
+  overflow: visible;
+}
+
+.cuenta-modal-card {
+  overflow: visible;
+}

@@ -260,3 +260,239 @@
     background: transparent;
     color: #94a3b8;
 }
+.che-filter-select {
+    min-width: 160px;
+    padding: 10px 36px 10px 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.che-filter-select:focus {
+    border-color: #38bdf8;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.cheque-print-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 12px 0 18px;
+}
+
+.cheque-fisico {
+    width: 720px;
+    min-width: 720px;
+    background: #ffffff;
+    border: 2px solid #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+    font-family: Georgia, serif;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+}
+
+.cheque-header-band {
+    background: #020617;
+    padding: 14px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cheque-banco-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cheque-banco-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cheque-banco-nombre {
+    color: #f8fafc;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.cheque-banco-cuenta {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.cheque-num-box {
+    text-align: right;
+}
+
+.cheque-num-label {
+    color: #94a3b8;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.cheque-num-value {
+    color: #38bdf8;
+    font-family: monospace;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.cheque-body {
+    padding: 22px 26px;
+    background: repeating-linear-gradient(
+        0deg,
+        #ffffff,
+        #ffffff 25px,
+        #e0f2fe 26px
+    );
+}
+
+.cheque-fecha-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+    font-size: 13px;
+}
+
+.cheque-fecha-lbl {
+    color: #64748b;
+    margin-right: 8px;
+}
+
+.cheque-fecha-val {
+    min-width: 120px;
+    border-bottom: 1px solid #334155;
+    font-family: monospace;
+    font-weight: 700;
+    text-align: center;
+}
+
+.cheque-pagese {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+
+.cheque-beneficiario-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 18px;
+    border-bottom: 2px solid #334155;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+}
+
+.cheque-beneficiario-nombre {
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.cheque-monto-box {
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 5px 14px;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    background: #f8fafc;
+    white-space: nowrap;
+}
+
+.cheque-letras-row {
+    font-size: 13px;
+    color: #334155;
+    font-style: italic;
+    border-bottom: 1px solid #94a3b8;
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+}
+
+.cheque-concepto-row {
+    font-size: 13px;
+    margin-bottom: 28px;
+}
+
+.cheque-concepto-lbl {
+    color: #64748b;
+}
+
+.cheque-concepto-val {
+    display: inline-block;
+    min-width: 260px;
+    border-bottom: 1px solid #94a3b8;
+    font-family: monospace;
+}
+
+.cheque-firmas {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 28px;
+}
+
+.cheque-firma-box {
+    text-align: center;
+}
+
+.cheque-firma-linea {
+    width: 190px;
+    border-top: 1px solid #334155;
+    margin-bottom: 6px;
+}
+
+.cheque-firma-lbl {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    font-family: system-ui, sans-serif;
+}
+
+.cheque-micr-band {
+    background: #020617;
+    padding: 10px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cheque-micr {
+    color: #64748b;
+    font-family: monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+}
+
+.cheque-no-neg {
+    color: #94a3b8;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-family: system-ui, sans-serif;
+}
+
+@media (max-width: 900px) {
+    .cheque-fisico {
+        transform: scale(0.85);
+        transform-origin: top center;
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, User, Check, ArrowLeft, ChevronRight } from "lucide-react";
+import { departamentosGuatemala } from '../../data/guatemalaUbicaciones';
 
 const INITIAL_FORM = {
   TIP_Tipo_Persona: "",
@@ -53,6 +54,87 @@ const getTipoDireccionId = (t) =>
 
 const getTipoDireccionDesc = (t) =>
   t?.tdI_Descripcion ?? t?.TDI_Descripcion ?? t?.tdi_Descripcion ?? "";
+
+const soloNumeros = (value) => value.replace(/\D/g, '');
+
+const soloLetras = (value) =>
+    value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+
+const limpiarTextoDireccion = (value) =>
+    value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,#-]/g, '');
+
+const normalize = (text) =>
+  String(text ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const SearchableSelect = ({
+  label,
+  value,
+  options = [],
+  onChange,
+  placeholder = "Buscar...",
+  disabled = false,
+  required = false,
+}) => {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const selected = options.find((x) => String(x.value) === String(value));
+
+  const filtered = options.filter((item) =>
+    normalize(item.label).includes(normalize(query))
+  );
+
+  return (
+    <div className="input-group searchable-select">
+      <label>{label} {required && "*"}</label>
+
+      <div className={`searchable-control ${open ? "is-open" : ""}`}>
+        <input
+          value={open ? query : selected?.label ?? ""}
+          placeholder={placeholder}
+          disabled={disabled}
+          onFocus={() => {
+            setOpen(true);
+            setQuery("");
+          }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+        />
+      </div>
+
+      {open && !disabled && (
+        <div className="searchable-menu">
+          {filtered.length === 0 ? (
+            <div className="searchable-empty">Sin resultados</div>
+          ) : (
+            filtered.map((item) => (
+              <button
+                type="button"
+                key={item.value}
+                className={`searchable-item ${
+                  String(item.value) === String(value) ? "selected" : ""
+                }`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  onChange(item.value);
+                  setOpen(false);
+                  setQuery("");
+                }}
+              >
+                {item.label}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const PersonaModal = ({
   isOpen,
@@ -262,7 +344,7 @@ const PersonaModal = ({
 
   return createPortal(
     <div className="modal-backdrop">
-      <div className="modal-card">
+      <div className="modal-card persona-modal-card">
         <div className="modal-header">
           <div className="modal-title-group">
             <div className="modal-icon">
@@ -388,9 +470,14 @@ const PersonaModal = ({
                 <div className="input-group">
                   <label>DPI</label>
                   <input
-                    value={form.PER_DPI}
-                    onChange={setText("PER_DPI")}
-                    disabled={saving}
+                      value={form.PER_DPI}
+                      maxLength={13}
+                      onChange={(e) =>
+                          setForm({
+                              ...form,
+                              PER_DPI: soloNumeros(e.target.value),
+                          })
+                      }
                   />
                 </div>
               </div>
@@ -398,137 +485,217 @@ const PersonaModal = ({
           )}
 
           {step === 1 && (
-            <>
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Tipo de teléfono *</label>
-                  <select
-                    value={form.Telefonos[0]?.TIT_Tipo_Telefono ?? ""}
-                    onChange={(e) => updateTelefono(0, "TIT_Tipo_Telefono", Number(e.target.value))}
-                    disabled={saving}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {tiposTelefono.map((tt) => (
-                      <option key={getTipoTelefonoId(tt)} value={getTipoTelefonoId(tt)}>
-                        {getTipoTelefonoDesc(tt)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+  <>
+    <div className="form-row">
+      <div className="input-group">
+        <label>Tipo de teléfono *</label>
+        <select
+          value={form.Telefonos[0]?.TIT_Tipo_Telefono ?? ""}
+          onChange={(e) =>
+            updateTelefono(0, "TIT_Tipo_Telefono", Number(e.target.value))
+          }
+          disabled={saving}
+        >
+          <option value="">Seleccionar...</option>
+          {tiposTelefono.map((tt) => (
+            <option key={getTipoTelefonoId(tt)} value={getTipoTelefonoId(tt)}>
+              {getTipoTelefonoDesc(tt)}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                <div className="input-group">
-                  <label>Teléfono principal *</label>
-                  <select
-                    value={form.Telefonos[0]?.TEP_Principal ?? "S"}
-                    onChange={(e) => updateTelefono(0, "TEP_Principal", e.target.value)}
-                    disabled={saving}
-                  >
-                    <option value="S">Sí</option>
-                    <option value="N">No</option>
-                  </select>
-                </div>
-              </div>
+      <div className="input-group">
+        <label>Teléfono principal *</label>
+        <select
+          value={form.Telefonos[0]?.TEP_Principal ?? "S"}
+          onChange={(e) =>
+            updateTelefono(0, "TEP_Principal", e.target.value)
+          }
+          disabled={saving}
+        >
+          <option value="S">Sí</option>
+          <option value="N">No</option>
+        </select>
+      </div>
+    </div>
 
-              <div className="input-group">
-                <label>Número *</label>
-                <input
-                  value={form.Telefonos[0]?.TEP_Numero ?? ""}
-                  onChange={(e) => updateTelefono(0, "TEP_Numero", e.target.value)}
-                  disabled={saving}
-                />
-              </div>
+    <div className="input-group">
+      <label>Número *</label>
+      <input
+        value={form.Telefonos[0]?.TEP_Numero ?? ""}
+        maxLength={8}
+        onChange={(e) =>
+          updateTelefono(0, "TEP_Numero", soloNumeros(e.target.value))
+        }
+        disabled={saving}
+        placeholder="Ej. 78451263"
+      />
+    </div>
 
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Tipo de dirección *</label>
-                  <select
-                    value={form.Direcciones[0]?.TDI_Tipo_Direccion ?? ""}
-                    onChange={(e) => updateDireccion(0, "TDI_Tipo_Direccion", Number(e.target.value))}
-                    disabled={saving}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {tiposDireccion.map((td) => (
-                      <option key={getTipoDireccionId(td)} value={getTipoDireccionId(td)}>
-                        {getTipoDireccionDesc(td)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+    <div className="form-row">
+      <div className="input-group">
+        <label>Tipo de dirección *</label>
+        <select
+          value={form.Direcciones[0]?.TDI_Tipo_Direccion ?? ""}
+          onChange={(e) =>
+            updateDireccion(0, "TDI_Tipo_Direccion", Number(e.target.value))
+          }
+          disabled={saving}
+        >
+          <option value="">Seleccionar...</option>
+          {tiposDireccion.map((td) => (
+            <option key={getTipoDireccionId(td)} value={getTipoDireccionId(td)}>
+              {getTipoDireccionDesc(td)}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                <div className="input-group">
-                  <label>Dirección principal *</label>
-                  <select
-                    value={form.Direcciones[0]?.DIR_Principal ?? "S"}
-                    onChange={(e) => updateDireccion(0, "DIR_Principal", e.target.value)}
-                    disabled={saving}
-                  >
-                    <option value="S">Sí</option>
-                    <option value="N">No</option>
-                  </select>
-                </div>
-              </div>
+      <div className="input-group">
+        <label>Dirección principal *</label>
+        <select
+          value={form.Direcciones[0]?.DIR_Principal ?? "S"}
+          onChange={(e) =>
+            updateDireccion(0, "DIR_Principal", e.target.value)
+          }
+          disabled={saving}
+        >
+          <option value="S">Sí</option>
+          <option value="N">No</option>
+        </select>
+      </div>
+    </div>
 
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Departamento *</label>
-                  <input
-                    value={form.Direcciones[0]?.DIR_Departamento ?? ""}
-                    onChange={(e) => updateDireccion(0, "DIR_Departamento", e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
+    {(() => {
+      const direccion = form.Direcciones[0] ?? {};
 
-                <div className="input-group">
-                  <label>Municipio</label>
-                  <input
-                    value={form.Direcciones[0]?.DIR_Municipio ?? ""}
-                    onChange={(e) => updateDireccion(0, "DIR_Municipio", e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
+      const departamentoObj = departamentosGuatemala.find(
+        (d) => d.departamento === direccion.DIR_Departamento
+      );
 
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Colonia</label>
-                  <input
-                    value={form.Direcciones[0]?.DIR_Colonia ?? ""}
-                    onChange={(e) => updateDireccion(0, "DIR_Colonia", e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
+      const municipiosDisponibles = departamentoObj?.municipios ?? [];
 
-                <div className="input-group">
-                  <label>Zona</label>
-                  <input
-                    value={form.Direcciones[0]?.DIR_Zona ?? ""}
-                    onChange={(e) => updateDireccion(0, "DIR_Zona", e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
+      const municipioObj = municipiosDisponibles.find(
+        (m) => m.nombre === direccion.DIR_Municipio
+      );
 
-              <div className="form-row">
-                <div className="input-group">
-                  <label>Número casa</label>
-                  <input
-                    value={form.Direcciones[0]?.DIR_Numero_Casa ?? ""}
-                    onChange={(e) => updateDireccion(0, "DIR_Numero_Casa", e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
+      const coloniasDisponibles = municipioObj?.colonias ?? [];
 
-                <div className="input-group">
-                  <label>Detalle</label>
-                  <input
-                    value={form.Direcciones[0]?.DIR_Detalle ?? ""}
-                    onChange={(e) => updateDireccion(0, "DIR_Detalle", e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+      const coloniaObj = coloniasDisponibles.find(
+        (c) => c.nombre === direccion.DIR_Colonia
+      );
+
+      const zonasDisponibles =
+        coloniaObj?.zonas?.length > 0
+          ? coloniaObj.zonas
+          : Array.from({ length: 25 }, (_, i) => `Zona ${i + 1}`);
+
+      return (
+        <>
+          <div className="form-row">
+            <SearchableSelect
+              label="Departamento"
+              required
+              value={direccion.DIR_Departamento}
+              options={departamentosGuatemala.map((d) => ({
+                value: d.departamento,
+                label: d.departamento,
+              }))}
+              placeholder="Buscar departamento..."
+              disabled={saving}
+              onChange={(value) => {
+                updateDireccion(0, "DIR_Departamento", value);
+                updateDireccion(0, "DIR_Municipio", "");
+                updateDireccion(0, "DIR_Colonia", "");
+                updateDireccion(0, "DIR_Zona", "");
+              }}
+            />
+
+            <SearchableSelect
+              label="Municipio"
+              value={direccion.DIR_Municipio}
+              options={municipiosDisponibles.map((m) => ({
+                value: m.nombre,
+                label: m.nombre,
+              }))}
+              placeholder="Buscar municipio..."
+              disabled={saving || !direccion.DIR_Departamento}
+              onChange={(value) => {
+                updateDireccion(0, "DIR_Municipio", value);
+                updateDireccion(0, "DIR_Colonia", "");
+                updateDireccion(0, "DIR_Zona", "");
+              }}
+            />
+          </div>
+
+          <div className="form-row">
+            <SearchableSelect
+              label="Colonia"
+              value={direccion.DIR_Colonia}
+              options={coloniasDisponibles.map((c) => ({
+                value: c.nombre,
+                label: c.nombre,
+              }))}
+              placeholder="Buscar colonia..."
+              disabled={saving || !direccion.DIR_Municipio}
+              onChange={(value) => {
+                updateDireccion(0, "DIR_Colonia", value);
+                updateDireccion(0, "DIR_Zona", "");
+              }}
+            />
+
+            <SearchableSelect
+              label="Zona"
+              value={direccion.DIR_Zona}
+              options={zonasDisponibles.map((z) => ({
+                value: z,
+                label: z,
+              }))}
+              placeholder="Buscar zona..."
+              disabled={saving || !direccion.DIR_Departamento}
+              onChange={(value) => updateDireccion(0, "DIR_Zona", value)}
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="input-group">
+              <label>Número casa</label>
+              <input
+                value={direccion.DIR_Numero_Casa ?? ""}
+                onChange={(e) =>
+                  updateDireccion(
+                    0,
+                    "DIR_Numero_Casa",
+                    limpiarTextoDireccion(e.target.value)
+                  )
+                }
+                disabled={saving}
+                placeholder="Ej. 15-20"
+              />
+            </div>
+
+            <div className="input-group">
+              <label>Detalle</label>
+              <input
+                value={direccion.DIR_Detalle ?? ""}
+                onChange={(e) =>
+                  updateDireccion(
+                    0,
+                    "DIR_Detalle",
+                    limpiarTextoDireccion(e.target.value)
+                  )
+                }
+                disabled={saving}
+                placeholder="Ej. Casa azul, portón negro"
+              />
+            </div>
+          </div>
+        </>
+      );
+    })()}
+  </>
+)}
 
           {step === 2 && (
             <div

@@ -60,6 +60,22 @@ const getPersonaDpi = (p) =>
 const getCuentaId = (c) =>
     g(c, 'cuB_Cuenta', 'cUB_Cuenta', 'cub_Cuenta', 'cub_cuenta', 'CUB_Cuenta');
 
+const getCuentaSimbolo = (c) =>
+    g(c, 'tMO_Simbolo', 'tmO_Simbolo', 'TMO_Simbolo', 'tmo_simbolo') ?? 'Q';
+
+const getCuentaMoneda = (c) =>
+    g(c, 'tMO_Descripcion', 'tmO_Descripcion', 'TMO_Descripcion', 'tmo_descripcion') ?? 'Quetzales';
+
+const getNombreMonedaLetras = (c) => {
+    const desc = String(getCuentaMoneda(c)).toLowerCase();
+
+    if (desc.includes('dolar') || desc.includes('dólar') || desc.includes('usd')) {
+        return 'DÓLARES';
+    }
+
+    return 'QUETZALES';
+};
+
 const getChequeraId = (q) =>
     g(q, 'chQ_Chequera', 'cHQ_Chequera', 'chq_Chequera', 'chq_chequera', 'CHQ_Chequera');
 
@@ -145,7 +161,7 @@ const numeroALetrasEntero = (n) => {
     return 'MONTO DEMASIADO GRANDE';
 };
 
-const montoALetras = (valor) => {
+const montoALetras = (valor, monedaTexto = 'QUETZALES') => {
     const numero = Number(valor);
 
     if (Number.isNaN(numero) || numero <= 0) return '';
@@ -156,7 +172,7 @@ const montoALetras = (valor) => {
     const letrasEnteros = numeroALetrasEntero(enteros);
     const letrasCentavos = centavos === 0 ? 'CERO' : numeroALetrasEntero(centavos);
 
-    return `${letrasEnteros} QUETZALES CON ${letrasCentavos} CENTAVOS`;
+    return `${letrasEnteros} ${monedaTexto} CON ${letrasCentavos} CENTAVOS`;
 };
 
 const ChequeModal = ({
@@ -189,17 +205,25 @@ const ChequeModal = ({
         });
     }, [isOpen, cuentas]);
 
-    useEffect(() => {
-        const texto = montoALetras(form.MOV_Monto);
+useEffect(() => {
+    const cuentaActual = cuentas.find(
+        (c) => String(getCuentaId(c)) === String(form.CUB_Cuenta)
+    );
 
-        setForm((prev) => {
-            if (prev.CHE_Monto_Letras === texto) return prev;
-            return {
-                ...prev,
-                CHE_Monto_Letras: texto,
-            };
-        });
-    }, [form.MOV_Monto]);
+    const texto = montoALetras(
+        form.MOV_Monto,
+        getNombreMonedaLetras(cuentaActual)
+    );
+
+    setForm((prev) => {
+        if (prev.CHE_Monto_Letras === texto) return prev;
+
+        return {
+            ...prev,
+            CHE_Monto_Letras: texto,
+        };
+    });
+}, [form.MOV_Monto, form.CUB_Cuenta, cuentas]);
 
     const set = (k) => (e) =>
         setForm((f) => ({
@@ -235,6 +259,9 @@ const ChequeModal = ({
             (c) => String(getCuentaId(c)) === String(form.CUB_Cuenta)
         );
     }, [cuentas, form.CUB_Cuenta]);
+
+    const simboloCuenta = getCuentaSimbolo(cuentaSelec);
+    const monedaLetras = getNombreMonedaLetras(cuentaSelec);
 
     const personaSelec = useMemo(() => {
         return personas.find(
@@ -658,7 +685,7 @@ const ChequeModal = ({
                                         </code>
                                     </span>
                                     <span style={{ color: '#15803d', fontWeight: 600 }}>
-                                        Saldo: Q {saldo.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                        Saldo: {simboloCuenta} {saldo.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
                             )}
@@ -796,7 +823,7 @@ const ChequeModal = ({
                                             fontSize: 13
                                         }}
                                     >
-                                        Q
+                                        {simboloCuenta}
                                     </span>
                                     <input
                                         type="number"
@@ -1007,7 +1034,7 @@ const ChequeModal = ({
                                 <div>
                                     <div style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Monto</div>
                                     <div style={{ fontSize: 13, color: '#0f172a', fontWeight: 700 }}>
-                                        Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                        {simboloCuenta} {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                                     </div>
                                 </div>
 
