@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import DashboardKpis from "./DashboardKpis";
 import DashboardChartsCuentasBancarias from "./DashboardChartsCuentasBancarias";
+import DashboardChartsMovimientos from "./DashboardChartsMovimientos";
+import DashboardChartsCheques from "./DashboardChartsCheques";
 
 import {
     getDashboardCuentas,
@@ -22,12 +24,27 @@ const g = (o, ...ks) => {
 };
 
 const getCuentaId = (item) =>
-    String(g(item, "cuB_Cuenta", "cUB_Cuenta", "CUB_Cuenta", "cub_Cuenta", "cub_cuenta"));
+    String(
+        g(
+            item,
+            "cuB_Cuenta",
+            "cUB_Cuenta",
+            "CUB_Cuenta",
+            "cub_Cuenta",
+            "cub_cuenta"
+        )
+    );
+
+const getBanco = (item) =>
+    g(item, "banco", "Banco", "bAN_Nombre", "BAN_Nombre") || "Sin banco";
+
+const getTipoCuenta = (item) =>
+    g(item, "tipoCuenta", "TipoCuenta", "tcU_Descripcion", "TCU_Descripcion") || "Sin tipo";
 
 const getTipoMovimiento = (m) =>
     String(g(m, "tiM_Descripcion", "tIM_Descripcion", "tim_descripcion")).toLowerCase();
 
-const getMonto = (m) =>
+const getMontoMovimiento = (m) =>
     Math.abs(Number(g(m, "moV_Monto", "mOV_Monto", "MOV_Monto", "mov_monto") || 0));
 
 const esIngreso = (m) => getTipoMovimiento(m) === "ingreso";
@@ -72,14 +89,34 @@ const getMonedaKey = (item) => {
     return "GTQ";
 };
 
+const getFechaMovimiento = (m) =>
+    g(m, "moV_Fecha", "mOV_Fecha", "MOV_Fecha", "mov_fecha");
+
+const getFechaCheque = (c) =>
+    g(c, "chE_Fecha_Emision", "cHE_Fecha_Emision", "CHE_Fecha_Emision");
+
+const getPeriodoFecha = (fecha) => {
+    const d = new Date(fecha);
+    if (Number.isNaN(d.getTime())) return "";
+
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+};
+
 export default function DashboardPage() {
     const [cuentas, setCuentas] = useState([]);
     const [conciliaciones, setConciliaciones] = useState([]);
     const [movimientos, setMovimientos] = useState([]);
     const [cheques, setCheques] = useState([]);
-    const [monedaFiltro, setMonedaFiltro] = useState("TODAS");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const [filtros, setFiltros] = useState({
+        moneda: "TODAS",
+        banco: "TODOS",
+        cuenta: "TODAS",
+        tipoCuenta: "TODOS",
+        periodo: "",
+    });
 
     const cargarDashboard = async () => {
         try {
@@ -114,49 +151,118 @@ export default function DashboardPage() {
         cargarDashboard();
     }, []);
 
+    const cubo = useMemo(() => {
+        let cuentasFiltradas = [...cuentas];
+
+        if (filtros.moneda !== "TODAS") {
+            cuentasFiltradas = cuentasFiltradas.filter(
+                (c) => getMonedaKey(c) === filtros.moneda
+            );
+        }
+
+        if (filtros.banco !== "TODOS") {
+            cuentasFiltradas = cuentasFiltradas.filter(
+                (c) => getBanco(c) === filtros.banco
+            );
+        }
+
+        if (filtros.tipoCuenta !== "TODOS") {
+            cuentasFiltradas = cuentasFiltradas.filter(
+                (c) => getTipoCuenta(c) === filtros.tipoCuenta
+            );
+        }
+
+        if (filtros.cuenta !== "TODAS") {
+            cuentasFiltradas = cuentasFiltradas.filter(
+                (c) => getCuentaId(c) === String(filtros.cuenta)
+            );
+        }
+
+        const cuentasIds = new Set(cuentasFiltradas.map(getCuentaId).filter(Boolean));
+
+        let movimientosFiltrados =
+            filtros.moneda === "TODAS" &&
+            filtros.banco === "TODOS" &&
+            filtros.cuenta === "TODAS" &&
+            filtros.tipoCuenta === "TODOS"
+                ? [...movimientos]
+                : movimientos.filter((m) => cuentasIds.has(getCuentaId(m)));
+
+        let chequesFiltrados =
+            filtros.moneda === "TODAS" &&
+            filtros.banco === "TODOS" &&
+            filtros.cuenta === "TODAS" &&
+            filtros.tipoCuenta === "TODOS"
+                ? [...cheques]
+                : cheques.filter((c) => cuentasIds.has(getCuentaId(c)));
+
+        if (filtros.periodo) {
+            movimientosFiltrados = movimientosFiltrados.filter(
+                (m) => getPeriodoFecha(getFechaMovimiento(m)) === filtros.periodo
+            );
+
+            chequesFiltrados = chequesFiltrados.filter(
+                (c) => getPeriodoFecha(getFechaCheque(c)) === filtros.periodo
+            );
+        }
+
+        return {
+            cuentasFiltradas,
+            movimientosFiltrados,
+            chequesFiltrados,
+        };
+    }, [cuentas, movimientos, cheques, filtros]);
+
     const metricas = useMemo(() => {
-        const cuentasFiltradas =
-            monedaFiltro === "TODAS"
-                ? cuentas
-                : cuentas.filter((c) => getMonedaKey(c) === monedaFiltro);
+        const { cuentasFiltradas, movimientosFiltrados, chequesFiltrados } = cubo;
 
-        const cuentasIdsFiltradas = new Set(
-            cuentasFiltradas.map(getCuentaId).filter(Boolean)
+        const cuentaById = new Map(
+            cuentasFiltradas.map((c) => [getCuentaId(c), c])
         );
 
-        const movimientosFiltrados =
-            monedaFiltro === "TODAS"
-                ? movimientos
-                : movimientos.filter((m) =>
-                    cuentasIdsFiltradas.has(getCuentaId(m))
-                );
+        const saldoGTQ = cuentasFiltradas
+            .filter((c) => getMonedaKey(c) === "GTQ")
+            .reduce(
+                (acc, item) =>
+                    acc + Number(g(item, "cuB_Saldo_Actual", "CUB_Saldo_Actual") || 0),
+                0
+            );
 
-        const chequesFiltrados =
-            monedaFiltro === "TODAS"
-                ? cheques
-                : cheques.filter((c) =>
-                    cuentasIdsFiltradas.has(getCuentaId(c))
-                );
+        const saldoUSD = cuentasFiltradas
+            .filter((c) => getMonedaKey(c) === "USD")
+            .reduce(
+                (acc, item) =>
+                    acc + Number(g(item, "cuB_Saldo_Actual", "CUB_Saldo_Actual") || 0),
+                0
+            );
 
-        const saldoTotal = cuentasFiltradas.reduce(
-            (acc, item) =>
-                acc + Number(g(item, "cuB_Saldo_Actual", "CUB_Saldo_Actual") || 0),
-            0
-        );
+        const ingresosGTQ = movimientosFiltrados
+            .filter((m) => {
+                const cuenta = cuentaById.get(getCuentaId(m));
+                return esIngreso(m) && getMonedaKey(cuenta) === "GTQ";
+            })
+            .reduce((acc, item) => acc + getMontoMovimiento(item), 0);
 
-        const saldoInicial = cuentasFiltradas.reduce(
-            (acc, item) =>
-                acc + Number(g(item, "cuB_Saldo_Inicial", "CUB_Saldo_Inicial") || 0),
-            0
-        );
+        const ingresosUSD = movimientosFiltrados
+            .filter((m) => {
+                const cuenta = cuentaById.get(getCuentaId(m));
+                return esIngreso(m) && getMonedaKey(cuenta) === "USD";
+            })
+            .reduce((acc, item) => acc + getMontoMovimiento(item), 0);
 
-        const totalIngresosMes = movimientosFiltrados
-            .filter(esIngreso)
-            .reduce((acc, item) => acc + getMonto(item), 0);
+        const egresosGTQ = movimientosFiltrados
+            .filter((m) => {
+                const cuenta = cuentaById.get(getCuentaId(m));
+                return !esIngreso(m) && getMonedaKey(cuenta) === "GTQ";
+            })
+            .reduce((acc, item) => acc + getMontoMovimiento(item), 0);
 
-        const totalEgresosMes = movimientosFiltrados
-            .filter((m) => !esIngreso(m))
-            .reduce((acc, item) => acc + getMonto(item), 0);
+        const egresosUSD = movimientosFiltrados
+            .filter((m) => {
+                const cuenta = cuentaById.get(getCuentaId(m));
+                return !esIngreso(m) && getMonedaKey(cuenta) === "USD";
+            })
+            .reduce((acc, item) => acc + getMontoMovimiento(item), 0);
 
         const cuentasActivas = cuentasFiltradas.filter(
             (x) => g(x, "cuB_Estado", "CUB_Estado") === "A"
@@ -176,15 +282,18 @@ export default function DashboardPage() {
             0
         );
 
-        const pendientesConciliacion = conciliaciones.reduce(
-            (acc, item) =>
-                acc +
-                Number(item.totalPendientesBanco ?? 0) +
-                Number(item.totalPendientesLibros ?? 0),
+        const pendientesBanco = conciliaciones.reduce(
+            (acc, item) => acc + Number(item.totalPendientesBanco ?? 0),
             0
         );
 
-        const totalMovConciliacion = movimientosConciliados + pendientesConciliacion;
+        const pendientesLibros = conciliaciones.reduce(
+            (acc, item) => acc + Number(item.totalPendientesLibros ?? 0),
+            0
+        );
+
+        const totalMovConciliacion =
+            movimientosConciliados + pendientesBanco + pendientesLibros;
 
         const porcentajeConciliacion =
             totalMovConciliacion > 0
@@ -192,16 +301,17 @@ export default function DashboardPage() {
                 : 0;
 
         return {
-            saldoTotal,
-            saldoInicial,
-            totalIngresosMes,
-            totalEgresosMes,
+            saldoGTQ,
+            saldoUSD,
+            ingresosGTQ,
+            ingresosUSD,
+            egresosGTQ,
+            egresosUSD,
             cuentasActivas,
             chequesPendientes,
             porcentajeConciliacion,
-            monedaFiltro,
         };
-    }, [cuentas, movimientos, cheques, conciliaciones, monedaFiltro]);
+    }, [cubo, conciliaciones]);
 
     return (
         <div className="dashboard-container">
@@ -222,14 +332,14 @@ export default function DashboardPage() {
                 <>
                     <DashboardKpis
                         metricas={metricas}
-                        monedaFiltro={monedaFiltro}
+                        filtros={filtros}
                     />
 
                     <div className="dashboard-section">
                         <div className="dashboard-section-header">
                             <h2>Cubo de Cuentas Bancarias</h2>
                             <span>
-                                Análisis ejecutivo de saldos, bancos, monedas, movimientos y cheques
+                                Análisis ejecutivo por moneda, banco, cuenta, tipo de cuenta y período
                             </span>
                         </div>
 
@@ -238,9 +348,39 @@ export default function DashboardPage() {
                             movimientos={movimientos}
                             cheques={cheques}
                             conciliaciones={conciliaciones}
-                            monedaFiltro={monedaFiltro}
-                            setMonedaFiltro={setMonedaFiltro}
+                            filtros={filtros}
+                            setFiltros={setFiltros}
+                            cubo={cubo}
                         />
+
+                        <div className="dashboard-section">
+                            <div className="dashboard-section-header">
+                                <h2>Cubo de Movimientos</h2>
+                                <span>
+                                    Análisis ejecutivo de ingresos, egresos, medios de movimiento,
+                                    recargos y comportamiento financiero
+                                </span>
+                            </div>
+
+                            <DashboardChartsMovimientos
+                                movimientos={movimientos}
+                                cuentas={cuentas}
+                            />
+                        </div>
+                        <div className="dashboard-section">
+                            <div className="dashboard-section-header">
+                                <h2>Cubo de Cheques</h2>
+                                <span>
+                                    Análisis ejecutivo de cheques emitidos, cobrados, pendientes,
+                                    vencimientos, bancos y monedas
+                                </span>
+                            </div>
+
+                            <DashboardChartsCheques
+                                cheques={cheques}
+                                cuentas={cuentas}
+                            />
+                        </div>
                     </div>
                 </>
             )}

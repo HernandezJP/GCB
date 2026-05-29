@@ -7,13 +7,8 @@ import {
     BadgeCheck,
 } from "lucide-react";
 
-const getSymbol = (monedaFiltro) => {
-    if (monedaFiltro === "USD") return "$";
-    return "Q";
-};
-
-const formatMoney = (value, monedaFiltro = "GTQ") =>
-    `${getSymbol(monedaFiltro)} ${Number(value ?? 0).toLocaleString("es-GT", {
+const money = (value, symbol) =>
+    `${symbol} ${Number(value ?? 0).toLocaleString("es-GT", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
@@ -33,37 +28,71 @@ const KpiCard = ({ label, value, icon, type = "blue" }) => {
     );
 };
 
-export default function DashboardKpis({ metricas, monedaFiltro = "TODAS" }) {
-    const monedaVisual = monedaFiltro === "TODAS" ? "GTQ" : monedaFiltro;
+export default function DashboardKpis({ metricas, filtros }) {
+    const mostrarGTQ = filtros.moneda === "TODAS" || filtros.moneda === "GTQ";
+    const mostrarUSD = filtros.moneda === "TODAS" || filtros.moneda === "USD";
 
     return (
         <div className="executive-kpi-grid">
-            <KpiCard
-                label="Saldo Total Disponible"
-                value={formatMoney(metricas.saldoTotal, monedaVisual)}
-                icon={<Wallet size={24} />}
-                type="navy"
-            />
+            {mostrarGTQ && (
+                <KpiCard
+                    label="Saldo Total GTQ"
+                    value={money(metricas.saldoGTQ, "Q")}
+                    icon={<Wallet size={24} />}
+                    type="navy"
+                />
+            )}
 
-            <KpiCard
-                label="Ingresos del Mes"
-                value={formatMoney(metricas.totalIngresosMes, monedaVisual)}
-                icon={<TrendingUp size={24} />}
-                type="blue"
-            />
+            {mostrarUSD && (
+                <KpiCard
+                    label="Saldo Total USD"
+                    value={money(metricas.saldoUSD, "$")}
+                    icon={<Wallet size={24} />}
+                    type="blue"
+                />
+            )}
 
-            <KpiCard
-                label="Egresos del Mes"
-                value={formatMoney(metricas.totalEgresosMes, monedaVisual)}
-                icon={<TrendingDown size={24} />}
-                type="sky"
-            />
+            {mostrarGTQ && (
+                <KpiCard
+                    label="Ingresos GTQ"
+                    value={money(metricas.ingresosGTQ, "Q")}
+                    icon={<TrendingUp size={24} />}
+                    type="soft"
+                />
+            )}
+
+            {mostrarUSD && (
+                <KpiCard
+                    label="Ingresos USD"
+                    value={money(metricas.ingresosUSD, "$")}
+                    icon={<TrendingUp size={24} />}
+                    type="soft"
+                />
+            )}
+
+            {mostrarGTQ && (
+                <KpiCard
+                    label="Egresos GTQ"
+                    value={money(metricas.egresosGTQ, "Q")}
+                    icon={<TrendingDown size={24} />}
+                    type="sky"
+                />
+            )}
+
+            {mostrarUSD && (
+                <KpiCard
+                    label="Egresos USD"
+                    value={money(metricas.egresosUSD, "$")}
+                    icon={<TrendingDown size={24} />}
+                    type="sky"
+                />
+            )}
 
             <KpiCard
                 label="Cuentas Activas"
                 value={metricas.cuentasActivas}
                 icon={<CreditCard size={24} />}
-                type="soft"
+                type="steel"
             />
 
             <KpiCard
