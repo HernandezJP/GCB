@@ -139,3 +139,27 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
+.input-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.btn-cancel,
+.btn-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.field-error {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 500;
+}

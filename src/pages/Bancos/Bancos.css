@@ -698,3 +698,27 @@
     color: #dc2626;
     flex-shrink: 0;
 }
+
+.btn-cancel,
+.btn-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.btn-cancel:hover {
+    background: #dc2626;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-cancel:active,
+.btn-save:active {
+    transform: scale(0.98);
+}
+
+.btn-save:hover {
+    transform: translateY(-1px);
+}

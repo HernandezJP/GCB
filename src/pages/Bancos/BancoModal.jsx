@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Building2, Hash, AlertCircle } from 'lucide-react';
+import {
+    X,
+    Building2,
+    Hash,
+    AlertCircle,
+    Save,
+    CircleX
+} from 'lucide-react';
 import { getNombre, getSwift } from './BancoPage';
 
 const INITIAL = { BAN_Nombre: '', BAN_Codigo_Swift: '' };
@@ -201,27 +208,29 @@ const BancoModal = ({ isOpen, onClose, onSave, bancoToEdit }) => {
                     </div>
 
                     <div className="modal-footer">
-                        <button
-                            type="button"
-                            className="btn-cancel"
-                            onClick={onClose}
-                            disabled={saving}
-                        >
-                            Cancelar
-                        </button>
+                    <button
+                        type="button"
+                        className="btn-cancel"
+                        onClick={onClose}
+                        disabled={saving}
+                    >
+                        <CircleX size={16} />
+                        Cancelar
+                    </button>
 
-                        <button
-                            type="submit"
-                            className="btn-save"
-                            disabled={saving}
-                        >
-                            {saving
-                                ? 'Guardando...'
-                                : bancoToEdit
-                                    ? 'Guardar Cambios'
-                                    : 'Crear Banco'}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        className="btn-save"
+                        disabled={saving}
+                    >
+                        <Save size={16} />
+                        {saving
+                            ? 'Guardando...'
+                            : bancoToEdit
+                                ? 'Guardar Cambios'
+                                : 'Crear Banco'}
+                    </button>
+                </div>
                 </form>
             </div>
         </div>,
