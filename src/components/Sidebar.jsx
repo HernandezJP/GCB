@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 
 import {
     Building2,
@@ -32,7 +32,6 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext.jsx";
-
 import "./Sidebar.css";
 
 const menuGroups = [
@@ -286,37 +285,77 @@ const canAccess = (rol, roles = []) => {
     return roles.includes(rol);
 };
 
+const getInitialGroupOpen = () => {
+    try {
+        const saved = localStorage.getItem("sidebarGroupOpen");
+
+        if (saved) {
+            return JSON.parse(saved);
+        }
+    } catch {
+        localStorage.removeItem("sidebarGroupOpen");
+    }
+
+    return Object.fromEntries(
+        menuGroups
+            .filter((g) => g.collapsible)
+            .map((g) => [g.title, g.title === "Reportes"])
+    );
+};
+
 const Sidebar = () => {
     const { rol, logout } = useAuth();
+    const location = useLocation();
+
+    const desktopContentRef = useRef(null);
+    const mobileContentRef = useRef(null);
 
     const [isOpen, setIsOpen] = useState(true);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [groupOpen, setGroupOpen] = useState(getInitialGroupOpen);
 
     const filteredGroups = useMemo(() => {
         return menuGroups
             .filter((group) => canAccess(rol, group.roles))
             .map((group) => ({
                 ...group,
-                items: group.items.filter((item) =>
-                    canAccess(rol, item.roles)
-                ),
+                items: group.items.filter((item) => canAccess(rol, item.roles)),
             }))
             .filter((group) => group.items.length > 0);
     }, [rol]);
 
-    const [groupOpen, setGroupOpen] = useState(
-        Object.fromEntries(
-            menuGroups
-                .filter((g) => g.collapsible)
-                .map((g) => [g.title, g.title === "Reportes"])
-        )
-    );
+    useEffect(() => {
+        const savedScroll = sessionStorage.getItem("sidebarScrollTop");
+
+        requestAnimationFrame(() => {
+            if (savedScroll && desktopContentRef.current) {
+                desktopContentRef.current.scrollTop = Number(savedScroll);
+            }
+
+            if (savedScroll && mobileContentRef.current) {
+                mobileContentRef.current.scrollTop = Number(savedScroll);
+            }
+        });
+    }, [location.pathname, groupOpen]);
+
+    const handleSidebarScroll = (e) => {
+        sessionStorage.setItem(
+            "sidebarScrollTop",
+            String(e.currentTarget.scrollTop)
+        );
+    };
 
     const toggleGroup = (title) => {
-        setGroupOpen((prev) => ({
-            ...prev,
-            [title]: !prev[title],
-        }));
+        setGroupOpen((prev) => {
+            const updated = {
+                ...prev,
+                [title]: !prev[title],
+            };
+
+            localStorage.setItem("sidebarGroupOpen", JSON.stringify(updated));
+
+            return updated;
+        });
     };
 
     const showLabels = isOpen || mobileOpen;
@@ -325,7 +364,7 @@ const Sidebar = () => {
         logout();
     };
 
-    const SidebarContent = () => (
+    const SidebarContent = ({ contentRef }) => (
         <>
             <div className="sidebar-header">
                 <div className="logo-section">
@@ -345,11 +384,7 @@ const Sidebar = () => {
                     className="toggle-control desktop-toggle"
                     onClick={() => setIsOpen((open) => !open)}
                 >
-                    {isOpen ? (
-                        <ChevronLeft size={16} />
-                    ) : (
-                        <Menu size={16} />
-                    )}
+                    {isOpen ? <ChevronLeft size={16} /> : <Menu size={16} />}
                 </button>
 
                 <button
@@ -361,7 +396,11 @@ const Sidebar = () => {
                 </button>
             </div>
 
-            <nav className="sidebar-content">
+            <nav
+                className="sidebar-content"
+                ref={contentRef}
+                onScroll={handleSidebarScroll}
+            >
                 {filteredGroups.map((group, gi) => {
                     const isExpanded =
                         !group.collapsible || groupOpen[group.title];
@@ -474,7 +513,7 @@ const Sidebar = () => {
                     isOpen ? "open" : "closed"
                 }`}
             >
-                <SidebarContent />
+                <SidebarContent contentRef={desktopContentRef} />
             </aside>
 
             <aside
@@ -482,7 +521,7 @@ const Sidebar = () => {
                     mobileOpen ? "mobile-open" : ""
                 }`}
             >
-                <SidebarContent />
+                <SidebarContent contentRef={mobileContentRef} />
             </aside>
         </>
     );

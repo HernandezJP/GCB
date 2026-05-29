@@ -1,25 +1,85 @@
 import { useEffect, useMemo, useState } from "react";
+
 import DashboardKpis from "./DashboardKpis";
-import DashboardCharts from "./DashboardChartsCuentasBancarias";
-import DashboardConciliacionCharts from "./DashboardChartsConciliacion";
-import DashboardChartsMovimientos from "./DashboardChartsMovimientos";
+import DashboardChartsCuentasBancarias from "./DashboardChartsCuentasBancarias";
+
 import {
     getDashboardCuentas,
     getDashboardConciliaciones,
 } from "../../services/DashboardService";
+
 import { getMovimientos } from "../../services/MovimientoService";
+import { getCheques } from "../../services/ChequeService";
+
 import "./Dashboard.css";
 
-import DashboardChartsCheques from "./DashboardChartsCheques";
-import { getCheques } from "../../services/ChequeService";
+const g = (o, ...ks) => {
+    for (const k of ks) {
+        const v = o?.[k];
+        if (v !== undefined && v !== null) return v;
+    }
+    return "";
+};
+
+const getCuentaId = (item) =>
+    String(g(item, "cuB_Cuenta", "cUB_Cuenta", "CUB_Cuenta", "cub_Cuenta", "cub_cuenta"));
+
+const getTipoMovimiento = (m) =>
+    String(g(m, "tiM_Descripcion", "tIM_Descripcion", "tim_descripcion")).toLowerCase();
+
+const getMonto = (m) =>
+    Math.abs(Number(g(m, "moV_Monto", "mOV_Monto", "MOV_Monto", "mov_monto") || 0));
+
+const esIngreso = (m) => getTipoMovimiento(m) === "ingreso";
+
+const getEstadoCheque = (c) =>
+    String(
+        g(
+            c,
+            "estadoCheque",
+            "EstadoCheque",
+            "esC_Descripcion",
+            "eSC_Descripcion",
+            "ESC_Descripcion"
+        )
+    ).toLowerCase();
+
+const getMonedaTexto = (item) =>
+    String(
+        g(
+            item,
+            "tipoMoneda",
+            "TipoMoneda",
+            "tmO_Descripcion",
+            "tMO_Descripcion",
+            "TMO_Descripcion",
+            "moneda",
+            "Moneda"
+        )
+    ).toLowerCase();
+
+const getMonedaKey = (item) => {
+    const moneda = getMonedaTexto(item);
+
+    if (
+        moneda.includes("dólar") ||
+        moneda.includes("dolar") ||
+        moneda.includes("usd")
+    ) {
+        return "USD";
+    }
+
+    return "GTQ";
+};
 
 export default function DashboardPage() {
     const [cuentas, setCuentas] = useState([]);
     const [conciliaciones, setConciliaciones] = useState([]);
     const [movimientos, setMovimientos] = useState([]);
+    const [cheques, setCheques] = useState([]);
+    const [monedaFiltro, setMonedaFiltro] = useState("TODAS");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [cheques, setCheques] = useState([]);
 
     const cargarDashboard = async () => {
         try {
@@ -27,19 +87,19 @@ export default function DashboardPage() {
             setError("");
 
             const [
-            cuentasData,
-            conciliacionesData,
-            movimientosData,
-            chequesData
-        ] = await Promise.all([
-            getDashboardCuentas(),
-            getDashboardConciliaciones(),
-            getMovimientos(),
-            getCheques(),
-        ]);
+                cuentasData,
+                conciliacionesData,
+                movimientosData,
+                chequesData,
+            ] = await Promise.all([
+                getDashboardCuentas(),
+                getDashboardConciliaciones(),
+                getMovimientos(),
+                getCheques(),
+            ]);
 
-            setCuentas(cuentasData);
-            setConciliaciones(conciliacionesData);
+            setCuentas(Array.isArray(cuentasData) ? cuentasData : []);
+            setConciliaciones(Array.isArray(conciliacionesData) ? conciliacionesData : []);
             setMovimientos(Array.isArray(movimientosData) ? movimientosData : []);
             setCheques(Array.isArray(chequesData) ? chequesData : []);
         } catch (error) {
@@ -55,31 +115,61 @@ export default function DashboardPage() {
     }, []);
 
     const metricas = useMemo(() => {
-        const totalCuentas = cuentas.length;
+        const cuentasFiltradas =
+            monedaFiltro === "TODAS"
+                ? cuentas
+                : cuentas.filter((c) => getMonedaKey(c) === monedaFiltro);
 
-        const saldoTotal = cuentas.reduce(
-            (acc, item) => acc + Number(item.cuB_Saldo_Actual ?? 0),
+        const cuentasIdsFiltradas = new Set(
+            cuentasFiltradas.map(getCuentaId).filter(Boolean)
+        );
+
+        const movimientosFiltrados =
+            monedaFiltro === "TODAS"
+                ? movimientos
+                : movimientos.filter((m) =>
+                    cuentasIdsFiltradas.has(getCuentaId(m))
+                );
+
+        const chequesFiltrados =
+            monedaFiltro === "TODAS"
+                ? cheques
+                : cheques.filter((c) =>
+                    cuentasIdsFiltradas.has(getCuentaId(c))
+                );
+
+        const saldoTotal = cuentasFiltradas.reduce(
+            (acc, item) =>
+                acc + Number(g(item, "cuB_Saldo_Actual", "CUB_Saldo_Actual") || 0),
             0
         );
 
-        const saldoInicial = cuentas.reduce(
-            (acc, item) => acc + Number(item.cuB_Saldo_Inicial ?? 0),
+        const saldoInicial = cuentasFiltradas.reduce(
+            (acc, item) =>
+                acc + Number(g(item, "cuB_Saldo_Inicial", "CUB_Saldo_Inicial") || 0),
             0
         );
 
-        const cuentasActivas = cuentas.filter(x => x.cuB_Estado === "A").length;
-        const cuentasInactivas = cuentas.filter(x => x.cuB_Estado === "I").length;
+        const totalIngresosMes = movimientosFiltrados
+            .filter(esIngreso)
+            .reduce((acc, item) => acc + getMonto(item), 0);
 
-        const bancosUtilizados = new Set(
-            cuentas.map(x => x.banco).filter(Boolean)
-        ).size;
+        const totalEgresosMes = movimientosFiltrados
+            .filter((m) => !esIngreso(m))
+            .reduce((acc, item) => acc + getMonto(item), 0);
 
-        const totalConciliaciones = conciliaciones.length;
+        const cuentasActivas = cuentasFiltradas.filter(
+            (x) => g(x, "cuB_Estado", "CUB_Estado") === "A"
+        ).length;
 
-        const diferenciaConciliacion = conciliaciones.reduce(
-            (acc, item) => acc + Number(item.coN_Diferencia ?? 0),
-            0
-        );
+        const chequesPendientes = chequesFiltrados.filter((c) => {
+            const estado = getEstadoCheque(c);
+            return (
+                estado.includes("emitido") ||
+                estado.includes("pendiente") ||
+                estado.includes("activo")
+            );
+        }).length;
 
         const movimientosConciliados = conciliaciones.reduce(
             (acc, item) => acc + Number(item.totalConciliados ?? 0),
@@ -94,40 +184,32 @@ export default function DashboardPage() {
             0
         );
 
-        const totalCheques = cheques.length;
+        const totalMovConciliacion = movimientosConciliados + pendientesConciliacion;
 
-        const chequesCobrados = cheques.filter((c) =>
-        String(c.estadoCheque ?? c.EstadoCheque ?? "").toLowerCase().includes("cobrado")
-        ).length;
-
-        const chequesCancelados = cheques.filter((c) =>
-        String(c.estadoCheque ?? c.EstadoCheque ?? "").toLowerCase().includes("cancelado")
-        ).length;
+        const porcentajeConciliacion =
+            totalMovConciliacion > 0
+                ? (movimientosConciliados / totalMovConciliacion) * 100
+                : 0;
 
         return {
-            totalCuentas,
             saldoTotal,
             saldoInicial,
+            totalIngresosMes,
+            totalEgresosMes,
             cuentasActivas,
-            cuentasInactivas,
-            bancosUtilizados,
-            totalConciliaciones,
-            diferenciaConciliacion,
-            movimientosConciliados,
-            pendientesConciliacion,
-            totalCheques,
-            chequesCobrados,
-            chequesCancelados,
+            chequesPendientes,
+            porcentajeConciliacion,
+            monedaFiltro,
         };
-    }, [cuentas, conciliaciones, cheques]);
+    }, [cuentas, movimientos, cheques, conciliaciones, monedaFiltro]);
 
     return (
         <div className="dashboard-container">
-            <div className="page-header">
+            <div className="page-header dashboard-main-header">
                 <div className="page-header-left">
-                    <h1>Dashboard General GCB</h1>
+                    <h1>Dashboard Ejecutivo GCB</h1>
                     <span className="record-count">
-                        Resumen financiero del sistema
+                        Cubo financiero de cuentas bancarias
                     </span>
                 </div>
             </div>
@@ -138,42 +220,27 @@ export default function DashboardPage() {
                 <div className="loading-state">Cargando dashboard...</div>
             ) : (
                 <>
-                    <DashboardKpis metricas={metricas} />
+                    <DashboardKpis
+                        metricas={metricas}
+                        monedaFiltro={monedaFiltro}
+                    />
 
                     <div className="dashboard-section">
                         <div className="dashboard-section-header">
-                            <h2>Cuentas Bancarias</h2>
-                            <span>Análisis general de cuentas, bancos, saldos y estados</span>
+                            <h2>Cubo de Cuentas Bancarias</h2>
+                            <span>
+                                Análisis ejecutivo de saldos, bancos, monedas, movimientos y cheques
+                            </span>
                         </div>
 
-                        <DashboardCharts cuentas={cuentas} />
-                    </div>
-
-                    <div className="dashboard-section">
-                        <div className="dashboard-section-header">
-                            <h2>Conciliación Bancaria</h2>
-                            <span>Resumen de conciliaciones, diferencias y movimientos pendientes</span>
-                        </div>
-
-                        <DashboardConciliacionCharts conciliaciones={conciliaciones} />
-                    </div>
-
-                    <div className="dashboard-section">
-                        <div className="dashboard-section-header">
-                            <h2>Movimientos</h2>
-                            <span>Ingresos, egresos, medios y recargos registrados</span>
-                        </div>
-
-                        <DashboardChartsMovimientos movimientos={movimientos} />
-                    </div>
-
-                    <div className="dashboard-section">
-                    <div className="dashboard-section-header">
-                        <h2>Cheques</h2>
-                        <span>Resumen de cheques emitidos, cobrados, cancelados y rechazados</span>
-                    </div>
-
-                    <DashboardChartsCheques cheques={cheques} />
+                        <DashboardChartsCuentasBancarias
+                            cuentas={cuentas}
+                            movimientos={movimientos}
+                            cheques={cheques}
+                            conciliaciones={conciliaciones}
+                            monedaFiltro={monedaFiltro}
+                            setMonedaFiltro={setMonedaFiltro}
+                        />
                     </div>
                 </>
             )}

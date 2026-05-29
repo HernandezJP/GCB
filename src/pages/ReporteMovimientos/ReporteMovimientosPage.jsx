@@ -267,7 +267,7 @@ export default function ReporteMovimientosPage() {
         <div className="cuentabancaria-container">
             <div className="page-header">
                 <div className="page-header-left">
-                    <h1>Estado de Cuenta Bancaria</h1>
+                    <h1>Reporte de Movimientos</h1>
 
                     <span className="record-count">
                         {dataFiltrada.length} registros

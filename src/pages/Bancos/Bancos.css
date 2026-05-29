@@ -683,3 +683,18 @@
     .action-buttons { gap: 4px; }
     .icon-btn       { padding: 6px; }
 }
+
+.input-error {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #dc2626;
+    font-size: 0.76rem;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.input-error svg {
+    color: #dc2626;
+    flex-shrink: 0;
+}
