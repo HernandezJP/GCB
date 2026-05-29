@@ -4,6 +4,7 @@ import DashboardKpis from "./DashboardKpis";
 import DashboardChartsCuentasBancarias from "./DashboardChartsCuentasBancarias";
 import DashboardChartsMovimientos from "./DashboardChartsMovimientos";
 import DashboardChartsCheques from "./DashboardChartsCheques";
+import DashboardChartsConciliaciones from "./DashboardChartsConciliacion";
 
 import {
     getDashboardCuentas,
@@ -379,6 +380,18 @@ export default function DashboardPage() {
                             <DashboardChartsCheques
                                 cheques={cheques}
                                 cuentas={cuentas}
+                            />
+                        </div>
+                        <div className="dashboard-section">
+                            <div className="dashboard-section-header">
+                                <h2>Cubo de Conciliaciones</h2>
+                                <span>
+                                    Análisis ejecutivo de saldos, diferencias, pendientes y conciliación bancaria
+                                </span>
+                            </div>
+
+                            <DashboardChartsConciliaciones
+                                conciliaciones={conciliaciones}
                             />
                         </div>
                     </div>
