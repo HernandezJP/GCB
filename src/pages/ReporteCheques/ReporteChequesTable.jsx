@@ -6,8 +6,36 @@ const g = (o, ...ks) => {
   return "";
 };
 
-const formatMoney = (value) =>
-  `Q ${Number(value ?? 0).toLocaleString("es-GT", {
+const getMonedaTexto = (item) =>
+  String(
+    g(
+      item,
+      "tipoMoneda",
+      "TipoMoneda",
+      "tmO_Descripcion",
+      "tMO_Descripcion",
+      "TMO_Descripcion",
+      "moneda",
+      "Moneda"
+    )
+  ).toLowerCase();
+
+const getSimboloMoneda = (item) => {
+  const moneda = getMonedaTexto(item);
+
+  if (
+    moneda.includes("dólar") ||
+    moneda.includes("dolar") ||
+    moneda.includes("usd")
+  ) {
+    return "$";
+  }
+
+  return "Q";
+};
+
+const formatMoney = (value, item = {}) =>
+  `${getSimboloMoneda(item)} ${Number(value ?? 0).toLocaleString("es-GT", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -81,7 +109,11 @@ function ReporteChequesTable({ data = [] }) {
                     </code>
                   </td>
 
-                  <td>{g(item, "cuB_Numero_Cuenta", "cUB_Numero_Cuenta", "CUB_Numero_Cuenta") || "—"}</td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>
+                      {g(item, "cuentaTexto") || "—"}
+                    </div>
+                  </td>
 
                   <td>{g(item, "beneficiario", "Beneficiario", "persona", "Persona") || "—"}</td>
 
@@ -90,7 +122,14 @@ function ReporteChequesTable({ data = [] }) {
                   </td>
 
                   <td className="money money-red">
-                    {formatMoney(Math.abs(Number(g(item, "moV_Monto", "mOV_Monto", "MOV_Monto") || 0)))}
+                    {formatMoney(
+                      Math.abs(
+                        Number(
+                          g(item, "moV_Monto", "mOV_Monto", "MOV_Monto") || 0
+                        )
+                      ),
+                      item
+                    )}
                   </td>
 
                   <td>{formatDate(g(item, "chE_Fecha_Emision", "cHE_Fecha_Emision", "CHE_Fecha_Emision"))}</td>
