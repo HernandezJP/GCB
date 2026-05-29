@@ -366,351 +366,346 @@ export const exportToExcel = (
     );
 };
 
-export const exportToPDF = (
-    data,
-    resumen = {}
-) => {
+export const exportToPDF = (data, resumen = {}) => {
     const dataOrdenada = ordenarPorFecha(data);
-
     const cuenta = getCuentaInfo(dataOrdenada);
-
     const periodo = getPeriodo(dataOrdenada);
 
     const doc = new jsPDF({
-        orientation: "landscape",
+        orientation: "portrait",
         unit: "mm",
         format: "letter",
     });
 
-    const pageWidth =
-        doc.internal.pageSize.getWidth();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    doc.setFillColor(15, 23, 42);
+    const azul = [3, 31, 71];
+    const verde = [22, 163, 74];
+    const rojo = [220, 38, 38];
+    const morado = [91, 33, 182];
+    const grisTexto = [51, 65, 85];
+    const grisBorde = [226, 232, 240];
+    const azulClaro = [230, 242, 255];
+
+    const primerItem = dataOrdenada[0] ?? {};
+    const money = (value) => formatMoney(value, primerItem);
+
+    const drawKpiCard = (x, y, w, h, titulo, valor, color) => {
+        doc.setDrawColor(...grisBorde);
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(x, y, w, h, 3, 3, "FD");
+
+        doc.setTextColor(...color);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.text(titulo, x + w / 2, y + 12, { align: "center" });
+
+        doc.setFontSize(16);
+        doc.text(String(valor), x + w / 2, y + 25, { align: "center" });
+
+        doc.setDrawColor(...color);
+        doc.setLineWidth(0.5);
+        doc.line(x + w / 2 - 6, y + 31, x + w / 2 + 6, y + 31);
+        doc.setLineWidth(0.2);
+    };
+
+    // HEADER
+    doc.setFillColor(...azul);
+    doc.rect(0, 0, pageWidth, 32, "F");
+
     doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(23);
+    doc.text("GCB", 12, 17);
 
-    doc.rect(0, 0, pageWidth, 36, "F");
+    doc.setTextColor(250, 204, 21);
+    doc.setFontSize(13);
+    doc.text("BANK", 36, 17);
 
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7.5);
+    doc.text("GESTIÓN DE CUENTAS BANCARIAS", 12, 24);
 
-    doc.setFontSize(24);
+    // TÍTULO CENTRADO
+doc.setTextColor(255, 255, 255);
+
+doc.setFont("helvetica", "bold");
+doc.setFontSize(18);
+doc.text(
+    "REPORTE DE MOVIMIENTOS",
+    pageWidth / 2,
+    13,
+    { align: "center" }
+);
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(10);
+doc.text(
+    "Estado de Cuenta Bancaria",
+    pageWidth / 2,
+    21,
+    { align: "center" }
+);
+
+// FECHA A LA DERECHA
+doc.setFont("helvetica", "bold");
+doc.setFontSize(8);
+doc.text("Fecha de emisión", pageWidth - 45, 10);
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+doc.text(
+    new Date().toLocaleString("es-GT"),
+    pageWidth - 45,
+    18
+);
+
+    doc.setFillColor(...verde);
+    doc.rect(0, 32, pageWidth, 1.5, "F");
+
+    // INFO CUENTA
+    doc.setDrawColor(...grisBorde);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(7, 40, pageWidth - 14, 62, 3, 3, "FD");
+
+    doc.setTextColor(...azul);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("INFORMACIÓN DE LA CUENTA", 12, 52);
+
+    doc.setFontSize(8);
+    doc.setTextColor(...grisTexto);
+
+    let yInfo = 64;
+
+    const infoRows = [
+        ["Titular de la cuenta", cuenta.persona],
+        ["Número de cuenta", cuenta.numeroCuenta],
+        ["Banco", cuenta.banco],
+        ["Tipo de cuenta", cuenta.tipoCuenta],
+        ["Moneda", cuenta.moneda],
+        ["Estado de la cuenta", "Activa"],
+    ];
+
+    infoRows.forEach(([label, value]) => {
+        doc.setFont("helvetica", "bold");
+        doc.text(label, 12, yInfo);
+        doc.text(":", 49, yInfo);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(String(value ?? "—"), 56, yInfo);
+
+        yInfo += 6;
+    });
+
+    // Banco centrado, sin símbolos raros
+    doc.setDrawColor(...grisBorde);
+    doc.line(101, 54, 101, 92);
+
+    doc.setTextColor(...azul);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(String(cuenta.banco || "Banco"), 126, 70, { align: "center" });
+
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(9);
+    doc.text("Siempre de tu lado", 126, 81, { align: "center" });
+
+    doc.setDrawColor(...grisBorde);
+    doc.line(151, 54, 151, 92);
+
+    // Periodo
+    doc.setTextColor(...azul);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("PERÍODO DEL REPORTE", 166, 52);
+
+    doc.setFontSize(8);
+    doc.setTextColor(...grisTexto);
 
     doc.setFont("helvetica", "bold");
-
-    doc.text("GCB", 14, 18);
-
-    doc.setTextColor(255, 255, 255);
-
-    doc.setFontSize(17);
-
-    doc.text(
-        "Estado de Cuenta Bancaria",
-        14,
-        30
-    );
-
-    doc.setFontSize(10);
+    doc.text("Fecha inicial", 158, 66);
+    doc.text("Fecha final", 158, 74);
+    doc.text("Días del período", 158, 88);
 
     doc.setFont("helvetica", "normal");
+    doc.text(`: ${periodo.fechaInicio}`, 188, 66);
+    doc.text(`: ${periodo.fechaFin}`, 188, 74);
+    doc.text(`: ${dataOrdenada.length} movimientos`, 188, 88);
 
-    doc.text(
-        `Generado: ${new Date().toLocaleDateString(
-            "es-GT"
-        )}`,
-        pageWidth - 65,
-        18
-    );
+    doc.setDrawColor(203, 213, 225);
+    doc.line(158, 80, 205, 80);
 
+    // KPI CARDS sin círculos
+    drawKpiCard(7, 110, 47, 38, "SALDO INICIAL", money(resumen.saldoInicial), [2, 132, 199]);
+    drawKpiCard(60, 110, 47, 38, "TOTAL INGRESOS", money(resumen.totalCreditos), verde);
+    drawKpiCard(113, 110, 47, 38, "TOTAL EGRESOS", money(resumen.totalDebitos), rojo);
+    drawKpiCard(166, 110, 43, 38, "SALDO FINAL", money(resumen.saldoFinal), morado);
+
+    // TÍTULO TABLA
+    doc.setDrawColor(...grisBorde);
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(7, 158, pageWidth - 14, 8, 2, 2, "FD");
+
+    doc.setTextColor(...azul);
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("DETALLE DE MOVIMIENTOS", 10, 164);
 
-    doc.setFontSize(12);
+    const rows = dataOrdenada.map((item) => {
+        const monto = getMonto(item);
+        const credito = esIngreso(item) ? monto : 0;
+        const debito = esIngreso(item) ? 0 : monto;
 
-    doc.text(
-        "Información de la cuenta",
-        14,
-        48
-    );
+        const referencia =
+            getValue(item, [
+                "moV_Numero_Referencia",
+                "mOV_Numero_Referencia",
+                "mov_numero_referencia",
+            ]) || "—";
 
-    doc.setFont("helvetica", "normal");
+        const descripcion =
+            getValue(item, [
+                "moV_Descripcion",
+                "mOV_Descripcion",
+                "mov_descripcion",
+            ]) || getMedio(item) || "—";
 
-    doc.setFontSize(10);
-
-    doc.text(
-        `Banco: ${cuenta.banco}`,
-        14,
-        57
-    );
-
-    doc.text(
-        `Número de cuenta: ${cuenta.numeroCuenta}`,
-        14,
-        64
-    );
-
-    doc.text(
-        `Tipo de cuenta: ${cuenta.tipoCuenta}`,
-        14,
-        71
-    );
-
-    doc.text(
-        `Moneda: ${cuenta.moneda}`,
-        14,
-        78
-    );
-
-    doc.text(
-        `Titular: ${cuenta.persona}`,
-        14,
-        85
-    );
-
-    doc.text(
-        `Periodo: ${periodo.fechaInicio} al ${periodo.fechaFin}`,
-        14,
-        92
-    );
-
-    doc.setFont("helvetica", "bold");
-
-    doc.setFontSize(12);
-
-    doc.text(
-        "Resumen financiero",
-        175,
-        48
-    );
+        return [
+            formatDate(getValue(item, ["moV_Fecha", "mOV_Fecha", "mov_fecha"])),
+            referencia,
+            descripcion,
+            esIngreso(item) ? "Ingreso" : "Egreso",
+            debito > 0
+                ? Number(debito).toLocaleString("es-GT", { minimumFractionDigits: 2 })
+                : "—",
+            credito > 0
+                ? Number(credito).toLocaleString("es-GT", { minimumFractionDigits: 2 })
+                : "—",
+            Number(getSaldo(item)).toLocaleString("es-GT", { minimumFractionDigits: 2 }),
+        ];
+    });
 
     autoTable(doc, {
-        startY: 52,
-
-        margin: {
-            left: 175,
-            right: 14,
-        },
-
+        startY: 168,
+        head: [[
+            "FECHA",
+            "REFERENCIA",
+            "DESCRIPCIÓN",
+            "TIPO",
+            "DÉBITO",
+            "CRÉDITO",
+            "SALDO",
+        ]],
+        body: rows,
         theme: "grid",
-
+        margin: { left: 7, right: 7 },
         styles: {
-            fontSize: 9,
-            cellPadding: 2,
+            fontSize: 7.3,
+            cellPadding: 2.4,
+            overflow: "linebreak",
+            lineColor: grisBorde,
+            textColor: grisTexto,
         },
-
         headStyles: {
-            fillColor: [15, 23, 42],
+            fillColor: azul,
             textColor: [255, 255, 255],
             fontStyle: "bold",
             halign: "center",
         },
-
-        head: [["Concepto", "Valor"]],
-
-        body: [
-            [
-                "Saldo inicial",
-                formatMoney(resumen.saldoInicial, dataOrdenada[0]),
-            ],
-
-            [
-                "Total créditos",
-                formatMoney(resumen.totalCreditos, dataOrdenada[0]),
-            ],
-
-            [
-                "Total débitos",
-                formatMoney(resumen.totalDebitos, dataOrdenada[0]),
-            ],
-
-            [
-                "Total recargos",
-                formatMoney(resumen.totalRecargos, dataOrdenada[0]),
-            ],
-
-            [
-                "Saldo final",
-                formatMoney(resumen.saldoFinal, dataOrdenada[0]),
-            ],
-
-            [
-                "Total movimientos",
-                resumen.totalMovimientos ??
-                    dataOrdenada.length,
-            ],
-        ],
-    });
-
-    doc.setFont("helvetica", "bold");
-
-    doc.setFontSize(12);
-
-    doc.text(
-        "Detalle de movimientos",
-        14,
-        110
-    );
-
-    const rows = dataOrdenada.map(
-        (item, index) => {
-            const monto = getMonto(item);
-
-            const credito = esIngreso(item)
-                ? monto
-                : 0;
-
-            const debito = esIngreso(item)
-                ? 0
-                : monto;
-
-            return [
-                index + 1,
-
-                formatDate(
-                    getValue(item, [
-                        "moV_Fecha",
-                        "mOV_Fecha",
-                        "mov_fecha",
-                    ])
-                ),
-
-                getTipo(item) || "—",
-
-                getMedio(item) || "—",
-
-                getValue(item, [
-                    "moV_Descripcion",
-                    "mOV_Descripcion",
-                    "mov_descripcion",
-                ]) || "—",
-
-                getValue(item, [
-                    "moV_Numero_Referencia",
-                    "mOV_Numero_Referencia",
-                    "mov_numero_referencia",
-                ]) || "—",
-
-                debito > 0
-                    ? formatMoney(debito, item)
-                    : "—",
-
-                credito > 0
-                    ? formatMoney(credito, item)
-                    : "—",
-
-                getRecargo(item) > 0
-                 ? formatMoney(getRecargo(item), item)
-                    : "—",
-
-                formatMoney(getSaldo(item), item),
-
-                getEstado(item) || "—",
-            ];
-        }
-    );
-
-    autoTable(doc, {
-        startY: 114,
-
-        head: [[
-            "#",
-            "Fecha",
-            "Tipo",
-            "Medio",
-            "Descripción",
-            "Referencia",
-            "Débito",
-            "Crédito",
-            "Recargo",
-            "Saldo",
-            "Estado",
-        ]],
-
-        body: rows,
-
-        styles: {
-            fontSize: 7.5,
-            cellPadding: 2,
-            overflow: "linebreak",
-        },
-
-        headStyles: {
-            fillColor: [249, 115, 22],
-            textColor: 255,
-            fontStyle: "bold",
-        },
-
         alternateRowStyles: {
             fillColor: [248, 250, 252],
         },
-
         columnStyles: {
-            0: {
-                cellWidth: 10,
-                halign: "center",
-            },
+            0: { cellWidth: 23, halign: "center" },
+            1: { cellWidth: 27, halign: "center" },
+            2: { cellWidth: 46 },
+            3: { cellWidth: 25, halign: "center", fontStyle: "bold" },
+            4: { cellWidth: 27, halign: "right" },
+            5: { cellWidth: 27, halign: "right" },
+            6: { cellWidth: 27, halign: "right", fontStyle: "bold" },
+        },
+        didParseCell: (cell) => {
+            if (cell.section === "body" && cell.column.index === 3) {
+                const tipo = String(cell.cell.raw).toLowerCase();
 
-            1: {
-                cellWidth: 18,
-            },
+                if (tipo.includes("ingreso")) {
+                    cell.cell.styles.textColor = verde;
+                    cell.cell.styles.fillColor = [240, 253, 244];
+                }
 
-            2: {
-                cellWidth: 20,
-            },
+                if (tipo.includes("egreso")) {
+                    cell.cell.styles.textColor = rojo;
+                    cell.cell.styles.fillColor = [254, 242, 242];
+                }
+            }
 
-            3: {
-                cellWidth: 22,
-            },
+            if (cell.section === "body" && cell.column.index === 4 && cell.cell.raw !== "—") {
+                cell.cell.styles.textColor = rojo;
+                cell.cell.styles.fontStyle = "bold";
+            }
 
-            4: {
-                cellWidth: 45,
-            },
-
-            5: {
-                cellWidth: 26,
-            },
-
-            6: {
-                cellWidth: 22,
-                halign: "right",
-            },
-
-            7: {
-                cellWidth: 22,
-                halign: "right",
-            },
-
-            8: {
-                cellWidth: 22,
-                halign: "right",
-            },
-
-            9: {
-                cellWidth: 24,
-                halign: "right",
-            },
-
-            10: {
-                cellWidth: 18,
-            },
+            if (cell.section === "body" && cell.column.index === 5 && cell.cell.raw !== "—") {
+                cell.cell.styles.textColor = verde;
+                cell.cell.styles.fontStyle = "bold";
+            }
         },
     });
 
-    const pageCount =
-        doc.internal.getNumberOfPages();
+    let finalY = doc.lastAutoTable.finalY + 5;
+
+    if (finalY > pageHeight - 35) {
+        doc.addPage();
+        finalY = 20;
+    }
+
+    // NOTA
+    doc.setFillColor(...azulClaro);
+    doc.setDrawColor(191, 219, 254);
+    doc.roundedRect(7, finalY, pageWidth - 14, 8, 2, 2, "FD");
+
+    doc.setTextColor(30, 64, 175);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text(
+        "Los saldos mostrados corresponden al saldo después de cada movimiento.",
+        13,
+        finalY + 5.3
+    );
+
+    finalY += 16;
+
+    // PIE
+    doc.setDrawColor(...grisBorde);
+    doc.line(7, finalY, pageWidth - 7, finalY);
+
+    doc.setTextColor(...azul);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("REPORTE GENERADO AUTOMÁTICAMENTE", 12, finalY + 9);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...grisTexto);
+    doc.text("Sistema de Gestión de Cuentas Bancarias - GCBANK", 12, finalY + 15);
+    doc.text("Este documento no requiere firma.", 12, finalY + 20);
+
+    doc.setTextColor(...azul);
+    doc.setFont("helvetica", "bold");
+    doc.text(
+        `Página 1 de ${doc.internal.getNumberOfPages()}`,
+        pageWidth - 42,
+        finalY + 15
+    );
+
+    const pageCount = doc.internal.getNumberOfPages();
 
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-
-        doc.setFontSize(8);
-
-        doc.setTextColor(100);
-
-        doc.text(
-            `Sistema GCB - Estado de Cuenta Bancaria | Página ${i} de ${pageCount}`,
-            14,
-            doc.internal.pageSize.getHeight() -
-                10
-        );
+        doc.setFillColor(...azul);
+        doc.rect(0, pageHeight - 4, pageWidth, 4, "F");
     }
 
-    doc.save(
-        "Estado_Cuenta_Bancaria_GCB.pdf"
-    );
+    doc.save("Estado_Cuenta_Bancaria_GCB.pdf");
 };
