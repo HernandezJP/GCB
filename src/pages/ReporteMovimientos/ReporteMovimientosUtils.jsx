@@ -366,6 +366,89 @@ export const exportToExcel = (
     );
 };
 
+export const exportToCsvConciliacion = (data) => {
+    const dataOrdenada = ordenarPorFecha(data);
+
+    const headers = [
+        "#",
+        "Fecha",
+        "Tipo",
+        "Medio",
+        "Descripcion",
+        "Referencia",
+        "Debito",
+        "Credito",
+        "Recargo",
+        "Saldo",
+        "Estado",
+    ];
+
+    const rows = dataOrdenada.map((item, index) => {
+        const monto = getMonto(item);
+        const credito = esIngreso(item) ? monto : 0;
+        const debito = esIngreso(item) ? 0 : monto;
+
+        return [
+            index + 1,
+            formatDate(getValue(item, [
+                "moV_Fecha",
+                "mOV_Fecha",
+                "mov_fecha",
+            ])),
+            getTipo(item),
+            getMedio(item),
+            getValue(item, [
+                "moV_Descripcion",
+                "mOV_Descripcion",
+                "mov_descripcion",
+            ]),
+            getValue(item, [
+                "moV_Numero_Referencia",
+                "mOV_Numero_Referencia",
+                "mov_numero_referencia",
+            ]),
+            debito > 0 ? formatMoney(debito, item) : "",
+            credito > 0 ? formatMoney(credito, item) : "",
+            getRecargo(item) > 0 ? formatMoney(getRecargo(item), item) : "",
+            formatMoney(getSaldo(item), item),
+            getEstado(item),
+        ];
+    });
+
+    const escapeCsv = (value) => {
+        const text = String(value ?? "");
+
+        if (
+            text.includes(",") ||
+            text.includes('"') ||
+            text.includes("\n")
+        ) {
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        return text;
+    };
+
+    const csvContent = [
+        headers.join(","),
+        ...rows.map(row =>
+            row.map(escapeCsv).join(",")
+        ),
+    ].join("\n");
+
+    const blob = new Blob(
+        ["\uFEFF" + csvContent],
+        {
+            type: "text/csv;charset=utf-8;",
+        }
+    );
+
+    saveAs(
+        blob,
+        "Estado_Cuenta_Bancaria_GCB_conciliacion.csv"
+    );
+};
+
 export const exportToPDF = (data, resumen = {}) => {
     const dataOrdenada = ordenarPorFecha(data);
     const cuenta = getCuentaInfo(dataOrdenada);

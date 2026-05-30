@@ -11,7 +11,7 @@ import {
 
 import ReporteMovimientosFilter from "./ReporteMovimientosFilter";
 import ReporteMovimientosTable from "./ReporteMovimientosTable";
-import { exportToExcel, exportToPDF } from "./ReporteMovimientosUtils";
+import { exportToExcel, exportToPDF, exportToCsvConciliacion } from "./ReporteMovimientosUtils";
 import { getReporteMovimientos } from "../../services/ReporteMovimientoService";
 import { getTiposMovimiento } from "../../services/TipoMovimientoService";
 import { getMediosMovimiento } from "../../services/MedioMovimientoService";
@@ -217,7 +217,7 @@ export default function ReporteMovimientosPage() {
         );
     }, [data, filtros.busqueda]);
 
-    
+
 
     const simboloMoneda = filtros.cuentaId
         ? getSimboloCuenta(cuentas, filtros.cuentaId)
@@ -250,18 +250,18 @@ export default function ReporteMovimientosPage() {
     }, [data]);
 
     const dataOrdenada = useMemo(() => {
-    return [...dataFiltrada].sort((a, b) => {
-        const fechaA = new Date(
-            getValue(a, ["moV_Fecha", "mOV_Fecha", "mov_fecha"])
-        );
+        return [...dataFiltrada].sort((a, b) => {
+            const fechaA = new Date(
+                getValue(a, ["moV_Fecha", "mOV_Fecha", "mov_fecha"])
+            );
 
-        const fechaB = new Date(
-            getValue(b, ["moV_Fecha", "mOV_Fecha", "mov_fecha"])
-        );
+            const fechaB = new Date(
+                getValue(b, ["moV_Fecha", "mOV_Fecha", "mov_fecha"])
+            );
 
-        return fechaB - fechaA;
-    });
-}, [dataFiltrada]);
+            return fechaB - fechaA;
+        });
+    }, [dataFiltrada]);
 
     return (
         <div className="cuentabancaria-container">
@@ -275,6 +275,15 @@ export default function ReporteMovimientosPage() {
                 </div>
 
                 <div className="reporte-actions">
+                    <button
+                        className="btn-secondary"
+                        onClick={() => exportToCsvConciliacion(dataOrdenada, resumen)}
+                        disabled={!dataFiltrada.length}
+                    >
+                        <FileSpreadsheet size={18} />
+                
+                        Exportar CSV
+                    </button>
                     <button
                         className="btn-secondary"
                         onClick={() => exportToExcel(dataOrdenada, resumen)}
