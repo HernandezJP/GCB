@@ -354,24 +354,34 @@
 
 /* Modal */
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
+  align-items: flex-start !important;
+  padding-top: 35px !important;
+  overflow-y: auto !important;
 }
 
 .modal-card {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
   border: 1px solid var(--border-light);
+
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-card::-webkit-scrollbar {
+  width: 7px;
+}
+
+.modal-card::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 20px;
+}
+
+.modal-card::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
 .modal-header {
@@ -609,4 +619,21 @@
     .kpi-grid {
         grid-template-columns: 1fr;
     }
+}
+.persona-modal-card {
+  max-height: 88vh !important;
+  overflow-y: auto !important;
+}
+
+.persona-modal-card .modal-body {
+  max-height: calc(88vh - 150px);
+  overflow-y: auto;
+  padding-bottom: 25px;
+}
+
+.persona-modal-card .modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  z-index: 10;
 }

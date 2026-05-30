@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, BookOpen, FileText, AlertCircle, Loader } from 'lucide-react';
 import { getChequesPorCuenta } from '../../services/ChequeService';
 import { getQId, getQSerie, getQDesde, getQHasta, getQUsados, getQEstado, getQFecRec } from './ChequeraTable';
+import { ArrowLeft, BookOpen, FileText, AlertCircle, Loader, Eye } from 'lucide-react';
 
 const g = (o, ...ks) => {
     for (const k of ks) {
@@ -26,11 +26,36 @@ const estadoCheqPill = (e) => {
     return m[e] ?? 'chq-pill-amber';
 };
 
-const ChequeraDetalle = ({ chequera, onBack }) => {
+const ChequeraDetalle = ({ chequera, cuentas = [], onBack, onVerCheque }) => {
     const [cheques, setCheques] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const cuentaId = g(chequera, 'cUB_Cuenta', 'cuB_Cuenta', 'CUB_Cuenta');
+    const cuentaSelec = cuentas.find(
+    c => String(
+        g(c, 'cUB_Cuenta', 'cuB_Cuenta', 'CUB_Cuenta', 'cub_cuenta')
+    ) === String(cuentaId)
+    );
+
+    const simboloCuenta =
+        g(
+            cuentaSelec,
+            'tMO_Simbolo',
+            'tmO_Simbolo',
+            'TMO_Simbolo',
+            'tmo_simbolo',
+            'simbolo'
+        ) ??
+        g(
+            chequera,
+            'tMO_Simbolo',
+            'tmO_Simbolo',
+            'TMO_Simbolo',
+            'tmo_simbolo',
+            'simbolo'
+        ) ??
+        'Q';
+
     const serie = getQSerie(chequera);
     const desde = Number(getQDesde(chequera) ?? 0);
     const hasta = Number(getQHasta(chequera) ?? 0);
@@ -204,6 +229,7 @@ const ChequeraDetalle = ({ chequera, onBack }) => {
                                         <th>Fecha emisión</th>
                                         <th>Fecha cobro</th>
                                         <th>Estado</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -214,6 +240,9 @@ const ChequeraDetalle = ({ chequera, onBack }) => {
                                         const benef = g(c, 'beneficiario', 'Beneficiario') ?? '—';
                                         const fEmis = g(c, 'cHE_Fecha_Emision', 'chE_Fecha_Emision', 'CHE_Fecha_Emision');
                                         const fCobro = g(c, 'cHE_Fecha_Cobro', 'chE_Fecha_Cobro', 'CHE_Fecha_Cobro');
+                                        const simbolo =
+                                        g(c, 'tMO_Simbolo', 'tmO_Simbolo', 'TMO_Simbolo', 'tmo_simbolo') ??
+                                        simboloCuenta;
 
                                         return (
                                             <tr key={i}>
@@ -222,7 +251,7 @@ const ChequeraDetalle = ({ chequera, onBack }) => {
                                                 </td>
                                                 <td style={{ fontWeight: 500 }}>{benef}</td>
                                                 <td style={{ fontWeight: 600, color: '#b91c1c', fontFamily: 'monospace', fontSize: 12 }}>
-                                                    Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                                    {simbolo} {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                                                 </td>
                                                 <td style={{ fontSize: 12, color: '#64748b' }}>{formatFecha(fEmis)}</td>
                                                 <td style={{ fontSize: 12, color: '#64748b' }}>{fCobro ? formatFecha(fCobro) : '—'}</td>
@@ -230,6 +259,29 @@ const ChequeraDetalle = ({ chequera, onBack }) => {
                                                     <span className={`chq-pill ${estadoCheqPill(est)}`}>
                                                         {est || '—'}
                                                     </span>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="chq-icon-btn view"
+                                                        title="Ver detalle del cheque"
+                                                        onClick={() =>
+                                                        onVerCheque?.({
+                                                            ...c,
+                                                            tMO_Simbolo: simbolo,
+                                                            TMO_Simbolo: simbolo,
+                                                            tMO_Descripcion:
+                                                                g(cuentaSelec, 'tMO_Descripcion', 'tmO_Descripcion', 'TMO_Descripcion', 'tmo_descripcion') ??
+                                                                g(chequera, 'tMO_Descripcion', 'tmO_Descripcion', 'TMO_Descripcion', 'tmo_descripcion') ??
+                                                                'Quetzales',
+                                                            TMO_Descripcion:
+                                                                g(cuentaSelec, 'tMO_Descripcion', 'tmO_Descripcion', 'TMO_Descripcion', 'tmo_descripcion') ??
+                                                                g(chequera, 'tMO_Descripcion', 'tmO_Descripcion', 'TMO_Descripcion', 'tmo_descripcion') ??
+                                                                'Quetzales',
+                                                        })
+                                                    }
+                                                    >
+                                                        <Eye size={15} color="#0284c7" />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         );

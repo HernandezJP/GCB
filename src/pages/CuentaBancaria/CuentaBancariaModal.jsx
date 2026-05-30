@@ -100,19 +100,19 @@ const SearchableSelect = ({
     }, []);
 
     const filteredOptions = useMemo(() => {
-        const q = normalize(query);
+    const q = normalize(query);
 
-        if (!q) return options.slice(0, 10);
+    if (!q) return options;
 
-        return options
-            .filter(item => {
-                const visible = normalize(getOptionText(item));
-                const search = normalize(getSearchText ? getSearchText(item) : getOptionText(item));
+    return options.filter(item => {
+        const visible = normalize(getOptionText(item));
+        const search = normalize(
+            getSearchText ? getSearchText(item) : getOptionText(item)
+        );
 
-                return visible.includes(q) || search.includes(q);
-            })
-            .slice(0, 10);
-    }, [query, options, getOptionText, getSearchText]);
+        return visible.includes(q) || search.includes(q);
+    });
+}, [query, options, getOptionText, getSearchText]);
 
     const handleChange = (e) => {
         const text = e.target.value;

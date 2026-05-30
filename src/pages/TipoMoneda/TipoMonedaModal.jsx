@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Coins, Tag, BadgeCheck } from "lucide-react";
+import {
+    X,
+    Coins,
+    Tag,
+    BadgeCheck,
+    AlertCircle,
+    Save,
+    CircleX,
+} from "lucide-react";
 
 import {
     getDescripcion,
@@ -14,9 +22,21 @@ const INITIAL = {
     TMO_Simbolo: "",
 };
 
+const soloLetrasRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+const soloLetrasMayusRegex = /^[A-Z]+$/;
+
+const limpiarSoloLetras = (value) => {
+    return value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
+};
+
+const limpiarCodigoIso = (value) => {
+    return value.replace(/[^A-Za-z]/g, "").toUpperCase();
+};
+
 const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
     const [formData, setFormData] = useState(INITIAL);
     const [saving, setSaving] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (!isOpen) return;
@@ -30,37 +50,111 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
         } else {
             setFormData(INITIAL);
         }
+
+        setErrors({});
     }, [monedaToEdit, isOpen]);
 
     if (!isOpen) return null;
 
-    const set = (field) => (e) => {
+    const handleDescripcionChange = (e) => {
+        const original = e.target.value;
+        const limpio = limpiarSoloLetras(original);
+
         setFormData((prev) => ({
             ...prev,
-            [field]:
-                field === "TMO_Codigo_ISO"
-                    ? e.target.value.toUpperCase()
-                    : e.target.value,
+            TMO_Descripcion: limpio,
         }));
+
+        if (original !== limpio) {
+            setErrors((prev) => ({
+                ...prev,
+                TMO_Descripcion:
+                    "La descripción solo permite letras y espacios.",
+            }));
+        } else {
+            setErrors((prev) => ({
+                ...prev,
+                TMO_Descripcion: "",
+            }));
+        }
+    };
+
+    const handleCodigoIsoChange = (e) => {
+        const original = e.target.value;
+        const limpio = limpiarCodigoIso(original).slice(0, 3);
+
+        setFormData((prev) => ({
+            ...prev,
+            TMO_Codigo_ISO: limpio,
+        }));
+
+        if (original !== limpiarCodigoIso(original)) {
+            setErrors((prev) => ({
+                ...prev,
+                TMO_Codigo_ISO:
+                    "El código ISO solo permite letras, sin números ni caracteres especiales.",
+            }));
+        } else {
+            setErrors((prev) => ({
+                ...prev,
+                TMO_Codigo_ISO: "",
+            }));
+        }
+    };
+
+    const handleSimboloChange = (e) => {
+        setFormData((prev) => ({
+            ...prev,
+            TMO_Simbolo: e.target.value,
+        }));
+    };
+
+    const validarFormulario = () => {
+        const nuevosErrores = {};
+
+        const descripcion = formData.TMO_Descripcion.trim();
+        const codigoIso = formData.TMO_Codigo_ISO.trim();
+        const simbolo = formData.TMO_Simbolo.trim();
+
+        if (!descripcion) {
+            nuevosErrores.TMO_Descripcion = "La descripción es obligatoria.";
+        } else if (!soloLetrasRegex.test(descripcion)) {
+            nuevosErrores.TMO_Descripcion =
+                "La descripción solo puede contener letras y espacios.";
+        }
+
+        if (!codigoIso) {
+            nuevosErrores.TMO_Codigo_ISO = "El código ISO es obligatorio.";
+        } else if (!soloLetrasMayusRegex.test(codigoIso)) {
+            nuevosErrores.TMO_Codigo_ISO =
+                "El código ISO solo puede contener letras.";
+        } else if (codigoIso.length !== 3) {
+            nuevosErrores.TMO_Codigo_ISO =
+                "El código ISO debe tener exactamente 3 letras. Ej. GTQ, USD, EUR.";
+        }
+
+        if (!simbolo) {
+            nuevosErrores.TMO_Simbolo = "El símbolo es obligatorio.";
+        }
+
+        setErrors(nuevosErrores);
+
+        return Object.keys(nuevosErrores).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.TMO_Descripcion.trim()) {
-            alert("La descripción es obligatoria.");
-            return;
-        }
-
-        if (!formData.TMO_Simbolo.trim()) {
-            alert("El símbolo es obligatorio.");
-            return;
-        }
+        if (!validarFormulario()) return;
 
         setSaving(true);
 
         try {
-            await onSave(formData);
+            await onSave({
+                TMO_Descripcion: formData.TMO_Descripcion.trim(),
+                TMO_Codigo_ISO: formData.TMO_Codigo_ISO.trim(),
+                TMO_Simbolo: formData.TMO_Simbolo.trim(),
+            });
         } finally {
             setSaving(false);
         }
@@ -103,10 +197,18 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
                                 id="tmo-desc"
                                 required
                                 value={formData.TMO_Descripcion}
-                                onChange={set("TMO_Descripcion")}
+                                onChange={handleDescripcionChange}
                                 placeholder="Ej. Quetzal, Dólar, Euro"
                                 disabled={saving}
+                                maxLength={60}
                             />
+
+                            {errors.TMO_Descripcion && (
+                                <small className="input-error">
+                                    <AlertCircle size={13} />
+                                    {errors.TMO_Descripcion}
+                                </small>
+                            )}
                         </div>
 
                         <div className="input-group">
@@ -116,10 +218,11 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
 
                             <input
                                 id="tmo-iso"
+                                required
                                 value={formData.TMO_Codigo_ISO}
-                                onChange={set("TMO_Codigo_ISO")}
+                                onChange={handleCodigoIsoChange}
                                 placeholder="Ej. GTQ, USD, EUR"
-                                maxLength={10}
+                                maxLength={3}
                                 disabled={saving}
                                 style={{
                                     fontWeight: "700",
@@ -127,6 +230,13 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
                                     textTransform: "uppercase",
                                 }}
                             />
+
+                            {errors.TMO_Codigo_ISO && (
+                                <small className="input-error">
+                                    <AlertCircle size={13} />
+                                    {errors.TMO_Codigo_ISO}
+                                </small>
+                            )}
                         </div>
 
                         <div className="input-group">
@@ -138,7 +248,7 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
                                 id="tmo-simbolo"
                                 required
                                 value={formData.TMO_Simbolo}
-                                onChange={set("TMO_Simbolo")}
+                                onChange={handleSimboloChange}
                                 placeholder="Ej. Q, $, €, £"
                                 maxLength={10}
                                 disabled={saving}
@@ -148,6 +258,13 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
                                     letterSpacing: "1px",
                                 }}
                             />
+
+                            {errors.TMO_Simbolo && (
+                                <small className="input-error">
+                                    <AlertCircle size={13} />
+                                    {errors.TMO_Simbolo}
+                                </small>
+                            )}
                         </div>
                     </div>
 
@@ -158,6 +275,7 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
                             onClick={onClose}
                             disabled={saving}
                         >
+                            <CircleX size={16} />
                             Cancelar
                         </button>
 
@@ -166,6 +284,7 @@ const TipoMonedaModal = ({ isOpen, onClose, onSave, monedaToEdit }) => {
                             className="btn-save"
                             disabled={saving}
                         >
+                            <Save size={16} />
                             {saving
                                 ? "Guardando..."
                                 : monedaToEdit

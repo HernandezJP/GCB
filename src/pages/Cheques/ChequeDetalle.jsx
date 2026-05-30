@@ -22,19 +22,77 @@ const estadoPill = (e) => {
     return m[e] ?? 'che-pill-amber';
 };
 
-// Convierte monto a letras de forma simple
-const toLetras = (n) => {
-    if (!n) return '';
-    return `${n.toLocaleString('es-GT', { minimumFractionDigits: 2 })} quetzales`;
-};
-
 const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
     const printRef = useRef(null);
 
     const numCheque = g(cheque, 'cHE_Numero_Cheque', 'chE_Numero_Cheque', 'CHE_Numero_Cheque') ?? '—';
     const benef = g(cheque, 'beneficiario', 'Beneficiario') ?? '—';
     const monto = Math.abs(g(cheque, 'mOV_Monto', 'moV_Monto', 'MOV_Monto') ?? 0);
-    const letras = g(cheque, 'cHE_Monto_Letras', 'chE_Monto_Letras', 'CHE_Monto_Letras') || toLetras(monto);
+
+    const simbolo =
+    g(cheque, 'tMO_Simbolo', 'tmO_Simbolo', 'TMO_Simbolo', 'tmo_simbolo') ?? 'Q';
+
+    const monedaDesc =
+        g(cheque, 'tMO_Descripcion', 'tmO_Descripcion', 'TMO_Descripcion', 'tmo_descripcion') ?? 'Quetzales';
+
+
+    const numeroALetras = (n) => {
+    const unidades = [
+        '', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE',
+        'DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE',
+        'DIECISÉIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE', 'VEINTE'
+    ];
+
+    const decenas = [
+        '', '', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA',
+        'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'
+    ];
+
+    const centenas = [
+        '', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS',
+        'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'
+    ];
+
+    if (n === 0) return 'CERO';
+    if (n === 100) return 'CIEN';
+    if (n <= 20) return unidades[n];
+
+    if (n < 30) {
+        return `VEINTI${unidades[n - 20].toLowerCase()}`.toUpperCase();
+    }
+
+    if (n < 100) {
+        const d = Math.floor(n / 10);
+        const u = n % 10;
+        return u === 0 ? decenas[d] : `${decenas[d]} Y ${unidades[u]}`;
+    }
+
+    if (n < 1000) {
+        const c = Math.floor(n / 100);
+        const r = n % 100;
+        return r === 0 ? centenas[c] : `${centenas[c]} ${numeroALetras(r)}`;
+    }
+
+    return String(n);
+};
+
+const toLetras = (n) => {
+    if (!n) return '';
+
+    const monedaTexto =
+        String(monedaDesc).toLowerCase().includes('dólar') ||
+        String(monedaDesc).toLowerCase().includes('dolar') ||
+        String(monedaDesc).toLowerCase().includes('usd')
+            ? 'DÓLARES'
+            : 'QUETZALES';
+
+    const enteros = Math.floor(n);
+    const centavos = Math.round((n - enteros) * 100);
+
+    return `${numeroALetras(enteros)} ${monedaTexto} CON ${numeroALetras(centavos)} CENTAVOS`;
+};
+    
+    const letras = toLetras(monto);
     const concepto = g(cheque, 'cHE_Concepto', 'chE_Concepto', 'CHE_Concepto') ?? '';
     const fEmision = g(cheque, 'cHE_Fecha_Emision', 'chE_Fecha_Emision', 'CHE_Fecha_Emision');
     const fCobro = g(cheque, 'cHE_Fecha_Cobro', 'chE_Fecha_Cobro', 'CHE_Fecha_Cobro');
@@ -112,7 +170,9 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                     <div class="pagese">Páguese a la orden de</div>
                     <div class="benef-row">
                         <span class="benef-nm">${benef}</span>
-                        <span class="monto-bx">Q ${monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
+                        <span class="monto-bx">
+                            ${simbolo} ${monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                        </span>
                     </div>
                     <div class="letras">La suma de: ${letras}</div>
                     <div class="concepto-row">
@@ -185,7 +245,7 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                         Monto del cheque
                     </div>
                     <div style={{ fontSize: 30, fontWeight: 700, color: '#b91c1c', fontFamily: 'monospace' }}>
-                        Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                        {simbolo} {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                     </div>
                     {letras && (
                         <div style={{ fontSize: 12, color: '#0369a1', marginTop: 6, fontStyle: 'italic' }}>
@@ -240,7 +300,7 @@ const ChequeDetalle = ({ cheque, onBack, onCambiarEstado, estadosCheque }) => {
                                 <div className="cheque-beneficiario-row">
                                     <span className="cheque-beneficiario-nombre">{benef}</span>
                                     <span className="cheque-monto-box">
-                                        Q {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                        {simbolo} {monto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
                                 <div className="cheque-letras-row">La suma de: {letras}</div>

@@ -586,3 +586,92 @@
     max-width: 100%;
   }
 }
+/* Modal grande con scroll */
+.modal-card-lg {
+    width: 95%;
+    max-width: 700px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Scroll solo en el contenido */
+.modal-card-lg .modal-body {
+    overflow-y: auto;
+    max-height: calc(90vh - 150px);
+    padding-right: 8px;
+}
+
+/* Scroll elegante */
+.modal-card-lg .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+.modal-card-lg .modal-footer {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    z-index: 10;
+}
+
+.modal-card-lg {
+    width: 95%;
+    max-width: 700px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-form-scroll {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.modal-card-lg .modal-body {
+    overflow-y: auto;
+    max-height: calc(90vh - 160px);
+    padding-right: 8px;
+}
+
+.modal-card-lg .modal-footer {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    z-index: 10;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+.modal-card-lg .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}

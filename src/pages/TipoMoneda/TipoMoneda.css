@@ -466,3 +466,13 @@
 
 .detalle-valor      { font-size: 1.05rem; font-weight: 600; color: #0f172a; }
 .detalle-valor.mono { font-family: 'JetBrains Mono', monospace; color: #0284c7; }
+
+.input-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 500;
+}

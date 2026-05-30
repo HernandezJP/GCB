@@ -13,7 +13,8 @@ import {
   Check,
   Search,
   Plus,
-  User
+  User,
+  AlertTriangle
 } from 'lucide-react';
 
 const INITIAL = {
@@ -154,6 +155,8 @@ const MovimientoModal = ({
   const [form, setForm] = useState(INITIAL);
   const [saving, setSaving] = useState(false);
   const [personaSearch, setPersonaSearch] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [periodoBloqueado, setPeriodoBloqueado] = useState(false);
 
   const setValue = (key, value) =>
     setForm(prev => ({
@@ -161,8 +164,14 @@ const MovimientoModal = ({
       [key]: value
     }));
 
-  const setText = (key) => (e) =>
+  const setText = (key) => (e) => {
     setValue(key, e.target.value);
+
+    if (key === 'MOV_Fecha') {
+      setErrorMessage('');
+      setPeriodoBloqueado(false);
+    }
+  };
 
   const getPersonaId = (p) =>
     p?.peR_Persona ??
@@ -277,12 +286,15 @@ const MovimientoModal = ({
       });
 
       setPersonaSearch('');
+      setErrorMessage('');
+      setPeriodoBloqueado(false);
     }
   }, [isOpen, cuentaId, estadoPorDefecto]);
 
   if (!isOpen) return null;
 
   const isValid =
+    !periodoBloqueado &&
     String(form.CUB_Cuenta).trim() !== '' &&
     String(form.TIM_Tipo_Movimiento).trim() !== '' &&
     String(form.MEM_Medio_Movimiento).trim() !== '' &&
@@ -295,6 +307,7 @@ const MovimientoModal = ({
     if (!isValid || saving) return;
 
     setSaving(true);
+    setErrorMessage('');
 
     try {
       await onSave({
@@ -309,6 +322,26 @@ const MovimientoModal = ({
         MOV_Descripcion: form.MOV_Descripcion.trim(),
         MOV_Monto_Origen: Number(form.MOV_Monto_Origen),
       });
+    } catch (error) {
+      const mensaje =
+        error?.response?.data?.mensaje ||
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        'No se pudo registrar el movimiento.';
+
+      setErrorMessage(mensaje);
+
+      const texto = String(mensaje).toLowerCase();
+
+      if (
+        texto.includes('conciliado') ||
+        texto.includes('conciliada') ||
+        texto.includes('período') ||
+        texto.includes('periodo')
+      ) {
+        setPeriodoBloqueado(true);
+      }
     } finally {
       setSaving(false);
     }
@@ -340,6 +373,13 @@ const MovimientoModal = ({
         </div>
 
         <div className="modal-body">
+          {errorMessage && (
+            <div className="error-banner">
+              <AlertTriangle size={16} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           <div className="form-row">
             <div className="input-group">
               <label>Cuenta</label>

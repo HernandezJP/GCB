@@ -534,3 +534,12 @@
     justify-content: center;
   }
 }
+.input-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 500;
+}

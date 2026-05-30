@@ -1,41 +1,101 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Repeat } from 'lucide-react';
+import {
+    X,
+    Repeat,
+    Save,
+    CircleX,
+    AlertCircle
+} from 'lucide-react';
+
 import { getDescripcion } from './InteresFrecuenciaPage';
 
 const INITIAL = {
     INF_Descripcion: ''
 };
 
-const InteresFrecuenciaModal = ({ isOpen, onClose, onSave, frecuenciaToEdit }) => {
+const InteresFrecuenciaModal = ({
+    isOpen,
+    onClose,
+    onSave,
+    frecuenciaToEdit
+}) => {
     const [formData, setFormData] = useState(INITIAL);
     const [saving, setSaving] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (isOpen) {
             setFormData(
                 frecuenciaToEdit
                     ? {
-                        INF_Descripcion: getDescripcion(frecuenciaToEdit)
+                        INF_Descripcion:
+                            getDescripcion(frecuenciaToEdit)
                     }
                     : INITIAL
             );
+
+            setErrors({});
         }
     }, [frecuenciaToEdit, isOpen]);
 
     if (!isOpen) return null;
 
+    const handleDescripcionChange = (e) => {
+        const original = e.target.value;
+
+        const limpio = original.replace(
+            /[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g,
+            ''
+        );
+
+        setFormData({
+            INF_Descripcion: limpio
+        });
+
+        if (original !== limpio) {
+            setErrors({
+                INF_Descripcion:
+                    'La descripción solo permite letras y espacios.'
+            });
+        } else {
+            setErrors({});
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.INF_Descripcion.trim()) {
-            alert('Debes ingresar una descripción.');
+        const descripcion =
+            formData.INF_Descripcion.trim();
+
+        const nuevosErrores = {};
+
+        if (!descripcion) {
+            nuevosErrores.INF_Descripcion =
+                'Debe ingresar una descripción.';
+        } else if (
+            !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(
+                descripcion
+            )
+        ) {
+            nuevosErrores.INF_Descripcion =
+                'La descripción solo permite letras y espacios.';
+        }
+
+        if (
+            Object.keys(nuevosErrores).length > 0
+        ) {
+            setErrors(nuevosErrores);
             return;
         }
 
         setSaving(true);
+
         try {
-            await onSave(formData);
+            await onSave({
+                INF_Descripcion: descripcion
+            });
         } finally {
             setSaving(false);
         }
@@ -49,10 +109,20 @@ const InteresFrecuenciaModal = ({ isOpen, onClose, onSave, frecuenciaToEdit }) =
                         <div className="modal-icon">
                             <Repeat size={20} />
                         </div>
-                        <h2>{frecuenciaToEdit ? 'Editar Frecuencia de Interés' : 'Nueva Frecuencia de Interés'}</h2>
+
+                        <h2>
+                            {frecuenciaToEdit
+                                ? 'Editar Frecuencia de Interés'
+                                : 'Nueva Frecuencia de Interés'}
+                        </h2>
                     </div>
 
-                    <button onClick={onClose} className="close-btn" disabled={saving}>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="close-btn"
+                        disabled={saving}
+                    >
                         <X size={18} />
                     </button>
                 </div>
@@ -64,20 +134,24 @@ const InteresFrecuenciaModal = ({ isOpen, onClose, onSave, frecuenciaToEdit }) =
                                 <Repeat size={13} />
                                 Descripción
                             </label>
+
                             <input
                                 id="inf-descripcion"
                                 type="text"
                                 required
                                 value={formData.INF_Descripcion}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        INF_Descripcion: e.target.value
-                                    })
-                                }
+                                onChange={handleDescripcionChange}
                                 placeholder="Ej. Mensual"
                                 disabled={saving}
+                                maxLength={60}
                             />
+
+                            {errors.INF_Descripcion && (
+                                <small className="input-error">
+                                    <AlertCircle size={13} />
+                                    {errors.INF_Descripcion}
+                                </small>
+                            )}
                         </div>
                     </div>
 
@@ -88,6 +162,7 @@ const InteresFrecuenciaModal = ({ isOpen, onClose, onSave, frecuenciaToEdit }) =
                             onClick={onClose}
                             disabled={saving}
                         >
+                            <CircleX size={16} />
                             Cancelar
                         </button>
 
@@ -96,6 +171,8 @@ const InteresFrecuenciaModal = ({ isOpen, onClose, onSave, frecuenciaToEdit }) =
                             className="btn-save"
                             disabled={saving}
                         >
+                            <Save size={16} />
+
                             {saving
                                 ? 'Guardando...'
                                 : frecuenciaToEdit

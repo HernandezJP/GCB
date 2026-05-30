@@ -39,6 +39,10 @@ export default function UsuarioModal({
 }) {
     const [form, setForm] = useState(INITIAL_FORM);
     const [saving, setSaving] = useState(false);
+    const [primerNombreError, setPrimerNombreError] = useState(false);
+    const [segundoNombreError, setSegundoNombreError] = useState(false);
+    const [primerApellidoError, setPrimerApellidoError] = useState(false);
+    const [segundoApellidoError, setSegundoApellidoError] = useState(false);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -67,6 +71,8 @@ export default function UsuarioModal({
         }));
     };
 
+    const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$/;
+
     const handleSubmit = async () => {
         if (!form.ROL_ROL) {
             alert("Debes seleccionar un rol.");
@@ -90,6 +96,31 @@ export default function UsuarioModal({
 
         if (!usuarioToEdit && !form.USU_PASSWORD.trim()) {
             alert("La contraseña es obligatoria.");
+            return;
+        }
+        if (!soloLetras.test(form.USU_PRIMER_NOMBRE)) {
+            alert("El primer nombre solo puede contener letras.");
+            return;
+        }
+
+        if (
+            form.USU_SEGUNDO_NOMBRE &&
+            !soloLetras.test(form.USU_SEGUNDO_NOMBRE)
+        ) {
+            alert("El segundo nombre solo puede contener letras.");
+            return;
+        }
+
+        if (!soloLetras.test(form.USU_PRIMER_APELLIDO)) {
+            alert("El primer apellido solo puede contener letras.");
+            return;
+        }
+
+        if (
+            form.USU_SEGUNDO_APELLIDO &&
+            !soloLetras.test(form.USU_SEGUNDO_APELLIDO)
+        ) {
+            alert("El segundo apellido solo puede contener letras.");
             return;
         }
 
@@ -154,21 +185,59 @@ export default function UsuarioModal({
                         <div className="input-group">
                             <label>Primer nombre *</label>
                             <input
-                                value={form.USU_PRIMER_NOMBRE}
-                                onChange={setText("USU_PRIMER_NOMBRE")}
-                                placeholder="Primer nombre"
-                                disabled={saving}
-                            />
+                            value={form.USU_PRIMER_NOMBRE}
+                            onChange={(e) => {
+                                const value = e.target.value;
+
+                                if (soloLetras.test(value)) {
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        USU_PRIMER_NOMBRE: value,
+                                    }));
+
+                                    setPrimerNombreError(false);
+                                } else {
+                                    setPrimerNombreError(true);
+                                }
+                            }}
+                            placeholder="Primer nombre"
+                            disabled={saving}
+                        />
+
+                        {primerNombreError && (
+                            <small className="field-error">
+                                Solo se permiten letras y espacios.
+                            </small>
+                        )}
                         </div>
 
                         <div className="input-group">
                             <label>Segundo nombre</label>
                             <input
                                 value={form.USU_SEGUNDO_NOMBRE}
-                                onChange={setText("USU_SEGUNDO_NOMBRE")}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    if (soloLetras.test(value)) {
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            USU_SEGUNDO_NOMBRE: value,
+                                        }));
+
+                                        setSegundoNombreError(false);
+                                    } else {
+                                        setSegundoNombreError(true);
+                                    }
+                                }}
                                 placeholder="Segundo nombre"
                                 disabled={saving}
                             />
+
+                        {segundoNombreError && (
+                            <small className="field-error">
+                                Solo se permiten letras y espacios.
+                            </small>
+                        )}
                         </div>
                     </div>
 
@@ -177,20 +246,58 @@ export default function UsuarioModal({
                             <label>Primer apellido *</label>
                             <input
                                 value={form.USU_PRIMER_APELLIDO}
-                                onChange={setText("USU_PRIMER_APELLIDO")}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    if (soloLetras.test(value)) {
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            USU_PRIMER_APELLIDO: value,
+                                        }));
+
+                                        setPrimerApellidoError(false);
+                                    } else {
+                                        setPrimerApellidoError(true);
+                                    }
+                                }}
                                 placeholder="Primer apellido"
                                 disabled={saving}
                             />
+
+                            {primerApellidoError && (
+                                <small className="field-error">
+                                    Solo se permiten letras y espacios.
+                                </small>
+                            )}
                         </div>
 
                         <div className="input-group">
                             <label>Segundo apellido</label>
                             <input
                                 value={form.USU_SEGUNDO_APELLIDO}
-                                onChange={setText("USU_SEGUNDO_APELLIDO")}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    if (soloLetras.test(value)) {
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            USU_SEGUNDO_APELLIDO: value,
+                                        }));
+
+                                        setSegundoApellidoError(false);
+                                    } else {
+                                        setSegundoApellidoError(true);
+                                    }
+                                }}
                                 placeholder="Segundo apellido"
                                 disabled={saving}
                             />
+
+                            {segundoApellidoError && (
+                                <small className="field-error">
+                                    Solo se permiten letras y espacios.
+                                </small>
+                            )}
                         </div>
                     </div>
 

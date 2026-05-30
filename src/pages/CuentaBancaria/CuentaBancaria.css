@@ -48,8 +48,8 @@
     border-radius: 10px;
     box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
     padding: 6px;
-    max-height: 220px;
-    overflow-y: auto;
+    max-height: 145px !important;
+    overflow-y: scroll !important;
 }
 
 .searchable-item {
@@ -186,5 +186,16 @@
         text-align: left;
     }
 }
+.searchable-menu::-webkit-scrollbar {
+    width: 7px;
+}
 
+.searchable-menu::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 20px;
+}
+
+.searchable-menu::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
 
