@@ -22,12 +22,24 @@ const getDpi = (p) => p?.peR_DPI ?? p?.PER_DPI ?? "";
 const getTipoPersona = (p) => p?.tipoPersonaDescripcion ?? p?.TipoPersonaDescripcion ?? "";
 
 const getNombreCompleto = (p) => {
-  const nombreApi = p?.nombreCompleto ?? p?.NombreCompleto ?? "";
-  if (String(nombreApi).trim()) return nombreApi;
-
-  return `${p?.peR_Primer_Nombre ?? p?.PER_Primer_Nombre ?? ""} ${p?.peR_Segundo_Nombre ?? p?.PER_Segundo_Nombre ?? ""} ${p?.peR_Primer_Apellido ?? p?.PER_Primer_Apellido ?? ""} ${p?.peR_Segundo_Apellido ?? p?.PER_Segundo_Apellido ?? ""}`
+  const nombre = [
+    p?.peR_Primer_Nombre ?? p?.PER_Primer_Nombre,
+    p?.peR_Segundo_Nombre ?? p?.PER_Segundo_Nombre,
+    p?.peR_Primer_Apellido ?? p?.PER_Primer_Apellido,
+    p?.peR_Segundo_Apellido ?? p?.PER_Segundo_Apellido,
+  ]
+    .filter(Boolean)
+    .join(" ")
     .replace(/\s+/g, " ")
     .trim();
+
+  if (nombre) return nombre;
+
+  return (
+    p?.peR_Razon_Social ??
+    p?.PER_Razon_Social ??
+    "—"
+  );
 };
 
 const getTelefonoId = (t) => t?.teL_Telefono ?? t?.TEL_Telefono ?? 0;

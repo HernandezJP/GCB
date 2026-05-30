@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, FileText, CheckCircle, Loader } from 'lucide-react';
+
 import {
     getCheques,
     getChequesPorCuenta,
     cambiarEstadoCheque,
     createCheque
 } from '../../services/ChequeService';
+
 import api from '../../api/axios';
+
 import ChequeTable, {
     getChId,
     getChNumero,
@@ -14,12 +17,15 @@ import ChequeTable, {
     getChMonto,
     getChEstado
 } from './ChequeTable';
+
 import ChequeDetalle from './ChequeDetalle';
 import ChequeModal from './ChequeModal';
+
 import { getChequeras } from '../../services/ChequeraService';
 import { getCuentas } from '../../services/CuentaBancariaService';
 import { getPersonas } from '../../services/PersonaService';
 import { getBancos } from '../../services/BancoService';
+
 import './Cheque.css';
 
 const g = (o, ...ks) => {
@@ -90,8 +96,8 @@ const buildCuentaLabel = (c, bancos) => {
     const numero = getCuentaNumero(c) ?? 'Sin número';
     const bancoId = getCuentaBancoId(c);
 
-    const bancoObj = bancos.find(b =>
-        String(getBancoId(b)) === String(bancoId)
+    const bancoObj = bancos.find(
+        (b) => String(getBancoId(b)) === String(bancoId)
     );
 
     const bancoNombre = getBancoNombre(bancoObj);
@@ -99,15 +105,34 @@ const buildCuentaLabel = (c, bancos) => {
 
     let label = numero;
 
-    if (bancoNombre) {
-        label += ` - ${bancoNombre}`;
-    }
-
-    if (titular) {
-        label += ` - ${titular}`;
-    }
+    if (bancoNombre) label += ` - ${bancoNombre}`;
+    if (titular) label += ` - ${titular}`;
 
     return label;
+};
+
+const getSimboloMoneda = (c) =>
+    c?.tMO_Simbolo ??
+    c?.tmO_Simbolo ??
+    c?.TMO_Simbolo ??
+    c?.tmo_simbolo ??
+    'Q';
+
+const getDescripcionMoneda = (c) =>
+    c?.tMO_Descripcion ??
+    c?.tmO_Descripcion ??
+    c?.TMO_Descripcion ??
+    c?.tmo_descripcion ??
+    '';
+
+const getLabelMoneda = (simbolo, descripcion = '') => {
+    const desc = String(descripcion).toLowerCase();
+
+    if (simbolo === '$' || desc.includes('dolar') || desc.includes('dólar') || desc.includes('usd')) {
+        return `Dólares (${simbolo})`;
+    }
+
+    return `Quetzales (${simbolo})`;
 };
 
 const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
@@ -115,9 +140,9 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const [filtered, setFiltered] = useState([]);
     const [search, setSearch] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('');
-    const [filtroCuenta, setFiltroCuenta] = useState(
-        cuentaId ? String(cuentaId) : ''
-    );
+    const [filtroMoneda, setFiltroMoneda] = useState('');
+    const [filtroCuenta, setFiltroCuenta] = useState(cuentaId ? String(cuentaId) : '');
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -164,7 +189,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                 getBancos(),
                 getChequeras(),
                 getPersonas(),
-                api.get('/estados-cheque').then(r => r.data),
+                api.get('/estados-cheque').then((r) => r.data),
             ]);
 
             setCuentas(cu ?? []);
@@ -183,62 +208,130 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     }, [cuentaId, modoDetalleCuenta]);
 
     const chequesConSerie = useMemo(() => {
-        return cheques.map(ch => {
+        return cheques.map((ch) => {
             const chequeraId = getChequeChequeraId(ch);
+            const cuentaIdCheque = getChequeCuentaId(ch);
 
-            const chequera = chequeras.find(q =>
-                String(getChequeraId(q)) === String(chequeraId)
+            const chequera = chequeras.find(
+                (q) => String(getChequeraId(q)) === String(chequeraId)
+            );
+
+            const cuenta = cuentas.find(
+                (c) => String(getCuentaId(c)) === String(cuentaIdCheque)
             );
 
             const serie = getChequeraSerie(chequera);
 
             return {
                 ...ch,
-                chQ_Serie: ch?.chQ_Serie ?? ch?.cHQ_Serie ?? ch?.CHQ_Serie ?? serie ?? '',
+                chQ_Serie:
+                    ch?.chQ_Serie ??
+                    ch?.cHQ_Serie ??
+                    ch?.CHQ_Serie ??
+                    serie ??
+                    '',
+
+                tMO_Simbolo:
+                    ch?.tMO_Simbolo ??
+                    ch?.tmO_Simbolo ??
+                    ch?.TMO_Simbolo ??
+                    cuenta?.tMO_Simbolo ??
+                    cuenta?.tmO_Simbolo ??
+                    cuenta?.TMO_Simbolo ??
+                    'Q',
+
+                tMO_Descripcion:
+                    ch?.tMO_Descripcion ??
+                    ch?.tmO_Descripcion ??
+                    ch?.TMO_Descripcion ??
+                    cuenta?.tMO_Descripcion ??
+                    cuenta?.tmO_Descripcion ??
+                    cuenta?.TMO_Descripcion ??
+                    'Quetzales',
             };
         });
-    }, [cheques, chequeras]);
+    }, [cheques, chequeras, cuentas]);
 
     useEffect(() => {
         let result = [...chequesConSerie];
 
         if (!modoDetalleCuenta && filtroCuenta) {
-            result = result.filter(c =>
-                String(getChequeCuentaId(c)) === String(filtroCuenta)
+            result = result.filter(
+                (c) => String(getChequeCuentaId(c)) === String(filtroCuenta)
             );
         }
 
         if (filtroEstado) {
-            result = result.filter(c => getChEstado(c) === filtroEstado);
+            result = result.filter((c) => getChEstado(c) === filtroEstado);
+        }
+
+        if (filtroMoneda) {
+            result = result.filter(
+                (c) => String(getSimboloMoneda(c)) === String(filtroMoneda)
+            );
         }
 
         if (search.trim()) {
             const q = search.toLowerCase();
-            result = result.filter(c =>
-                String(getChNumero(c) ?? '').toLowerCase().includes(q) ||
-                String(getChBenef(c) ?? '').toLowerCase().includes(q) ||
-                String(c?.chQ_Serie ?? '').toLowerCase().includes(q)
+
+            result = result.filter(
+                (c) =>
+                    String(getChNumero(c) ?? '').toLowerCase().includes(q) ||
+                    String(getChBenef(c) ?? '').toLowerCase().includes(q) ||
+                    String(c?.chQ_Serie ?? '').toLowerCase().includes(q)
             );
         }
 
         setFiltered(result);
-    }, [chequesConSerie, search, filtroEstado, filtroCuenta, modoDetalleCuenta]);
+    }, [
+        chequesConSerie,
+        search,
+        filtroEstado,
+        filtroMoneda,
+        filtroCuenta,
+        modoDetalleCuenta,
+    ]);
 
     const cuentasFiltradasModal = useMemo(() => {
         if (!modoDetalleCuenta || !cuentaId) return cuentas;
 
-        return cuentas.filter(c =>
-            String(getCuentaId(c)) === String(cuentaId)
-        );
+        return cuentas.filter((c) => String(getCuentaId(c)) === String(cuentaId));
     }, [cuentas, cuentaId, modoDetalleCuenta]);
 
     const chequerasFiltradasModal = useMemo(() => {
         if (!modoDetalleCuenta || !cuentaId) return chequeras;
 
-        return chequeras.filter(q =>
-            String(g(q, 'cUB_Cuenta', 'cuB_Cuenta', 'CUB_Cuenta')) === String(cuentaId)
+        return chequeras.filter(
+            (q) =>
+                String(g(q, 'cUB_Cuenta', 'cuB_Cuenta', 'CUB_Cuenta')) ===
+                String(cuentaId)
         );
     }, [chequeras, cuentaId, modoDetalleCuenta]);
+
+    const estadosCatalogo = estadosCheque
+        .map((e) =>
+            e?.eSC_Descripcion ??
+            e?.esC_Descripcion ??
+            e?.ESC_Descripcion
+        )
+        .filter(Boolean);
+
+    const monedasDisponibles = [
+        ...new Map(
+            chequesConSerie.map((c) => {
+                const simbolo = getSimboloMoneda(c);
+                const descripcion = getDescripcionMoneda(c);
+                return [
+                    simbolo,
+                    {
+                        simbolo,
+                        descripcion,
+                        label: getLabelMoneda(simbolo, descripcion),
+                    },
+                ];
+            })
+        ).values(),
+    ];
 
     const showOk = (msg) => {
         setSuccess(msg);
@@ -251,11 +344,12 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     };
 
     const handleCambiarEstado = async (chequeId, estadoId) => {
-        const est = estadosCheque.find(e => {
+        const est = estadosCheque.find((e) => {
             const eid =
                 e?.eSC_Estado_Cheque ??
                 e?.esC_Estado_Cheque ??
                 e?.ESC_Estado_Cheque;
+
             return String(eid) === String(estadoId);
         });
 
@@ -265,18 +359,26 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             est?.ESC_Descripcion ??
             'cambiar estado';
 
-        if (!window.confirm(`¿Deseas ${String(desc).toLowerCase()} este cheque?`)) return;
+        if (!window.confirm(`¿Deseas ${String(desc).toLowerCase()} este cheque?`)) {
+            return;
+        }
 
         try {
+            const cuentaActual = filtroCuenta;
+
             await cambiarEstadoCheque(chequeId, {
-                ESC_Estado_Cheque: parseInt(estadoId, 10)
+                ESC_Estado_Cheque: parseInt(estadoId, 10),
             });
 
             showOk(`Estado del cheque actualizado a: ${desc}`);
-
-            if (detalle) setDetalle(null);
+            setDetalle(null);
 
             await fetchCheques();
+            await fetchCatalogos();
+
+            if (cuentaActual) {
+                setFiltroCuenta(cuentaActual);
+            }
         } catch (err) {
             showErr(err?.response?.data?.mensaje ?? 'Error al cambiar el estado.');
         }
@@ -284,16 +386,26 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
     const handleSave = async (dto) => {
         setSaving(true);
+
         try {
+            const cuentaActual = filtroCuenta;
+
             const dtoFinal =
                 modoDetalleCuenta && cuentaId
                     ? { ...dto, CUB_Cuenta: parseInt(cuentaId, 10) }
                     : dto;
 
             await createCheque(dtoFinal);
+
             setModalOpen(false);
-            showOk('Cheque emitido correctamente. Movimiento de egreso y saldo actualizados.');
+            showOk('Cheque emitido correctamente. Movimiento de egreso y saldo actualizado.');
+
             await fetchCheques();
+            await fetchCatalogos();
+
+            if (cuentaActual) {
+                setFiltroCuenta(cuentaActual);
+            }
         } catch (err) {
             showErr(err?.response?.data?.mensaje ?? 'Error al emitir el cheque.');
         } finally {
@@ -303,25 +415,23 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
     const baseKpis = filtered;
 
-    const emitidos = baseKpis.filter(c => {
+    const emitidos = baseKpis.filter((c) => {
         const e = getChEstado(c);
         return e === 'Emitido' || e === 'Activo' || e === 'Pendiente';
     }).length;
 
-    const cobrados = baseKpis.filter(c => {
+    const cobrados = baseKpis.filter((c) => {
         const e = getChEstado(c);
         return e === 'Depositado' || e === 'Cobrado';
     }).length;
 
-    const cancelados = baseKpis.filter(c =>
-        getChEstado(c) === 'Cancelado'
+    const cancelados = baseKpis.filter(
+        (c) => getChEstado(c) === 'Cancelado'
     ).length;
 
     const totalMonto = baseKpis
-        .filter(c => getChEstado(c) !== 'Cancelado')
+        .filter((c) => getChEstado(c) !== 'Cancelado')
         .reduce((s, c) => s + (Number(getChMonto(c)) || 0), 0);
-
-    const estadosUnicos = [...new Set(chequesConSerie.map(getChEstado).filter(Boolean))];
 
     if (detalle) {
         return (
@@ -350,13 +460,23 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     return (
         <div className="cheque-container">
             <div className="che-page-header">
-                <div>
-                    <h1>{modoDetalleCuenta ? 'Cheques de la cuenta' : 'Cheques'}</h1>
-                    <p className="che-page-subtitle">
-                        {modoDetalleCuenta
-                            ? 'Consulta de cheques asociados a esta cuenta bancaria'
-                            : 'Consulta general de todos los cheques emitidos en el sistema'}
-                    </p>
+                <div className="page-header-left">
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            flexWrap: 'wrap',
+                        }}
+                    >
+                        <h1 style={{ margin: 0 }}>
+                            {modoDetalleCuenta ? 'Cheques de la cuenta' : 'Cheques'}
+                        </h1>
+
+                        <span className="record-count">
+                            {filtered.length} registros
+                        </span>
+                    </div>
                 </div>
 
                 <button className="btn-primary" onClick={() => setModalOpen(true)}>
@@ -374,7 +494,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                         label: 'Total emitido',
                         val: `Q ${totalMonto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}`,
                         color: '#b91c1c',
-                        bg: '#fee2e2'
+                        bg: '#fee2e2',
                     },
                 ].map((s, i) => (
                     <div
@@ -388,7 +508,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                                 className="che-kpi-value"
                                 style={{
                                     color: s.color,
-                                    fontSize: i === 4 ? '13px' : '20px'
+                                    fontSize: i === 4 ? '13px' : '20px',
                                 }}
                             >
                                 {s.val}
@@ -419,6 +539,7 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                         onChange={(e) => setFiltroCuenta(e.target.value)}
                     >
                         <option value="">Todas las cuentas</option>
+
                         {cuentas.map((c, idx) => {
                             const id = getCuentaId(c);
 
@@ -433,36 +554,54 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
 
                 <div className="che-search-wrap">
                     <Search size={15} className="che-search-icon" />
+
                     <input
                         className="che-search-input"
                         placeholder="Buscar por número, serie o beneficiario."
                         value={search}
-                        onChange={e => setSearch(e.target.value)}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
 
                 <select
                     className="che-filter-select"
-                    value={filtroEstado}
-                    onChange={e => setFiltroEstado(e.target.value)}
+                    value={filtroMoneda}
+                    onChange={(e) => setFiltroMoneda(e.target.value)}
                 >
-                    <option value="">Todos los estados</option>
-                    {estadosUnicos.map(e => (
-                        <option key={e} value={e}>
-                            {e}
+                    <option value="">Todas las monedas</option>
+
+                    {monedasDisponibles.map((m) => (
+                        <option key={m.simbolo} value={m.simbolo}>
+                            {m.label}
                         </option>
                     ))}
                 </select>
 
-                <span className="che-toolbar-count">
-                    {filtered.length} registros
-                </span>
+                <select
+                    className="che-filter-select"
+                    value={filtroEstado}
+                    onChange={(e) => setFiltroEstado(e.target.value)}
+                >
+                    <option value="">Todos los estados</option>
+
+                    {estadosCatalogo.map((estado) => (
+                        <option key={estado} value={estado}>
+                            {estado}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             {loading ? (
                 <div className="che-loading">
                     <Loader size={22} color="#0284c7" />
                     <span>Cargando cheques.</span>
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="che-table-card empty-report-card">
+                    <div className="empty-state">
+                        No se encontraron cheques.
+                    </div>
                 </div>
             ) : (
                 <ChequeTable

@@ -12,6 +12,7 @@ import ChequeraTable, { getQEstado } from './ChequeraTable';
 import ChequeraDetalle from './ChequeraDetalle';
 import ChequeraModal from './ChequeraModal';
 import './Chequera.css';
+import ChequeDetalle from '../Cheques/ChequeDetalle';
 
 const g = (o, ...ks) => {
     for (const k of ks) {
@@ -88,17 +89,31 @@ const buildCuentaLabel = (c, bancos) => {
     return label;
 };
 
+const getCuentaSimbolo = (c) =>
+    g(c, 'tMO_Simbolo', 'tmO_Simbolo', 'TMO_Simbolo', 'tmo_simbolo') ?? 'Q';
+
+const getCuentaMoneda = (c) =>
+    g(
+        c,
+        'tMO_Descripcion',
+        'tmO_Descripcion',
+        'TMO_Descripcion',
+        'tmo_descripcion'
+    ) ?? 'Quetzales';
+
 const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     const [chequeras, setChequeras] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [search, setSearch] = useState('');
     const [filtroCuenta, setFiltroCuenta] = useState(cuentaId ? String(cuentaId) : '');
+    const [filtroMoneda, setFiltroMoneda] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [detalle, setDetalle] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [detalleCheque, setDetalleCheque] = useState(null);
 
     const [cuentas, setCuentas] = useState([]);
     const [bancos, setBancos] = useState([]);
@@ -146,6 +161,20 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
             );
         }
 
+        if (filtroMoneda) {
+            result = result.filter((q) => {
+                const cuenta = cuentas.find(
+                    (c) =>
+                        String(getCuentaId(c)) ===
+                        String(getChequeraCuentaId(q))
+                );
+
+                const simbolo = getCuentaSimbolo(cuenta);
+
+                return String(simbolo) === String(filtroMoneda);
+            });
+        }
+
         if (search.trim()) {
             const q = search.toLowerCase();
 
@@ -186,15 +215,43 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         }
 
         setFiltered(result);
-    }, [chequeras, search, filtroCuenta, cuentaId, modoDetalleCuenta]);
+    }, [
+            chequeras,
+            cuentas,
+            search,
+            filtroCuenta,
+            filtroMoneda,
+            cuentaId,
+            modoDetalleCuenta
+        ]);
 
     const cuentasFiltradasModal = useMemo(() => {
+
         if (!modoDetalleCuenta || !cuentaId) return cuentas;
 
         return cuentas.filter(c =>
             String(getCuentaId(c)) === String(cuentaId)
         );
     }, [cuentas, cuentaId, modoDetalleCuenta]);
+
+    const monedasDisponibles = useMemo(() => {
+            return [
+                ...new Map(
+                    cuentas.map((c) => {
+                        const simbolo = getCuentaSimbolo(c);
+                        const descripcion = getCuentaMoneda(c);
+
+                        return [
+                            simbolo,
+                            {
+                                simbolo,
+                                descripcion,
+                            },
+                        ];
+                    })
+                ).values(),
+            ];
+        }, [cuentas]);
 
     const showOk = (msg) => {
         setSuccess(msg);
@@ -256,10 +313,28 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         return e === 'I' || e === 'Inactiva' || e === 'Desactivada';
     }).length;
 
+    if (detalleCheque) {
+    return (
+        <div className="chequera-container">
+            <ChequeDetalle
+                cheque={detalleCheque}
+                onBack={() => setDetalleCheque(null)}
+                onCambiarEstado={() => {}}
+                estadosCheque={[]}
+            />
+        </div>
+        );
+    }
+
     if (detalle) {
         return (
             <div className="chequera-container">
-                <ChequeraDetalle chequera={detalle} onBack={() => setDetalle(null)} />
+                <ChequeraDetalle
+                    chequera={detalle}
+                    cuentas={cuentas}
+                    onBack={() => setDetalle(null)}
+                    onVerCheque={setDetalleCheque}
+                />
             </div>
         );
     }
@@ -267,16 +342,31 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     return (
         <div className="chequera-container">
             <div className="chq-page-header">
-                <div>
-                    <h1>{modoDetalleCuenta ? 'Chequeras de la cuenta' : 'Chequeras'}</h1>
-                    <p className="chq-page-subtitle">
-                        {modoDetalleCuenta
-                            ? 'Consulta de chequeras asociadas a esta cuenta bancaria'
-                            : 'Consulta general de todas las chequeras del sistema'}
-                    </p>
+                <div className="page-header-left">
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            flexWrap: 'wrap',
+                        }}
+                    >
+                        <h1 style={{ margin: 0 }}>
+                            {modoDetalleCuenta
+                                ? 'Chequeras de la cuenta'
+                                : 'Chequeras'}
+                        </h1>
+
+                        <span className="record-count">
+                            {filtered.length} registros
+                        </span>
+                    </div>
                 </div>
 
-                <button className="btn-primary" onClick={() => setModalOpen(true)}>
+                <button
+                    className="btn-primary"
+                    onClick={() => setModalOpen(true)}
+                >
                     + Registrar chequera
                 </button>
             </div>
@@ -310,7 +400,7 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                         value={filtroCuenta}
                         onChange={(e) => setFiltroCuenta(e.target.value)}
                     >
-                        <option value="">Todas las cuentas</option>
+                        <option value="">Seleccionar Cuenta</option>
                         {cuentas.map((c, idx) => {
                             const id = getCuentaId(c);
 
@@ -322,7 +412,19 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                         })}
                     </select>
                 )}
+                    <select
+                        className="chq-filter-select"
+                        value={filtroMoneda}
+                        onChange={(e) => setFiltroMoneda(e.target.value)}
+                    >
+                        <option value="">Todas las monedas</option>
 
+                        {monedasDisponibles.map((m) => (
+                            <option key={m.simbolo} value={m.simbolo}>
+                                {m.descripcion} ({m.simbolo})
+                            </option>
+                        ))}
+                    </select>
                 <div className="chq-search-wrap">
                     <Search size={15} className="chq-search-icon" />
                     <input
@@ -343,9 +445,17 @@ const ChequeraPage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                     <Loader size={22} color="#0284c7" />
                     <span>Cargando chequeras...</span>
                 </div>
+            ) : filtered.length === 0 ? (
+                <div className="chq-table-card empty-report-card">
+                    <div className="empty-state">
+                        No se encontraron chequeras.
+                    </div>
+                </div>
             ) : (
                 <ChequeraTable
                     chequeras={filtered}
+                    cuentas={cuentas}
+                    bancos={bancos}
                     onVer={setDetalle}
                     onToggle={handleToggle}
                 />

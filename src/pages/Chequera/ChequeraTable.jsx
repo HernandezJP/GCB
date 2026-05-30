@@ -45,7 +45,7 @@ const estadoLabel = (e) => {
 
 const formatFecha = f => (f ? new Date(f).toLocaleDateString('es-GT') : '—');
 
-const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
+const ChequeraTable = ({ chequeras, cuentas = [], bancos = [], onVer, onToggle }) => {
     if (!chequeras?.length) {
         return (
             <div className="chq-empty">
@@ -80,7 +80,49 @@ const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
                             const estado = getQEstado(q);
                             const activo = estado === 'A' || estado === 'Activa';
                             const barColor = pct >= 80 ? '#b91c1c' : pct >= 50 ? '#92400e' : '#15803d';
+                            const cuentaId = getQCuenta(q);
 
+                            const cuenta = cuentas.find(
+                                c => String(g(c, 'cuB_Cuenta', 'cUB_Cuenta', 'CUB_Cuenta')) === String(cuentaId)
+                            );
+
+                            console.log('CUENTA ENCONTRADA:', cuenta);
+
+                            const bancoId = g(
+                                cuenta,
+                                'bAN_Banco',
+                                'baN_Banco',
+                                'ban_Banco',
+                                'BAN_Banco',
+                                'BAN_BANCO',
+                                'banco',
+                                'Banco',
+                                'bancoId',
+                                'BancoId',
+                                'BANCO_ID'
+                            );
+
+                            const banco = bancos.find(
+                                b => String(g(b, 'bAN_Banco', 'ban_Banco', 'BAN_Banco')) === String(bancoId)
+                            );
+                            console.log('BANCO:', banco);
+
+                            const bancoNombre =
+                            g(q, 'bAN_Nombre', 'baN_Nombre', 'ban_nombre', 'BAN_Nombre', 'BancoNombre', 'bancoNombre') ??
+                            g(cuenta, 'bAN_Nombre', 'baN_Nombre', 'ban_nombre', 'BAN_Nombre', 'BancoNombre', 'bancoNombre') ??
+                            g(banco, 'bAN_Nombre', 'baN_Nombre', 'ban_nombre', 'BAN_Nombre', 'BancoNombre', 'bancoNombre') ??
+                            'Sin banco';
+
+                            const titular =
+                            g(cuenta, 'nombreCompleto', 'NombreCompleto') ??
+                            (
+                                [
+                                    g(cuenta, 'cuB_Primer_Nombre', 'cUB_Primer_Nombre', 'CUB_Primer_Nombre'),
+                                    g(cuenta, 'cuB_Segundo_Nombre', 'cUB_Segundo_Nombre', 'CUB_Segundo_Nombre'),
+                                    g(cuenta, 'cuB_Primer_Apellido', 'cUB_Primer_Apellido', 'CUB_Primer_Apellido'),
+                                    g(cuenta, 'cuB_Segundo_Apellido', 'cUB_Segundo_Apellido', 'CUB_Segundo_Apellido'),
+                                ].filter(Boolean).join(' ') || 'Sin titular'
+                            );
                             return (
                                 <tr
                                     key={getQId(q) ?? i}
@@ -101,7 +143,7 @@ const ChequeraTable = ({ chequeras, onVer, onToggle }) => {
                                                 fontSize: 12
                                             }}
                                         >
-                                            {g(q, 'cUB_Numero_Cuenta', 'cuB_Numero_Cuenta', 'CUB_Numero_Cuenta') ?? `Cuenta #${getQCuenta(q)}`}
+                                            {bancoNombre} — {titular}
                                         </code>
                                     </td>
 

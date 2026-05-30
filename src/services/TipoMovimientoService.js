@@ -1,6 +1,6 @@
 import api from '../api/axios';
 
-const BASE = '/TipoMovimiento';
+const BASE = '/tipo-movimiento';
 
 export const getTiposMovimiento = () => api.get(BASE).then(r => r.data);
 export const getTipoMovimientoById = (id) => api.get(`${BASE}/${id}`).then(r => r.data);

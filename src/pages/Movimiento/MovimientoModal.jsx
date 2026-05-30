@@ -1,6 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
+
 import { createPortal } from 'react-dom';
-import { X, ArrowLeftRight, Check } from 'lucide-react';
+
+import {
+  X,
+  ArrowLeftRight,
+  Check,
+  Search,
+  Plus,
+  User,
+  AlertTriangle
+} from 'lucide-react';
 
 const INITIAL = {
   CUB_Cuenta: '',
@@ -13,6 +28,117 @@ const INITIAL = {
   MOV_Numero_Referencia: '',
   MOV_Descripcion: '',
   MOV_Monto_Origen: '',
+};
+
+const normalize = (value) =>
+  String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+
+const SearchableSelect = ({
+  label,
+  value,
+  options = [],
+  getOptionId,
+  getOptionText,
+  onChange,
+  placeholder = 'Seleccionar...',
+  disabled = false,
+}) => {
+  const boxRef = useRef(null);
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const selected = options.find(
+      item => String(getOptionId(item)) === String(value)
+    );
+
+    if (selected) {
+      setQuery(getOptionText(selected));
+    }
+  }, [value, options, getOptionId, getOptionText]);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (boxRef.current && !boxRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+    };
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = normalize(query);
+
+    if (!q) return options.slice(0, 8);
+
+    return options
+      .filter(item => normalize(getOptionText(item)).includes(q))
+      .slice(0, 8);
+  }, [query, options, getOptionText]);
+
+  return (
+    <div className="input-group searchable-select" ref={boxRef}>
+      <label>{label}</label>
+
+      <div className={`searchable-control ${open ? 'is-open' : ''}`}>
+        <Search size={15} className="searchable-control-icon" />
+
+        <input
+          type="text"
+          value={query}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoComplete="off"
+          spellCheck={false}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+        />
+      </div>
+
+      {!disabled && open && (
+        <div className="searchable-menu">
+          {filtered.length > 0 ? (
+            filtered.map(item => {
+              const id = String(getOptionId(item));
+
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className={`searchable-item ${String(value) === id ? 'selected' : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    onChange(id);
+                    setQuery(getOptionText(item));
+                    setOpen(false);
+                  }}
+                >
+                  <span>{getOptionText(item)}</span>
+                  {String(value) === id && <Check size={14} />}
+                </button>
+              );
+            })
+          ) : (
+            <div className="searchable-empty">
+              No se encontraron resultados
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const MovimientoModal = ({
@@ -28,12 +154,31 @@ const MovimientoModal = ({
 }) => {
   const [form, setForm] = useState(INITIAL);
   const [saving, setSaving] = useState(false);
+  const [personaSearch, setPersonaSearch] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [periodoBloqueado, setPeriodoBloqueado] = useState(false);
 
-  const setText = (key) => (e) =>
-    setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setValue = (key, value) =>
+    setForm(prev => ({
+      ...prev,
+      [key]: value
+    }));
+
+  const setText = (key) => (e) => {
+    setValue(key, e.target.value);
+
+    if (key === 'MOV_Fecha') {
+      setErrorMessage('');
+      setPeriodoBloqueado(false);
+    }
+  };
 
   const getPersonaId = (p) =>
-    p?.peR_Persona ?? p?.pER_Persona ?? p?.per_persona ?? p?.id ?? '';
+    p?.peR_Persona ??
+    p?.pER_Persona ??
+    p?.per_persona ??
+    p?.id ??
+    '';
 
   const getPersonaNombre = (p) =>
     p?.peR_Nombre_Completo ??
@@ -42,23 +187,55 @@ const MovimientoModal = ({
     p?.nombreCompleto ??
     '';
 
+  const getPersonaNit = (p) =>
+    p?.peR_NIT ??
+    p?.pER_NIT ??
+    p?.PER_NIT ??
+    p?.nit ??
+    '';
+
+  const getPersonaDpi = (p) =>
+    p?.peR_DPI ??
+    p?.pER_DPI ??
+    p?.PER_DPI ??
+    p?.dpi ??
+    '';
+
   const getTipoId = (t) =>
-    t?.tiM_Tipo_Movimiento ?? t?.tIM_Tipo_Movimiento ?? t?.tim_tipo_movimiento ?? '';
+    t?.tiM_Tipo_Movimiento ??
+    t?.tIM_Tipo_Movimiento ??
+    t?.tim_tipo_movimiento ??
+    '';
 
   const getTipoDesc = (t) =>
-    t?.tiM_Descripcion ?? t?.tIM_Descripcion ?? t?.tim_descripcion ?? '';
+    t?.tiM_Descripcion ??
+    t?.tIM_Descripcion ??
+    t?.tim_descripcion ??
+    '';
 
   const getMedioId = (m) =>
-    m?.meM_Medio_Movimiento ?? m?.mEM_Medio_Movimiento ?? m?.mem_medio_movimiento ?? '';
+    m?.meM_Medio_Movimiento ??
+    m?.mEM_Medio_Movimiento ??
+    m?.mem_medio_movimiento ??
+    '';
 
   const getMedioDesc = (m) =>
-    m?.meM_Descripcion ?? m?.mEM_Descripcion ?? m?.mem_descripcion ?? '';
+    m?.meM_Descripcion ??
+    m?.mEM_Descripcion ??
+    m?.mem_descripcion ??
+    '';
 
   const getEstadoId = (e) =>
-    e?.esM_Estado_Movimiento ?? e?.eSM_Estado_Movimiento ?? e?.esm_estado_movimiento ?? '';
+    e?.esM_Estado_Movimiento ??
+    e?.eSM_Estado_Movimiento ??
+    e?.esm_estado_movimiento ??
+    '';
 
   const getEstadoDesc = (e) =>
-    e?.esM_Descripcion ?? e?.eSM_Descripcion ?? e?.esm_descripcion ?? '';
+    e?.esM_Descripcion ??
+    e?.eSM_Descripcion ??
+    e?.esm_descripcion ??
+    '';
 
   const estadoPorDefecto = useMemo(() => {
     if (!estadosMovimiento || estadosMovimiento.length === 0) return '';
@@ -67,13 +244,37 @@ const MovimientoModal = ({
       estadosMovimiento.find((e) =>
         String(getEstadoDesc(e)).trim().toLowerCase() === 'activo'
       ) ||
-      estadosMovimiento.find((e) =>
-        String(getEstadoDesc(e)).trim().toLowerCase() === 'aplicado'
-      ) ||
       estadosMovimiento[0];
 
     return String(getEstadoId(activo) ?? '');
   }, [estadosMovimiento]);
+
+  const mediosSinCheque = useMemo(() => {
+    return mediosMovimiento.filter((m) => {
+      const nombre = String(getMedioDesc(m)).trim().toLowerCase();
+      return nombre !== 'cheque';
+    });
+  }, [mediosMovimiento]);
+
+  const personasFiltradas = useMemo(() => {
+    const q = personaSearch.trim().toLowerCase();
+
+    if (!q) return [];
+
+    return personas
+      .filter((p) => {
+        const nombre = String(getPersonaNombre(p) ?? '').toLowerCase();
+        const nit = String(getPersonaNit(p) ?? '').toLowerCase();
+        const dpi = String(getPersonaDpi(p) ?? '').toLowerCase();
+
+        return (
+          nombre.includes(q) ||
+          nit.includes(q) ||
+          dpi.includes(q)
+        );
+      })
+      .slice(0, 8);
+  }, [personas, personaSearch]);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,27 +284,17 @@ const MovimientoModal = ({
         ESM_Estado_Movimiento: estadoPorDefecto,
         MOV_Fecha: new Date().toISOString().slice(0, 16),
       });
+
+      setPersonaSearch('');
+      setErrorMessage('');
+      setPeriodoBloqueado(false);
     }
   }, [isOpen, cuentaId, estadoPorDefecto]);
 
   if (!isOpen) return null;
 
-  const tipoSeleccionado = tiposMovimiento.find(
-    (t) => String(getTipoId(t)) === String(form.TIM_Tipo_Movimiento)
-  );
-
-  const medioSeleccionado = mediosMovimiento.find(
-    (m) => String(getMedioId(m)) === String(form.MEM_Medio_Movimiento)
-  );
-
-  const nombreTipo = String(getTipoDesc(tipoSeleccionado)).trim().toLowerCase();
-  const nombreMedio = String(getMedioDesc(medioSeleccionado)).trim().toLowerCase();
-
-  const aplicaRecargoInfo =
-    nombreTipo === 'egreso' &&
-    nombreMedio === 'transferencia a otros bancos';
-
   const isValid =
+    !periodoBloqueado &&
     String(form.CUB_Cuenta).trim() !== '' &&
     String(form.TIM_Tipo_Movimiento).trim() !== '' &&
     String(form.MEM_Medio_Movimiento).trim() !== '' &&
@@ -116,6 +307,8 @@ const MovimientoModal = ({
     if (!isValid || saving) return;
 
     setSaving(true);
+    setErrorMessage('');
+
     try {
       await onSave({
         CUB_Cuenta: Number(form.CUB_Cuenta),
@@ -129,6 +322,26 @@ const MovimientoModal = ({
         MOV_Descripcion: form.MOV_Descripcion.trim(),
         MOV_Monto_Origen: Number(form.MOV_Monto_Origen),
       });
+    } catch (error) {
+      const mensaje =
+        error?.response?.data?.mensaje ||
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        'No se pudo registrar el movimiento.';
+
+      setErrorMessage(mensaje);
+
+      const texto = String(mensaje).toLowerCase();
+
+      if (
+        texto.includes('conciliado') ||
+        texto.includes('conciliada') ||
+        texto.includes('período') ||
+        texto.includes('periodo')
+      ) {
+        setPeriodoBloqueado(true);
+      }
     } finally {
       setSaving(false);
     }
@@ -136,12 +349,13 @@ const MovimientoModal = ({
 
   return createPortal(
     <div className="modal-backdrop">
-      <div className="modal-card">
+      <div className="modal-card movimiento-modal-card">
         <div className="modal-header">
           <div className="modal-title-group">
             <div className="modal-icon">
               <ArrowLeftRight size={20} />
             </div>
+
             <div>
               <h2>Nuevo movimiento</h2>
               <p>Cuenta {numeroCuenta || cuentaId}</p>
@@ -159,23 +373,12 @@ const MovimientoModal = ({
         </div>
 
         <div className="modal-body">
-          <div className="stepper">
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 3
-              }}
-            >
-              <div className="step-dot active">
-                <Check size={13} />
-              </div>
-              <span className="step-label" style={{ color: '#0284c7' }}>
-                Movimiento
-              </span>
+          {errorMessage && (
+            <div className="error-banner">
+              <AlertTriangle size={16} />
+              <span>{errorMessage}</span>
             </div>
-          </div>
+          )}
 
           <div className="form-row">
             <div className="input-group">
@@ -195,70 +398,165 @@ const MovimientoModal = ({
           </div>
 
           <div className="form-row">
-            <div className="input-group">
-              <label>Tipo de movimiento *</label>
-              <select
-                value={form.TIM_Tipo_Movimiento}
-                onChange={setText('TIM_Tipo_Movimiento')}
-                disabled={saving}
-              >
-                <option value="">Seleccionar</option>
-                {tiposMovimiento.map((t) => (
-                  <option key={getTipoId(t)} value={String(getTipoId(t))}>
-                    {getTipoDesc(t)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SearchableSelect
+              label="Tipo movimiento *"
+              value={form.TIM_Tipo_Movimiento}
+              options={tiposMovimiento}
+              getOptionId={getTipoId}
+              getOptionText={getTipoDesc}
+              onChange={(value) => setValue('TIM_Tipo_Movimiento', value)}
+            />
 
-            <div className="input-group">
-              <label>Medio de movimiento *</label>
-              <select
-                value={form.MEM_Medio_Movimiento}
-                onChange={setText('MEM_Medio_Movimiento')}
-                disabled={saving}
-              >
-                <option value="">Seleccionar</option>
-                {mediosMovimiento.map((m) => (
-                  <option key={getMedioId(m)} value={String(getMedioId(m))}>
-                    {getMedioDesc(m)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SearchableSelect
+              label="Medio movimiento *"
+              value={form.MEM_Medio_Movimiento}
+              options={mediosSinCheque}
+              getOptionId={getMedioId}
+              getOptionText={getMedioDesc}
+              onChange={(value) => setValue('MEM_Medio_Movimiento', value)}
+            />
           </div>
 
-          <div className="form-row">
-            <div className="input-group">
-              <label>Persona</label>
-              <select
-                value={form.PER_Persona}
-                onChange={setText('PER_Persona')}
-                disabled={saving}
-              >
-                <option value="">Sin persona</option>
-                {personas.map((p) => (
-                  <option key={getPersonaId(p)} value={String(getPersonaId(p))}>
-                    {getPersonaNombre(p)}
-                  </option>
-                ))}
-              </select>
+          <div className="form-row movimiento-persona-layout">
+            <div className="input-group persona-search-section">
+              <label>Buscar persona</label>
+
+              <div style={{ position: 'relative', marginBottom: 10 }}>
+                <Search
+                  size={15}
+                  color="#94a3b8"
+                  style={{
+                    position: 'absolute',
+                    left: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)'
+                  }}
+                />
+
+                <input
+                  value={personaSearch}
+                  onChange={(e) => {
+                    setPersonaSearch(e.target.value);
+                    setValue('PER_Persona', '');
+                  }}
+                  placeholder="Buscar por nombre, NIT o DPI..."
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 34px',
+                    border: '1.5px solid #e2e8f0',
+                    borderRadius: 8,
+                    fontSize: 13,
+                    background: '#f8fafc',
+                    color: '#0f172a',
+                    boxSizing: 'border-box',
+                    fontFamily: 'inherit'
+                  }}
+                />
+              </div>
+
+              {personaSearch.trim() !== '' && (
+                <div
+                  style={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 10,
+                    maxHeight: 260,
+                    overflowY: 'auto',
+                    background: '#fff'
+                  }}
+                >
+                  {personasFiltradas.length === 0 ? (
+                    <div
+                      style={{
+                        padding: 14,
+                        fontSize: 12,
+                        color: '#94a3b8',
+                        textAlign: 'center'
+                      }}
+                    >
+                      No se encontraron personas.
+                    </div>
+                  ) : (
+                    personasFiltradas.map((p) => {
+                      const pid = getPersonaId(p);
+                      const nombre = getPersonaNombre(p) || 'Sin nombre';
+                      const nit = getPersonaNit(p);
+                      const dpi = getPersonaDpi(p);
+                      const selected = String(form.PER_Persona) === String(pid);
+
+                      return (
+                        <button
+                          key={pid}
+                          type="button"
+                          onClick={() => {
+                            setValue('PER_Persona', String(pid));
+                            setPersonaSearch(nombre);
+                          }}
+                          style={{
+                            width: '100%',
+                            border: 'none',
+                            borderBottom: '1px solid #f1f5f9',
+                            background: selected ? '#eff6ff' : '#fff',
+                            padding: '12px 14px',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 10
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 600,
+                                color: '#0f172a'
+                              }}
+                            >
+                              {nombre}
+                            </div>
+
+                            <div
+                              style={{
+                                fontSize: 11,
+                                color: '#64748b',
+                                marginTop: 2
+                              }}
+                            >
+                              NIT: {nit || '—'} · DPI: {dpi || '—'}
+                            </div>
+                          </div>
+
+                          {selected ? (
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: '#0284c7'
+                              }}
+                            >
+                              Seleccionado
+                            </span>
+                          ) : (
+                            <User size={16} color="#94a3b8" />
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="input-group">
-              <label>Estado *</label>
-              <select
+            <div className="estado-side">
+              <SearchableSelect
+                label="Estado *"
                 value={form.ESM_Estado_Movimiento}
-                onChange={setText('ESM_Estado_Movimiento')}
-                disabled={saving}
-              >
-                <option value="">Seleccionar</option>
-                {estadosMovimiento.map((e) => (
-                  <option key={getEstadoId(e)} value={String(getEstadoId(e))}>
-                    {getEstadoDesc(e)}
-                  </option>
-                ))}
-              </select>
+                options={estadosMovimiento}
+                getOptionId={getEstadoId}
+                getOptionText={getEstadoDesc}
+                onChange={(value) => setValue('ESM_Estado_Movimiento', value)}
+              />
             </div>
           </div>
 
@@ -275,15 +573,20 @@ const MovimientoModal = ({
 
             <div className="input-group">
               <label>Monto *</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.MOV_Monto_Origen}
-                onChange={setText('MOV_Monto_Origen')}
-                placeholder="0.00"
-                disabled={saving}
-              />
+
+              <div className="money-input">
+                <span>Q</span>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.MOV_Monto_Origen}
+                  onChange={setText('MOV_Monto_Origen')}
+                  placeholder="0.00"
+                  disabled={saving}
+                />
+              </div>
             </div>
           </div>
 
@@ -296,22 +599,6 @@ const MovimientoModal = ({
               disabled={saving}
             />
           </div>
-
-          {aplicaRecargoInfo && (
-            <div
-              style={{
-                marginTop: 14,
-                padding: '12px 14px',
-                borderRadius: 8,
-                background: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                color: '#1d4ed8',
-                fontSize: 13
-              }}
-            >
-              Este movimiento puede generar recargo automático según la lógica del backend.
-            </div>
-          )}
         </div>
 
         <div className="modal-footer">
@@ -330,7 +617,14 @@ const MovimientoModal = ({
             disabled={!isValid || saving}
             type="button"
           >
-            {saving ? 'Guardando...' : 'Guardar movimiento'}
+            {saving ? (
+              'Guardando...'
+            ) : (
+              <>
+                <Plus size={15} />
+                Guardar movimiento
+              </>
+            )}
           </button>
         </div>
       </div>

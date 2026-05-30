@@ -19,18 +19,28 @@ const getTipoPersona = (p) =>
   p?.tipo_persona_descripcion ??
   "";
 
+const getRazonSocial = (p) =>
+  p?.peR_Razon_Social ??
+  p?.PER_Razon_Social ??
+  p?.per_Razon_Social ??
+  p?.per_razon_social ??
+  "";
+
 const getNombreCompleto = (p) => {
-  const nombreApi =
-    p?.nombreCompleto ??
-    p?.NombreCompleto ??
-    p?.nombre_completo ??
-    "";
-
-  if (String(nombreApi).trim()) return nombreApi;
-
-  return `${p?.peR_Primer_Nombre ?? p?.PER_Primer_Nombre ?? ""} ${p?.peR_Segundo_Nombre ?? p?.PER_Segundo_Nombre ?? ""} ${p?.peR_Primer_Apellido ?? p?.PER_Primer_Apellido ?? ""} ${p?.peR_Segundo_Apellido ?? p?.PER_Segundo_Apellido ?? ""}`
+  const nombreArmado = [
+    p?.peR_Primer_Nombre ?? p?.PER_Primer_Nombre,
+    p?.peR_Segundo_Nombre ?? p?.PER_Segundo_Nombre,
+    p?.peR_Primer_Apellido ?? p?.PER_Primer_Apellido,
+    p?.peR_Segundo_Apellido ?? p?.PER_Segundo_Apellido,
+  ]
+    .filter(Boolean)
+    .join(" ")
     .replace(/\s+/g, " ")
     .trim();
+
+  if (nombreArmado) return nombreArmado;
+
+  return getRazonSocial(p) || p?.nombreCompleto || p?.NombreCompleto || "—";
 };
 
 const PersonaTable = ({ personas, onView, onEdit, onDelete }) => {
@@ -46,6 +56,7 @@ const PersonaTable = ({ personas, onView, onEdit, onDelete }) => {
             <tr>
               <th>#</th>
               <th>Nombre</th>
+              <th>Razón social</th>
               <th>Tipo</th>
               <th>NIT</th>
               <th>DPI</th>
@@ -74,6 +85,7 @@ const PersonaTable = ({ personas, onView, onEdit, onDelete }) => {
                     {getNombreCompleto(p) || "—"}
                   </td>
 
+                  <td>{getRazonSocial(p) || "—"}</td>
                   <td>{getTipoPersona(p) || "—"}</td>
                   <td>{getNit(p) || "—"}</td>
                   <td>{getDpi(p) || "—"}</td>
@@ -95,27 +107,15 @@ const PersonaTable = ({ personas, onView, onEdit, onDelete }) => {
 
                   <td onClick={(e) => e.stopPropagation()}>
                     <div className="action-buttons">
-                      <button
-                        className="icon-btn view"
-                        title="Ver detalle"
-                        onClick={() => onView && onView(p)}
-                      >
+                      <button className="icon-btn view" title="Ver detalle" onClick={() => onView && onView(p)}>
                         <Eye size={16} />
                       </button>
 
-                      <button
-                        className="icon-btn edit"
-                        title="Editar"
-                        onClick={() => onEdit && onEdit(p)}
-                      >
+                      <button className="icon-btn edit" title="Editar" onClick={() => onEdit && onEdit(p)}>
                         <Edit2 size={16} />
                       </button>
 
-                      <button
-                        className="icon-btn toggle-on"
-                        title="Desactivar"
-                        onClick={() => onDelete && onDelete(id)}
-                      >
+                      <button className="icon-btn toggle-on" title="Desactivar" onClick={() => onDelete && onDelete(id)}>
                         <Trash2 size={16} />
                       </button>
                     </div>

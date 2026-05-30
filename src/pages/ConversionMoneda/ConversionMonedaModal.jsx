@@ -1,12 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, RefreshCw, CalendarDays, BadgeDollarSign, Landmark, Wand2 } from 'lucide-react';
+import {
+    X,
+    RefreshCw,
+    CalendarDays,
+    BadgeDollarSign,
+    Landmark,
+    Wand2,
+    Save,
+    CircleX
+} from 'lucide-react';
+
 import {
     getMonedaOrigenId,
     getMonedaDestinoId,
     getTasaCambio,
     getFechaVigencia
 } from './ConversionMonedaPage';
+
 import { getTiposMoneda } from '../../services/TipoMonedaService';
 
 const INITIAL = {
@@ -25,16 +36,24 @@ const getTipoMonedaEstado = (m) => m?.tmO_Estado ?? m?.TMO_Estado ?? 'I';
 
 const toDateInputValue = (value) => {
     if (!value) return '';
+
     try {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return '';
+
         return date.toISOString().split('T')[0];
     } catch {
         return '';
     }
 };
 
-const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conversionToEdit }) => {
+const ConversionMonedaModal = ({
+    isOpen,
+    onClose,
+    onSave,
+    onFetchApiRate,
+    conversionToEdit
+}) => {
     const [formData, setFormData] = useState(INITIAL);
     const [saving, setSaving] = useState(false);
     const [loadingMonedas, setLoadingMonedas] = useState(false);
@@ -47,8 +66,13 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
         const cargarMonedas = async () => {
             try {
                 setLoadingMonedas(true);
+
                 const data = await getTiposMoneda();
-                const activas = (data || []).filter(m => getTipoMonedaEstado(m) === 'A');
+
+                const activas = (data || []).filter(
+                    (m) => getTipoMonedaEstado(m) === 'A'
+                );
+
                 setTiposMoneda(activas);
             } catch (error) {
                 console.error('Error al cargar tipos de moneda:', error);
@@ -66,15 +90,22 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
             setFormData(
                 conversionToEdit
                     ? {
-                        TMO_Tipo_Moneda: getMonedaOrigenId(conversionToEdit) ?? '',
-                        TMO_Tipo_Moneda_Destino: getMonedaDestinoId(conversionToEdit) ?? '',
-                        COM_Tasa_Cambio: getTasaCambio(conversionToEdit) ?? '',
-                        COM_Fecha_Vigencia: toDateInputValue(getFechaVigencia(conversionToEdit)),
+                        TMO_Tipo_Moneda:
+                            getMonedaOrigenId(conversionToEdit) ?? '',
+                        TMO_Tipo_Moneda_Destino:
+                            getMonedaDestinoId(conversionToEdit) ?? '',
+                        COM_Tasa_Cambio:
+                            getTasaCambio(conversionToEdit) ?? '',
+                        COM_Fecha_Vigencia:
+                            toDateInputValue(
+                                getFechaVigencia(conversionToEdit)
+                            ),
                         COM_Fuente: 'M'
                     }
                     : {
                         ...INITIAL,
-                        COM_Fecha_Vigencia: new Date().toISOString().split('T')[0]
+                        COM_Fecha_Vigencia:
+                            new Date().toISOString().split('T')[0]
                     }
             );
         }
@@ -82,7 +113,12 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
 
     const monedasDisponiblesDestino = useMemo(() => {
         if (!formData.TMO_Tipo_Moneda) return tiposMoneda;
-        return tiposMoneda.filter(m => String(getTipoMonedaId(m)) !== String(formData.TMO_Tipo_Moneda));
+
+        return tiposMoneda.filter(
+            (m) =>
+                String(getTipoMonedaId(m)) !==
+                String(formData.TMO_Tipo_Moneda)
+        );
     }, [tiposMoneda, formData.TMO_Tipo_Moneda]);
 
     if (!isOpen) return null;
@@ -101,13 +137,19 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                 return;
             }
 
-            if (String(formData.TMO_Tipo_Moneda) === String(formData.TMO_Tipo_Moneda_Destino)) {
+            if (
+                String(formData.TMO_Tipo_Moneda) ===
+                String(formData.TMO_Tipo_Moneda_Destino)
+            ) {
                 alert('La moneda origen y destino no pueden ser iguales.');
                 return;
             }
         }
 
-        if (formData.COM_Tasa_Cambio === '' || Number(formData.COM_Tasa_Cambio) <= 0) {
+        if (
+            formData.COM_Tasa_Cambio === '' ||
+            Number(formData.COM_Tasa_Cambio) <= 0
+        ) {
             alert('Debes ingresar una tasa de cambio válida.');
             return;
         }
@@ -118,6 +160,7 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
         }
 
         setSaving(true);
+
         try {
             await onSave(formData);
         } finally {
@@ -126,33 +169,53 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
     };
 
     const handleBuscarDesdeApi = async () => {
-        if (!formData.TMO_Tipo_Moneda || !formData.TMO_Tipo_Moneda_Destino) {
+        if (
+            !formData.TMO_Tipo_Moneda ||
+            !formData.TMO_Tipo_Moneda_Destino
+        ) {
             alert('Primero selecciona la moneda origen y la moneda destino.');
             return;
         }
 
-        if (String(formData.TMO_Tipo_Moneda) === String(formData.TMO_Tipo_Moneda_Destino)) {
+        if (
+            String(formData.TMO_Tipo_Moneda) ===
+            String(formData.TMO_Tipo_Moneda_Destino)
+        ) {
             alert('La moneda origen y destino no pueden ser iguales.');
             return;
         }
 
         try {
             setFetchingApiRate(true);
+
             const tasa = await onFetchApiRate(
                 Number(formData.TMO_Tipo_Moneda),
                 Number(formData.TMO_Tipo_Moneda_Destino)
             );
 
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
-                COM_Tasa_Cambio: tasa?.coM_Tasa_Cambio ?? tasa?.COM_Tasa_Cambio ?? prev.COM_Tasa_Cambio,
-                COM_Fecha_Vigencia: toDateInputValue(tasa?.coM_Fecha_Vigencia ?? tasa?.COM_Fecha_Vigencia) || prev.COM_Fecha_Vigencia,
-                COM_Fuente: tasa?.coM_Fuente ?? tasa?.COM_Fuente ?? 'API'
+                COM_Tasa_Cambio:
+                    tasa?.coM_Tasa_Cambio ??
+                    tasa?.COM_Tasa_Cambio ??
+                    prev.COM_Tasa_Cambio,
+                COM_Fecha_Vigencia:
+                    toDateInputValue(
+                        tasa?.coM_Fecha_Vigencia ??
+                        tasa?.COM_Fecha_Vigencia
+                    ) || prev.COM_Fecha_Vigencia,
+                COM_Fuente:
+                    tasa?.coM_Fuente ??
+                    tasa?.COM_Fuente ??
+                    'API'
             }));
 
             alert('Tasa obtenida correctamente desde la API.');
         } catch (error) {
-            alert(error.message || 'No se pudo obtener la tasa desde la API.');
+            alert(
+                error.message ||
+                'No se pudo obtener la tasa desde la API.'
+            );
         } finally {
             setFetchingApiRate(false);
         }
@@ -166,15 +229,25 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                         <div className="modal-icon">
                             <RefreshCw size={20} />
                         </div>
-                        <h2>{conversionToEdit ? 'Editar Conversión de Moneda' : 'Nueva Conversión de Moneda'}</h2>
+
+                        <h2>
+                            {conversionToEdit
+                                ? 'Editar Conversión de Moneda'
+                                : 'Nueva Conversión de Moneda'}
+                        </h2>
                     </div>
 
-                    <button onClick={onClose} className="close-btn" disabled={saving || fetchingApiRate}>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="close-btn"
+                        disabled={saving || fetchingApiRate}
+                    >
                         <X size={18} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="modal-form-scroll">
                     <div className="modal-body">
                         {!conversionToEdit && (
                             <>
@@ -183,6 +256,7 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                         <Landmark size={13} />
                                         Moneda Origen
                                     </label>
+
                                     <select
                                         id="tmo-origen"
                                         required
@@ -190,19 +264,35 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                TMO_Tipo_Moneda: e.target.value,
+                                                TMO_Tipo_Moneda:
+                                                    e.target.value,
                                                 TMO_Tipo_Moneda_Destino:
-                                                    e.target.value === formData.TMO_Tipo_Moneda_Destino ? '' : formData.TMO_Tipo_Moneda_Destino
+                                                    e.target.value ===
+                                                    formData.TMO_Tipo_Moneda_Destino
+                                                        ? ''
+                                                        : formData.TMO_Tipo_Moneda_Destino
                                             })
                                         }
-                                        disabled={saving || loadingMonedas || fetchingApiRate}
+                                        disabled={
+                                            saving ||
+                                            loadingMonedas ||
+                                            fetchingApiRate
+                                        }
                                     >
                                         <option value="">
-                                            {loadingMonedas ? 'Cargando monedas...' : 'Seleccione moneda origen'}
+                                            {loadingMonedas
+                                                ? 'Cargando monedas...'
+                                                : 'Seleccione moneda origen'}
                                         </option>
+
                                         {tiposMoneda.map((m) => (
-                                            <option key={getTipoMonedaId(m)} value={getTipoMonedaId(m)}>
-                                                {getTipoMonedaSimbolo(m)} - {getTipoMonedaDescripcion(m)} ({getTipoMonedaISO(m)})
+                                            <option
+                                                key={getTipoMonedaId(m)}
+                                                value={getTipoMonedaId(m)}
+                                            >
+                                                {getTipoMonedaSimbolo(m)} -{' '}
+                                                {getTipoMonedaDescripcion(m)} (
+                                                {getTipoMonedaISO(m)})
                                             </option>
                                         ))}
                                     </select>
@@ -213,24 +303,40 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                         <Landmark size={13} />
                                         Moneda Destino
                                     </label>
+
                                     <select
                                         id="tmo-destino"
                                         required
-                                        value={formData.TMO_Tipo_Moneda_Destino}
+                                        value={
+                                            formData.TMO_Tipo_Moneda_Destino
+                                        }
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                TMO_Tipo_Moneda_Destino: e.target.value
+                                                TMO_Tipo_Moneda_Destino:
+                                                    e.target.value
                                             })
                                         }
-                                        disabled={saving || loadingMonedas || fetchingApiRate}
+                                        disabled={
+                                            saving ||
+                                            loadingMonedas ||
+                                            fetchingApiRate
+                                        }
                                     >
                                         <option value="">
-                                            {loadingMonedas ? 'Cargando monedas...' : 'Seleccione moneda destino'}
+                                            {loadingMonedas
+                                                ? 'Cargando monedas...'
+                                                : 'Seleccione moneda destino'}
                                         </option>
+
                                         {monedasDisponiblesDestino.map((m) => (
-                                            <option key={getTipoMonedaId(m)} value={getTipoMonedaId(m)}>
-                                                {getTipoMonedaSimbolo(m)} - {getTipoMonedaDescripcion(m)} ({getTipoMonedaISO(m)})
+                                            <option
+                                                key={getTipoMonedaId(m)}
+                                                value={getTipoMonedaId(m)}
+                                            >
+                                                {getTipoMonedaSimbolo(m)} -{' '}
+                                                {getTipoMonedaDescripcion(m)} (
+                                                {getTipoMonedaISO(m)})
                                             </option>
                                         ))}
                                     </select>
@@ -241,10 +347,16 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                         type="button"
                                         className="btn-secondary"
                                         onClick={handleBuscarDesdeApi}
-                                        disabled={saving || fetchingApiRate || loadingMonedas}
+                                        disabled={
+                                            saving ||
+                                            fetchingApiRate ||
+                                            loadingMonedas
+                                        }
                                     >
                                         <Wand2 size={16} />
-                                        {fetchingApiRate ? 'Consultando API...' : 'Obtener tasa desde API'}
+                                        {fetchingApiRate
+                                            ? 'Consultando API...'
+                                            : 'Obtener tasa desde API'}
                                     </button>
                                 </div>
                             </>
@@ -255,6 +367,7 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                 <BadgeDollarSign size={13} />
                                 Tasa de Cambio
                             </label>
+
                             <input
                                 id="com-tasa-cambio"
                                 type="number"
@@ -278,6 +391,7 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                 <CalendarDays size={13} />
                                 Fecha de Vigencia
                             </label>
+
                             <input
                                 id="com-fecha-vigencia"
                                 type="date"
@@ -299,6 +413,7 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                                     <RefreshCw size={13} />
                                     Fuente
                                 </label>
+
                                 <select
                                     id="com-fuente"
                                     value={formData.COM_Fuente}
@@ -324,6 +439,7 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                             onClick={onClose}
                             disabled={saving || fetchingApiRate}
                         >
+                            <CircleX size={16} />
                             Cancelar
                         </button>
 
@@ -332,6 +448,8 @@ const ConversionMonedaModal = ({ isOpen, onClose, onSave, onFetchApiRate, conver
                             className="btn-save"
                             disabled={saving || fetchingApiRate}
                         >
+                            <Save size={16} />
+
                             {saving
                                 ? 'Guardando...'
                                 : conversionToEdit

@@ -1,35 +1,38 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
-    baseURL: 'https://localhost:7172/api',
-    timeout: 10000, 
+    baseURL: "https://localhost:7172/api",
+    timeout: 10000,
     headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
     },
 });
 
-
 api.interceptors.request.use(
     (config) => {
+        const token = sessionStorage.getItem("token");
+
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
-    (response) => {
-        // Si todo salió bien, simplemente devolvemos la respuesta
-        return response;
-    },
+    (response) => response,
     (error) => {
-        // Si hubo un error global, podemos atajarlo aquí
-        if (error.response) {
-            if (error.response.status === 401) {
-                console.error('Error 401: No autorizado. Tu sesión pudo haber expirado.');
+        if (error.response?.status === 401) {
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("usuario");
+
+            if (window.location.pathname !== "/login") {
+                window.location.href = "/login";
             }
         }
+
         return Promise.reject(error);
     }
 );

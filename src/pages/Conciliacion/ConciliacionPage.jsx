@@ -304,38 +304,11 @@ const ConciliacionPage = () => {
         </button>
       </div>
 
-      <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-        <div className="input-group" style={{ minWidth: 340 }}>
-          <label>Cuenta</label>
-          <select
-            value={cuentaSeleccionadaId}
-            onChange={(e) => setCuentaSeleccionadaId(e.target.value)}
-          >
-            <option value="">Todas las cuentas</option>
-            {cuentas.map((c) => (
-              <option key={getCuentaIdLocal(c)} value={String(getCuentaIdLocal(c))}>
-                {getNumeroCuenta(c)} · {getBancoNombre(c)} · {getTitular(c)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="search-bar">
-          <Search size={16} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Buscar por período, cuenta o estado..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-
       <div className="kpi-grid">
         <div className="kpi-card" style={{ borderLeft: '4px solid #0284c7' }}>
           <div>
             <div className="kpi-label">Total conciliaciones</div>
-            <div className="kpi-value">{conciliaciones.length}</div>
+            <div className="kpi-value" style={{ color: '#0284c7' }}>{conciliaciones.length}</div>
           </div>
           <div className="kpi-icon" style={{ background: '#e0f2fe' }}>
             <Scale size={20} color="#0284c7" />
@@ -382,6 +355,33 @@ const ConciliacionPage = () => {
           <div className="kpi-icon" style={{ background: '#f1f5f9' }}>
             <Scale size={20} color="#64748b" />
           </div>
+        </div>
+      </div>
+
+      <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+        <div className="input-group" style={{ minWidth: 340 }}>
+          <label>Cuenta</label>
+          <select
+            value={cuentaSeleccionadaId}
+            onChange={(e) => setCuentaSeleccionadaId(e.target.value)}
+          >
+            <option value="">Seleccionar Cuenta</option>
+            {cuentas.map((c) => (
+              <option key={getCuentaIdLocal(c)} value={String(getCuentaIdLocal(c))}>
+                {getNumeroCuenta(c)} · {getBancoNombre(c)} · {getTitular(c)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="search-bar">
+          <Search size={16} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar por período, cuenta o estado..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
 

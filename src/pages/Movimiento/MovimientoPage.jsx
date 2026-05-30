@@ -1,21 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, CheckCircle, ArrowLeftRight } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Search, CheckCircle, ArrowLeftRight } from "lucide-react";
 
 import {
   getMovimientos,
   createMovimiento,
   anularMovimiento,
-} from '../../services/MovimientoService';
+} from "../../services/MovimientoService";
 
-import { getCuentas } from '../../services/CuentaBancariaService';
-import { getTiposMovimiento } from '../../services/TipoMovimientoService';
-import { getMediosMovimiento } from '../../services/MedioMovimientoService';
-import { getEstadosMovimiento } from '../../services/EstadoMovimientoService';
-import { getPersonas } from '../../services/PersonaService';
+import { getCuentas } from "../../services/CuentaBancariaService";
+import { getTiposMovimiento } from "../../services/TipoMovimientoService";
+import { getMediosMovimiento } from "../../services/MedioMovimientoService";
+import { getEstadosMovimiento } from "../../services/EstadoMovimientoService";
+import { getPersonas } from "../../services/PersonaService";
 
-import MovimientoTable from './MovimientoTable';
-import MovimientoModal from './MovimientoModal';
-import MovimientoDetalle from './MovimientoDetalle';
+import MovimientoTable from "./MovimientoTable";
+import MovimientoModal from "./MovimientoModal";
+import MovimientoDetalle from "./MovimientoDetalle";
 
 import {
   getDescripcion,
@@ -25,34 +25,60 @@ import {
   getPersonaNombre,
   getMonto,
   esIngreso,
-} from './MovimientoHelpers';
+  getCuentaId,
+  getNumeroCuenta,
+  getBancoNombre,
+  getSimboloMoneda,
+  formatMoney,
+} from "./MovimientoHelpers";
 
-import './Movimiento.css';
+import "./Movimiento.css";
 
-const getCuentaId = (c) =>
+const getCuentaLocalId = (c) =>
   c?.cUB_Cuenta ?? c?.cuB_Cuenta ?? c?.cub_cuenta ?? 0;
 
-const getNumeroCuenta = (c) =>
-  c?.cUB_Numero_Cuenta ?? c?.cuB_Numero_Cuenta ?? c?.cub_numero_cuenta ?? '';
+const getCuentaNumero = (c) =>
+  c?.cUB_Numero_Cuenta ?? c?.cuB_Numero_Cuenta ?? c?.cub_numero_cuenta ?? "";
 
-const getBancoNombre = (c) =>
-  c?.bAN_Nombre ?? c?.baN_Nombre ?? c?.ban_nombre ?? '';
+const getCuentaBancoNombre = (c) =>
+  c?.bAN_Nombre ?? c?.baN_Nombre ?? c?.ban_nombre ?? "";
 
 const getNombre = (c) =>
-  c?.cUB_Primer_Nombre ?? c?.cuB_Primer_Nombre ?? c?.cub_primer_nombre ?? '';
+  c?.cUB_Primer_Nombre ?? c?.cuB_Primer_Nombre ?? c?.cub_primer_nombre ?? "";
+
+const getSegundoNombre = (c) =>
+  c?.cUB_Segundo_Nombre ?? c?.cuB_Segundo_Nombre ?? c?.cub_segundo_nombre ?? "";
 
 const getApellido = (c) =>
-  c?.cUB_Primer_Apellido ?? c?.cuB_Primer_Apellido ?? c?.cub_primer_apellido ?? '';
+  c?.cUB_Primer_Apellido ?? c?.cuB_Primer_Apellido ?? c?.cub_primer_apellido ?? "";
 
-const getTitular = (c) => `${getNombre(c)} ${getApellido(c)}`.trim();
+const getSegundoApellido = (c) =>
+  c?.cUB_Segundo_Apellido ?? c?.cuB_Segundo_Apellido ?? c?.cub_segundo_apellido ?? "";
+
+const getSaldoInicial = (c) =>
+  Number(c?.cUB_Saldo_Inicial ?? c?.cuB_Saldo_Inicial ?? c?.cub_saldo_inicial ?? 0);
+
+const getSaldoActual = (c) =>
+  Number(c?.cUB_Saldo_Actual ?? c?.cuB_Saldo_Actual ?? c?.cub_saldo_actual ?? 0);
+
+const getTitular = (c) =>
+  [
+    getNombre(c),
+    getSegundoNombre(c),
+    getApellido(c),
+    getSegundoApellido(c),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
 const MovimientoPage = () => {
   const [movimientos, setMovimientos] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [movimientoDetalle, setMovimientoDetalle] = useState(null);
 
@@ -62,7 +88,7 @@ const MovimientoPage = () => {
   const [personas, setPersonas] = useState([]);
 
   const [cuentas, setCuentas] = useState([]);
-  const [cuentaSeleccionadaId, setCuentaSeleccionadaId] = useState('');
+  const [cuentaSeleccionadaId, setCuentaSeleccionadaId] = useState("");
 
   useEffect(() => {
     fetchMovimientos();
@@ -72,14 +98,16 @@ const MovimientoPage = () => {
   const fetchMovimientos = async () => {
     try {
       setLoading(true);
+
       const data = await getMovimientos();
       const lista = Array.isArray(data) ? data : [];
+
       setMovimientos(lista);
       setFiltered(lista);
       setError(null);
     } catch (err) {
-      console.error('Error cargando movimientos:', err);
-      setError('No se pudieron cargar los movimientos.');
+      console.error("Error cargando movimientos:", err);
+      setError("No se pudieron cargar los movimientos.");
     } finally {
       setLoading(false);
     }
@@ -87,13 +115,14 @@ const MovimientoPage = () => {
 
   const fetchCatalogos = async () => {
     try {
-      const [tipos, medios, estados, personasResp, cuentasResp] = await Promise.all([
-        getTiposMovimiento(),
-        getMediosMovimiento(),
-        getEstadosMovimiento(),
-        getPersonas(),
-        getCuentas(),
-      ]);
+      const [tipos, medios, estados, personasResp, cuentasResp] =
+        await Promise.all([
+          getTiposMovimiento(),
+          getMediosMovimiento(),
+          getEstadosMovimiento(),
+          getPersonas(),
+          getCuentas(),
+        ]);
 
       const listaCuentas = Array.isArray(cuentasResp) ? cuentasResp : [];
 
@@ -103,94 +132,140 @@ const MovimientoPage = () => {
       setPersonas(Array.isArray(personasResp) ? personasResp : []);
       setCuentas(listaCuentas);
 
-      if (listaCuentas.length > 0) {
-        setCuentaSeleccionadaId(String(getCuentaId(listaCuentas[0])));
-      }
+      setCuentaSeleccionadaId((actual) => {
+          if (actual) return actual;
+          return listaCuentas.length > 0 ? String(getCuentaLocalId(listaCuentas[0])) : "";
+        });
     } catch (err) {
-      console.error('Error cargando catálogos:', err);
+      console.error("Error cargando catálogos:", err);
     }
   };
 
+  const cuentaSeleccionada = useMemo(() => {
+    return (
+      cuentas.find(
+        (c) => String(getCuentaLocalId(c)) === String(cuentaSeleccionadaId)
+      ) || null
+    );
+  }, [cuentas, cuentaSeleccionadaId]);
+
+  const movimientosCuenta = useMemo(() => {
+    if (!cuentaSeleccionadaId) return movimientos;
+
+    return movimientos.filter(
+      (m) => String(getCuentaId(m)) === String(cuentaSeleccionadaId)
+    );
+  }, [movimientos, cuentaSeleccionadaId]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!search.trim()) {
-        setFiltered(movimientos);
-        return;
-      }
+      const q = search.trim().toLowerCase();
 
-      const q = search.toLowerCase();
+      let lista = [...movimientosCuenta];
 
-      setFiltered(
-        movimientos.filter((m) => {
-          const descripcion = String(getDescripcion(m) || '').toLowerCase();
-          const referencia = String(getReferencia(m) || '').toLowerCase();
-          const tipo = String(getTipoDescripcion(m) || '').toLowerCase();
-          const medio = String(getMedioDescripcion(m) || '').toLowerCase();
-          const persona = String(getPersonaNombre(m) || '').toLowerCase();
+      if (q) {
+        lista = lista.filter((m) => {
+          const descripcion = String(getDescripcion(m) || "").toLowerCase();
+          const referencia = String(getReferencia(m) || "").toLowerCase();
+          const tipo = String(getTipoDescripcion(m) || "").toLowerCase();
+          const medio = String(getMedioDescripcion(m) || "").toLowerCase();
+          const persona = String(getPersonaNombre(m) || "").toLowerCase();
+          const cuenta = String(getNumeroCuenta(m) || "").toLowerCase();
+
+          const banco = String(
+            getBancoNombre(m) ||
+              (cuentaSeleccionada ? getCuentaBancoNombre(cuentaSeleccionada) : "")
+          ).toLowerCase();
+
+          const titular = String(
+            cuentaSeleccionada ? getTitular(cuentaSeleccionada) : ""
+          ).toLowerCase();
 
           return (
             descripcion.includes(q) ||
             referencia.includes(q) ||
             tipo.includes(q) ||
             medio.includes(q) ||
-            persona.includes(q)
+            persona.includes(q) ||
+            cuenta.includes(q) ||
+            banco.includes(q) ||
+            titular.includes(q)
           );
-        })
-      );
+        });
+      }
+
+      setFiltered(lista);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, movimientos]);
+  }, [search, movimientosCuenta, cuentaSeleccionada]);
 
   const showSuccess = (msg) => {
     setSuccess(msg);
-    setTimeout(() => setSuccess(''), 3000);
+    setTimeout(() => setSuccess(""), 3000);
   };
-
-  const cuentaSeleccionada = useMemo(() => {
-    return cuentas.find(c => String(getCuentaId(c)) === String(cuentaSeleccionadaId)) || null;
-  }, [cuentas, cuentaSeleccionadaId]);
 
   const handleOpenCreate = () => {
     if (!cuentaSeleccionadaId) {
-      alert('Debes seleccionar una cuenta antes de crear el movimiento.');
+      alert("Debes seleccionar una cuenta antes de crear el movimiento.");
       return;
     }
+
     setIsModalOpen(true);
   };
 
   const handleSave = async (formData) => {
     try {
       await createMovimiento(formData);
-      showSuccess('Movimiento creado correctamente.');
+
+      showSuccess("Movimiento creado correctamente.");
       setIsModalOpen(false);
+
       await fetchMovimientos();
+      await fetchCatalogos();
+
     } catch (err) {
-      console.error('Error guardando movimiento:', err);
-      alert(err?.response?.data?.mensaje || 'Error al guardar el movimiento.');
+      console.error("Error guardando movimiento:", err);
+      alert(err?.response?.data?.mensaje || "Error al guardar el movimiento.");
     }
   };
 
   const handleAnular = async (id) => {
-    if (!window.confirm('¿Deseas anular este movimiento?')) return;
+    if (!window.confirm("¿Deseas anular este movimiento?")) return;
 
     try {
       await anularMovimiento(id);
-      showSuccess('Movimiento anulado correctamente.');
+
+      showSuccess("Movimiento anulado correctamente.");
+
       await fetchMovimientos();
+      await fetchCatalogos();
+
     } catch (err) {
-      console.error('Error anulando movimiento:', err);
-      alert(err?.response?.data?.mensaje || 'Error al anular el movimiento.');
+      console.error("Error anulando movimiento:", err);
+      alert(err?.response?.data?.mensaje || "Error al anular el movimiento.");
     }
   };
 
-  const totalIngresos = movimientos
+  const totalIngresos = movimientosCuenta
     .filter((m) => esIngreso(m))
     .reduce((sum, m) => sum + getMonto(m), 0);
 
-  const totalEgresos = movimientos
+  const totalEgresos = movimientosCuenta
     .filter((m) => !esIngreso(m))
     .reduce((sum, m) => sum + getMonto(m), 0);
+
+  const simboloMoneda = cuentaSeleccionada
+    ? getSimboloMoneda(cuentaSeleccionada)
+    : "Q";
+
+  const saldoInicial = cuentaSeleccionada
+  ? getSaldoInicial(cuentaSeleccionada)
+  : 0;
+
+const saldoActual = cuentaSeleccionada
+  ? getSaldoActual(cuentaSeleccionada)
+  : 0;
 
   if (movimientoDetalle) {
     return (
@@ -208,26 +283,151 @@ const MovimientoPage = () => {
       <div className="page-header">
         <div className="page-header-left">
           <h1>Movimientos</h1>
-          <span className="record-count">{movimientos.length} registros</span>
+
+          <span className="record-count">
+            {filtered.length} registros
+          </span>
         </div>
 
-        <button className="btn-primary" onClick={handleOpenCreate} type="button">
+        <button
+          className="btn-primary"
+          onClick={handleOpenCreate}
+          type="button"
+        >
           <Plus size={16} />
           Nuevo movimiento
         </button>
       </div>
 
-      <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+      <div className="kpi-grid">
+        <div
+          className="kpi-card"
+          style={{ borderLeft: "4px solid #0284c7" }}
+        >
+          <div>
+            <div className="kpi-label">Total movimientos</div>
+
+            <div
+              className="kpi-value"
+              style={{ color: "#0284c7" }}
+            >
+              {movimientosCuenta.length}
+            </div>
+          </div>
+
+          <div
+            className="kpi-icon"
+            style={{ background: "#e0f2fe" }}
+          >
+            <ArrowLeftRight size={20} color="#0284c7" />
+          </div>
+        </div>
+
+        <div
+        className="kpi-card"
+        style={{ borderLeft: "4px solid #64748b" }}
+      >
+        <div>
+          <div className="kpi-label">Saldo inicial</div>
+          <div
+            className="kpi-value"
+            style={{ color: "#334155" }}
+          >
+            {formatMoney(saldoInicial, simboloMoneda)}
+          </div>
+        </div>
+
+        <div
+          className="kpi-icon"
+          style={{ background: "#f1f5f9" }}
+        >
+          <ArrowLeftRight size={20} color="#64748b" />
+        </div>
+      </div>
+
+      <div
+        className="kpi-card"
+        style={{ borderLeft: "4px solid #0f766e" }}
+      >
+        <div>
+          <div className="kpi-label">Saldo actual</div>
+          <div
+            className="kpi-value"
+            style={{ color: "#0f766e" }}
+          >
+            {formatMoney(saldoActual, simboloMoneda)}
+          </div>
+        </div>
+
+        <div
+          className="kpi-icon"
+          style={{ background: "#ccfbf1" }}
+        >
+          <ArrowLeftRight size={20} color="#0f766e" />
+        </div>
+      </div>
+
+        <div
+          className="kpi-card"
+          style={{ borderLeft: "4px solid #15803d" }}
+        >
+          <div>
+            <div className="kpi-label">Total ingresos</div>
+
+            <div
+              className="kpi-value"
+              style={{ color: "#15803d" }}
+            >
+              {formatMoney(totalIngresos, simboloMoneda)}
+            </div>
+          </div>
+
+          <div
+            className="kpi-icon"
+            style={{ background: "#dcfce7" }}
+          >
+            <ArrowLeftRight size={20} color="#15803d" />
+          </div>
+        </div>
+
+        <div
+          className="kpi-card"
+          style={{ borderLeft: "4px solid #b91c1c" }}
+        >
+          <div>
+            <div className="kpi-label">Total egresos</div>
+
+            <div
+              className="kpi-value"
+              style={{ color: "#b91c1c" }}
+            >
+              {formatMoney(totalEgresos, simboloMoneda)}
+            </div>
+          </div>
+
+          <div
+            className="kpi-icon"
+            style={{ background: "#fee2e2" }}
+          >
+            <ArrowLeftRight size={20} color="#b91c1c" />
+          </div>
+        </div>
+      </div>
+
+      <div className="toolbar" style={{ justifyContent: "space-between" }}>
         <div className="input-group" style={{ minWidth: 340 }}>
-          <label>Cuenta para registrar</label>
           <select
             value={cuentaSeleccionadaId}
             onChange={(e) => setCuentaSeleccionadaId(e.target.value)}
           >
-            <option value="">Seleccionar cuenta</option>
+            <option value="">Seleccionar Cuenta</option>
+
             {cuentas.map((c) => (
-              <option key={getCuentaId(c)} value={String(getCuentaId(c))}>
-                {getNumeroCuenta(c)} · {getBancoNombre(c)} · {getTitular(c)}
+              <option
+                key={getCuentaLocalId(c)}
+                value={String(getCuentaLocalId(c))}
+              >
+                {getCuentaNumero(c)} · {getCuentaBancoNombre(c)} · {getTitular(c)}
               </option>
             ))}
           </select>
@@ -235,48 +435,13 @@ const MovimientoPage = () => {
 
         <div className="search-bar">
           <Search size={16} className="search-icon" />
+
           <input
             type="text"
-            placeholder="Buscar por descripción, referencia, persona, medio o tipo..."
+            placeholder="Buscar movimientos..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
-      </div>
-
-      <div className="kpi-grid">
-        <div className="kpi-card" style={{ borderLeft: '4px solid #0284c7' }}>
-          <div>
-            <div className="kpi-label">Total movimientos</div>
-            <div className="kpi-value">{movimientos.length}</div>
-          </div>
-          <div className="kpi-icon" style={{ background: '#e0f2fe' }}>
-            <ArrowLeftRight size={20} color="#0284c7" />
-          </div>
-        </div>
-
-        <div className="kpi-card" style={{ borderLeft: '4px solid #15803d' }}>
-          <div>
-            <div className="kpi-label">Total ingresos</div>
-            <div className="kpi-value" style={{ color: '#15803d' }}>
-              Q {totalIngresos.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
-            </div>
-          </div>
-          <div className="kpi-icon" style={{ background: '#dcfce7' }}>
-            <ArrowLeftRight size={20} color="#15803d" />
-          </div>
-        </div>
-
-        <div className="kpi-card" style={{ borderLeft: '4px solid #b91c1c' }}>
-          <div>
-            <div className="kpi-label">Total egresos</div>
-            <div className="kpi-value" style={{ color: '#b91c1c' }}>
-              Q {totalEgresos.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
-            </div>
-          </div>
-          <div className="kpi-icon" style={{ background: '#fee2e2' }}>
-            <ArrowLeftRight size={20} color="#b91c1c" />
-          </div>
         </div>
       </div>
 
@@ -303,8 +468,8 @@ const MovimientoPage = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
-        cuentaId={cuentaSeleccionada ? getCuentaId(cuentaSeleccionada) : ''}
-        numeroCuenta={cuentaSeleccionada ? getNumeroCuenta(cuentaSeleccionada) : ''}
+        cuentaId={cuentaSeleccionada ? getCuentaLocalId(cuentaSeleccionada) : ""}
+        numeroCuenta={cuentaSeleccionada ? getCuentaNumero(cuentaSeleccionada) : ""}
         personas={personas}
         tiposMovimiento={tiposMovimiento}
         mediosMovimiento={mediosMovimiento}

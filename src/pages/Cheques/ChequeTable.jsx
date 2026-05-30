@@ -52,6 +52,9 @@ const estadoPill = (e) => {
     return m[e] ?? 'che-pill-amber';
 };
 
+const getChSimbolo = (c) =>
+    g(c, 'tMO_Simbolo', 'tmO_Simbolo', 'TMO_Simbolo', 'tmo_simbolo') ?? 'Q';
+
 const formatFecha = (f) => (f ? new Date(f).toLocaleDateString('es-GT') : '—');
 
 const ChequeTable = ({ cheques, onVer, onImprimir, onCambiarEstado, estadosCheque }) => {
@@ -138,7 +141,7 @@ const ChequeTable = ({ cheques, onVer, onImprimir, onCambiarEstado, estadosChequ
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        Q {getChMonto(c).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                                        {getChSimbolo(c)} {getChMonto(c).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                                     </td>
 
                                     <td style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>
