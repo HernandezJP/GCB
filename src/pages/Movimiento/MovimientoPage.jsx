@@ -461,6 +461,7 @@ const saldoActual = cuentaSeleccionada
           movimientos={filtered}
           onView={setMovimientoDetalle}
           onAnular={handleAnular}
+          simbolo={simboloMoneda}
         />
       )}
 

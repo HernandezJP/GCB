@@ -36,6 +36,7 @@ const MovimientoTable = ({ movimientos, onView, onAnular, simbolo = 'Q' }) => {
               <th>Persona</th>
               <th>Descripción</th>
               <th>Referencia</th>
+              <th>Moneda</th>
               <th>Monto</th>
               <th>Recargo</th>
               <th>Saldo</th>
@@ -85,6 +86,10 @@ const MovimientoTable = ({ movimientos, onView, onAnular, simbolo = 'Q' }) => {
                     >
                       {getReferencia(m) || '—'}
                     </code>
+                  </td>
+
+                  <td style={{ fontWeight: 600, color: '#0284c7' }}>
+                    {simbolo}
                   </td>
 
                   <td
