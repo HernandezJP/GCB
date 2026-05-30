@@ -112,19 +112,28 @@ const buildCuentaLabel = (c, bancos) => {
 };
 
 const getSimboloMoneda = (c) =>
-    c?.tMO_Simbolo ??
-    c?.tmO_Simbolo ??
-    c?.TMO_Simbolo ??
-    c?.tmo_simbolo ??
-    'Q';
+    g(
+        c,
+        'tMO_Simbolo',
+        'tmO_Simbolo',
+        'TMO_Simbolo',
+        'tmo_simbolo',
+        'TMO_SIMBOLO'
+    ) ?? 'Q';
 
 const getDescripcionMoneda = (c) =>
-    c?.tMO_Descripcion ??
-    c?.tmO_Descripcion ??
-    c?.TMO_Descripcion ??
-    c?.tmo_descripcion ??
-    '';
-
+    g(
+        c,
+        'tMO_Descripcion',
+        'tmO_Descripcion',
+        'TMO_Descripcion',
+        'tmo_descripcion',
+        'TMO_DESCRIPCION',
+        'tmO_Nombre',
+        'tMO_Nombre',
+        'TMO_Nombre',
+        'tmo_nombre'
+    ) ?? '';
 const getLabelMoneda = (simbolo, descripcion = '') => {
     const desc = String(descripcion).toLowerCase();
 
@@ -208,49 +217,42 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
     }, [cuentaId, modoDetalleCuenta]);
 
     const chequesConSerie = useMemo(() => {
-        return cheques.map((ch) => {
-            const chequeraId = getChequeChequeraId(ch);
-            const cuentaIdCheque = getChequeCuentaId(ch);
+    return cheques.map((ch) => {
+        const chequeraId = getChequeChequeraId(ch);
+        const cuentaIdCheque = getChequeCuentaId(ch);
 
-            const chequera = chequeras.find(
-                (q) => String(getChequeraId(q)) === String(chequeraId)
-            );
+        const chequera = chequeras.find(
+            (q) => String(getChequeraId(q)) === String(chequeraId)
+        );
 
-            const cuenta = cuentas.find(
-                (c) => String(getCuentaId(c)) === String(cuentaIdCheque)
-            );
+        const cuenta = cuentas.find(
+            (c) => String(getCuentaId(c)) === String(cuentaIdCheque)
+        );
 
-            const serie = getChequeraSerie(chequera);
+        const serie = getChequeraSerie(chequera);
 
-            return {
-                ...ch,
-                chQ_Serie:
-                    ch?.chQ_Serie ??
-                    ch?.cHQ_Serie ??
-                    ch?.CHQ_Serie ??
-                    serie ??
-                    '',
+        return {
+            ...ch,
 
-                tMO_Simbolo:
-                    ch?.tMO_Simbolo ??
-                    ch?.tmO_Simbolo ??
-                    ch?.TMO_Simbolo ??
-                    cuenta?.tMO_Simbolo ??
-                    cuenta?.tmO_Simbolo ??
-                    cuenta?.TMO_Simbolo ??
-                    'Q',
+            chQ_Serie:
+                ch?.chQ_Serie ??
+                ch?.cHQ_Serie ??
+                ch?.CHQ_Serie ??
+                serie ??
+                '',
 
-                tMO_Descripcion:
-                    ch?.tMO_Descripcion ??
-                    ch?.tmO_Descripcion ??
-                    ch?.TMO_Descripcion ??
-                    cuenta?.tMO_Descripcion ??
-                    cuenta?.tmO_Descripcion ??
-                    cuenta?.TMO_Descripcion ??
-                    'Quetzales',
-            };
-        });
-    }, [cheques, chequeras, cuentas]);
+            tMO_Simbolo:
+                getSimboloMoneda(ch) !== 'Q'
+                    ? getSimboloMoneda(ch)
+                    : getSimboloMoneda(cuenta),
+
+            tMO_Descripcion:
+                getDescripcionMoneda(ch) ||
+                getDescripcionMoneda(cuenta) ||
+                'Quetzales',
+        };
+    });
+}, [cheques, chequeras, cuentas]);
 
     useEffect(() => {
         let result = [...chequesConSerie];
@@ -457,6 +459,11 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
         );
     }
 
+    const simboloMonedaKpi =
+    filtered.length > 0
+        ? getSimboloMoneda(filtered[0])
+        : 'Q';
+
     return (
         <div className="cheque-container">
             <div className="che-page-header">
@@ -492,9 +499,11 @@ const ChequePage = ({ cuentaId = null, modoDetalleCuenta = false }) => {
                     { label: 'Cancelados', val: cancelados, color: '#64748b', bg: '#f1f5f9' },
                     {
                         label: 'Total emitido',
-                        val: `Q ${totalMonto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}`,
-                        color: '#b91c1c',
-                        bg: '#fee2e2',
+    val: `${simboloMonedaKpi} ${totalMonto.toLocaleString('es-GT', {
+        minimumFractionDigits: 2,
+    })}`,
+    color: '#b91c1c',
+    bg: '#fee2e2',
                     },
                 ].map((s, i) => (
                     <div
