@@ -22,9 +22,10 @@ import {
   getPeriodo,
   getEstadoConciliacionDescripcion,
   getDiferencia,
+  formatMoney,
 } from './ConciliacionHelpers';
 
-const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q' }) => {
+const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q', moneda = '' }) => {
   const [conciliaciones, setConciliaciones] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [detalle, setDetalle] = useState([]);
@@ -216,6 +217,8 @@ const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q' }) => {
           onAceptarManual={handleAceptarManual}
           onRecalcular={() => handleRecalcular(getConciliacionId(conciliacionDetalle))}
           onCerrar={() => handleCerrar(getConciliacionId(conciliacionDetalle))}
+          simbolo={simbolo}
+          moneda={moneda}
         />
       </div>
     );
@@ -226,7 +229,10 @@ const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q' }) => {
       <div className="page-header" style={{ marginBottom: 16 }}>
         <div className="page-header-left">
           <h1 style={{ fontSize: '1.2rem' }}>Conciliación de la cuenta</h1>
-          <span className="record-count">{filtered.length} registros · {numeroCuenta}</span>
+          <span className="record-count">
+            {filtered.length} registros · {numeroCuenta}
+            {moneda ? ` · ${moneda}` : ''}{simbolo ? ` (${simbolo})` : ''}
+          </span>
         </div>
 
         <button className="btn-primary" onClick={() => setIsModalOpen(true)} type="button">
@@ -280,7 +286,7 @@ const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q' }) => {
           <div>
             <div className="kpi-label">Descuadre total</div>
             <div className="kpi-value" style={{ color: '#64748b' }}>
-              {simbolo} {totalDescuadre.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+              {formatMoney(totalDescuadre, simbolo)}
             </div>
           </div>
           <div className="kpi-icon" style={{ background: '#f1f5f9' }}>
@@ -315,6 +321,8 @@ const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q' }) => {
       ) : (
         <ConciliacionTable
           conciliaciones={filtered}
+          simbolo={simbolo}
+          moneda={moneda}
           onView={handleView}
           onRecalcular={handleRecalcular}
           onCerrar={handleCerrar}
@@ -332,6 +340,8 @@ const ConciliacionTab = ({ cuentaId, numeroCuenta, simbolo = 'Q' }) => {
             bAN_Nombre: '',
             cUB_Primer_Nombre: '',
             cUB_Primer_Apellido: '',
+            tmO_Descripcion: moneda,
+            tmO_Simbolo: simbolo,
           }
         ]}
         cuentaIdInicial={cuentaId}

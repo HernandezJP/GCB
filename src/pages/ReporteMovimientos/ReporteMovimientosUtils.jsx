@@ -194,14 +194,14 @@ const getPeriodo = (data) => {
     return {
         fechaInicio: fechas.length
             ? new Date(
-                  Math.min(...fechas)
-              ).toLocaleDateString("es-GT")
+                Math.min(...fechas)
+            ).toLocaleDateString("es-GT")
             : "—",
 
         fechaFin: fechas.length
             ? new Date(
-                  Math.max(...fechas)
-              ).toLocaleDateString("es-GT")
+                Math.max(...fechas)
+            ).toLocaleDateString("es-GT")
             : "—",
     };
 };
@@ -257,7 +257,7 @@ export const exportToExcel = (
         [
             "Total movimientos",
             resumen.totalMovimientos ??
-                dataOrdenada.length,
+            dataOrdenada.length,
         ],
         [],
     ];
@@ -390,11 +390,13 @@ export const exportToCsvConciliacion = (data) => {
 
         return [
             index + 1,
-            formatDate(getValue(item, [
-                "moV_Fecha",
-                "mOV_Fecha",
-                "mov_fecha",
-            ])),
+            formatDate(
+                getValue(item, [
+                    "moV_Fecha",
+                    "mOV_Fecha",
+                    "mov_fecha",
+                ])
+            ),
             getTipo(item),
             getMedio(item),
             getValue(item, [
@@ -407,10 +409,21 @@ export const exportToCsvConciliacion = (data) => {
                 "mOV_Numero_Referencia",
                 "mov_numero_referencia",
             ]),
-            debito > 0 ? formatMoney(debito, item) : "",
-            credito > 0 ? formatMoney(credito, item) : "",
-            getRecargo(item) > 0 ? formatMoney(getRecargo(item), item) : "",
-            formatMoney(getSaldo(item), item),
+
+            debito > 0
+                ? Number(debito).toFixed(2)
+                : "",
+
+            credito > 0
+                ? Number(credito).toFixed(2)
+                : "",
+
+            getRecargo(item) > 0
+                ? Number(getRecargo(item)).toFixed(2)
+                : "",
+
+            Number(getSaldo(item)).toFixed(2),
+
             getEstado(item),
         ];
     });
@@ -511,38 +524,38 @@ export const exportToPDF = (data, resumen = {}) => {
     doc.text("GESTIÓN DE CUENTAS BANCARIAS", 12, 24);
 
     // TÍTULO CENTRADO
-doc.setTextColor(255, 255, 255);
+    doc.setTextColor(255, 255, 255);
 
-doc.setFont("helvetica", "bold");
-doc.setFontSize(18);
-doc.text(
-    "REPORTE DE MOVIMIENTOS",
-    pageWidth / 2,
-    13,
-    { align: "center" }
-);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(
+        "REPORTE DE MOVIMIENTOS",
+        pageWidth / 2,
+        13,
+        { align: "center" }
+    );
 
-doc.setFont("helvetica", "normal");
-doc.setFontSize(10);
-doc.text(
-    "Estado de Cuenta Bancaria",
-    pageWidth / 2,
-    21,
-    { align: "center" }
-);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(
+        "Estado de Cuenta Bancaria",
+        pageWidth / 2,
+        21,
+        { align: "center" }
+    );
 
-// FECHA A LA DERECHA
-doc.setFont("helvetica", "bold");
-doc.setFontSize(8);
-doc.text("Fecha de emisión", pageWidth - 45, 10);
+    // FECHA A LA DERECHA
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("Fecha de emisión", pageWidth - 45, 10);
 
-doc.setFont("helvetica", "normal");
-doc.setFontSize(7);
-doc.text(
-    new Date().toLocaleString("es-GT"),
-    pageWidth - 45,
-    18
-);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text(
+        new Date().toLocaleString("es-GT"),
+        pageWidth - 45,
+        18
+    );
 
     doc.setFillColor(...verde);
     doc.rect(0, 32, pageWidth, 1.5, "F");

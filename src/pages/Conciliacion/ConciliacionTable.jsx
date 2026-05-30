@@ -14,7 +14,7 @@ import {
   formatMoney,
 } from './ConciliacionHelpers';
 
-const ConciliacionTable = ({ conciliaciones, onView, onRecalcular, onCerrar }) => {
+const ConciliacionTable = ({ conciliaciones, simbolo = 'Q', moneda = '', onView, onRecalcular, onCerrar }) => {
   if (!conciliaciones || conciliaciones.length === 0) {
     return <div className="empty-state">No se encontraron conciliaciones.</div>;
   }
@@ -48,13 +48,13 @@ const ConciliacionTable = ({ conciliaciones, onView, onRecalcular, onCerrar }) =
                   style={{ cursor: 'pointer' }}
                 >
                   <td style={{ color: '#cbd5e1', fontSize: 11, fontWeight: 600 }}>{idx + 1}</td>
-                  <td>{getCuentaId(c)}</td>
+                  <td>{getCuentaId(c)}{moneda ? ` · ${moneda}` : ''}{simbolo ? ` (${simbolo})` : ''}</td>
                   <td>{getPeriodo(c) || '—'}</td>
                   <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>
-                    {formatMoney(getSaldoBanco(c))}
+                    {formatMoney(getSaldoBanco(c), simbolo)}
                   </td>
                   <td style={{ fontWeight: 600, fontFamily: 'monospace' }}>
-                    {formatMoney(getSaldoLibros(c))}
+                    {formatMoney(getSaldoLibros(c), simbolo)}
                   </td>
                   <td
                     style={{
@@ -63,7 +63,7 @@ const ConciliacionTable = ({ conciliaciones, onView, onRecalcular, onCerrar }) =
                       color: getDiferencia(c) === 0 ? '#15803d' : '#b91c1c',
                     }}
                   >
-                    {formatMoney(getDiferencia(c))}
+                    {formatMoney(getDiferencia(c), simbolo)}
                   </td>
                   <td>
                     <span className={`status-pill ${getEstadoPillClass(estado)}`}>

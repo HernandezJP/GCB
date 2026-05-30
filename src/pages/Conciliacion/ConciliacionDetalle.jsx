@@ -47,6 +47,8 @@ const ConciliacionDetalle = ({
   onAceptarManual,
   onRecalcular,
   onCerrar,
+  simbolo = 'Q',
+  moneda = '',
 }) => {
   const [tab, setTab] = useState('detalle');
 
@@ -85,6 +87,8 @@ const ConciliacionDetalle = ({
             <h2>Conciliación {getPeriodo(conciliacion) || '—'}</h2>
             <p className="detalle-subtitle">
               {formatDate(getFechaConciliacion(conciliacion))} {' · '} Documento de conciliación bancaria
+              {moneda ? ` · ${moneda}` : ''}
+              {simbolo ? ` (${simbolo})` : ''}
             </p>
           </div>
 
@@ -97,15 +101,15 @@ const ConciliacionDetalle = ({
 
         <div className="detalle-stats">
           {[
-            { label: 'Saldo banco', val: formatMoney(getSaldoBanco(conciliacion)) },
-            { label: 'Saldo libros', val: formatMoney(getSaldoLibros(conciliacion)) },
+            { label: 'Saldo banco', val: formatMoney(getSaldoBanco(conciliacion), simbolo) },
+            { label: 'Saldo libros', val: formatMoney(getSaldoLibros(conciliacion), simbolo) },
             {
               label: 'Diferencia',
-              val: formatMoney(getDiferencia(conciliacion)),
+              val: formatMoney(getDiferencia(conciliacion), simbolo),
               color: getDiferencia(conciliacion) === 0 ? '#15803d' : '#b91c1c'
             },
-            { label: 'Banco ajustado', val: formatMoney(getSaldoBancoAjustado(conciliacion)) },
-            { label: 'Libros ajustado', val: formatMoney(getSaldoLibrosAjustado(conciliacion)) },
+            { label: 'Banco ajustado', val: formatMoney(getSaldoBancoAjustado(conciliacion), simbolo) },
+            { label: 'Libros ajustado', val: formatMoney(getSaldoLibrosAjustado(conciliacion), simbolo) },
           ].map((s, i) => (
             <div key={i} className="detalle-stat">
               <div className="detalle-stat-label">{s.label}</div>
@@ -139,10 +143,10 @@ const ConciliacionDetalle = ({
           <div className="tab-content" style={{ padding: 24 }}>
             <div className="kpi-grid" style={{ marginBottom: 0 }}>
               {[
-                { label: 'Depósitos en tránsito', value: formatMoney(getTotalDepositosTransito(conciliacion)), color: '#15803d', bg: '#dcfce7' },
-                { label: 'Cheques en circulación', value: formatMoney(getTotalChequesCirculacion(conciliacion)), color: '#b91c1c', bg: '#fee2e2' },
-                { label: 'Errores bancarios', value: formatMoney(getTotalErroresBancarios(conciliacion)), color: '#92400e', bg: '#fef3c7' },
-                { label: 'Ajustes contables', value: formatMoney(getTotalAjustesContablesPendientes(conciliacion)), color: '#1d4ed8', bg: '#dbeafe' },
+                { label: 'Depósitos en tránsito', value: formatMoney(getTotalDepositosTransito(conciliacion), simbolo), color: '#15803d', bg: '#dcfce7' },
+                { label: 'Cheques en circulación', value: formatMoney(getTotalChequesCirculacion(conciliacion), simbolo), color: '#b91c1c', bg: '#fee2e2' },
+                { label: 'Errores bancarios', value: formatMoney(getTotalErroresBancarios(conciliacion), simbolo), color: '#92400e', bg: '#fef3c7' },
+                { label: 'Ajustes contables', value: formatMoney(getTotalAjustesContablesPendientes(conciliacion), simbolo), color: '#1d4ed8', bg: '#dbeafe' },
               ].map((k, i) => (
                 <div key={i} className="kpi-card" style={{ borderLeft: `4px solid ${k.color}` }}>
                   <div>
@@ -232,12 +236,12 @@ const ConciliacionDetalle = ({
 
                             <td>{formatDate(getMovFecha(d))}</td>
                             <td><code style={codeStyle}>{getMovReferencia(d)}</code></td>
-                            <td style={moneyStyle}>{formatMoney(getMovMonto(d))}</td>
+                            <td style={moneyStyle}>{formatMoney(getMovMonto(d), simbolo)}</td>
 
                             <td>{formatDate(getTempFecha(d))}</td>
                             <td><code style={codeStyle}>{getTempReferencia(d)}</code></td>
-                            <td style={{ ...moneyStyle, color: '#b91c1c' }}>{formatMoney(getTempDebito(d))}</td>
-                            <td style={{ ...moneyStyle, color: '#15803d' }}>{formatMoney(getTempCredito(d))}</td>
+                            <td style={{ ...moneyStyle, color: '#b91c1c' }}>{formatMoney(getTempDebito(d), simbolo)}</td>
+                            <td style={{ ...moneyStyle, color: '#15803d' }}>{formatMoney(getTempCredito(d), simbolo)}</td>
                             <td>{getTempDescripcion(d) || '—'}</td>
 
                             <td>

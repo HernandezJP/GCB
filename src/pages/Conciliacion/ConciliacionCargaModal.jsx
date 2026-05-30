@@ -23,6 +23,12 @@ const getNombre = (c) =>
 const getApellido = (c) =>
     c?.cUB_Primer_Apellido ?? c?.cuB_Primer_Apellido ?? c?.cub_primer_apellido ?? '';
 
+const getMoneda = (c) =>
+    c?.tMO_Descripcion ?? c?.tmO_Descripcion ?? c?.tmo_descripcion ?? c?.Moneda ?? '';
+
+const getSimbolo = (c) =>
+    c?.tMO_Simbolo ?? c?.tmO_Simbolo ?? c?.tmo_simbolo ?? c?.Simbolo ?? 'Q';
+
 const getTitular = (c) => `${getNombre(c)} ${getApellido(c)}`.trim();
 
 const getCurrentPeriod = () => {
@@ -122,6 +128,8 @@ const ConciliacionCargaModal = ({
                             {cuentas.map((c) => (
                                 <option key={getCuentaId(c)} value={String(getCuentaId(c))}>
                                     {getNumeroCuenta(c) || `Cuenta #${getCuentaId(c)}`}
+                                    {getMoneda(c) ? ` · ${getMoneda(c)}` : ''}
+                                    {getSimbolo(c) ? ` (${getSimbolo(c)})` : ''}
                                     {getBancoNombre(c) ? ` · ${getBancoNombre(c)}` : ''}
                                     {getTitular(c) ? ` · ${getTitular(c)}` : ''}
                                 </option>
@@ -169,7 +177,9 @@ const ConciliacionCargaModal = ({
                             }}
                         >
                             Se procesará el archivo para la cuenta{' '}
-                            <strong>{getNumeroCuenta(cuentaSeleccionada)}</strong>.
+                            <strong>{getNumeroCuenta(cuentaSeleccionada)}</strong>
+                            {getMoneda(cuentaSeleccionada) ? ` · ${getMoneda(cuentaSeleccionada)}` : ''}
+                            {getSimbolo(cuentaSeleccionada) ? ` (${getSimbolo(cuentaSeleccionada)})` : ''}.
                         </div>
                     )}
                 </div>

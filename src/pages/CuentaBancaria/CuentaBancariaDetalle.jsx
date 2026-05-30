@@ -152,6 +152,7 @@ const CuentaBancariaView = ({ cuenta, onBack }) => {
               cuentaId={cuentaId}
               numeroCuenta={numeroCuenta}
               simbolo={simbolo}
+              moneda={getMoneda(cuenta)}
             />
           )}
         </div>
